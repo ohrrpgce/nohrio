@@ -1,0 +1,6 @@
+This is the OHRRPGCE I/O module, extracted from the depths of my misc doctests module
+so I could.. do *unit*-testing on them :)
+It handles OHRRPGCE data formats directly and can easily be used to make mass changes like cleaning strings.
+Simple formats are already YAML serializable
+
+Next is to test the robustness of that implementation, then to support more complex formats.

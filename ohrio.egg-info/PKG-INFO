@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: ohrio
+Version: 0.33dev
+Summary: Binary manipulation and text serialization of OHRRPGCE formats
+Home-page: UNKNOWN
+Author: David Gowers
+Author-email: 00ai99@gmail.com
+License: GPLv3
+Description: Binary manipulation and text serialization of OHRRPGCE formats
+Keywords: ohrrpgce i/o yaml serialization binary
+Platform: UNKNOWN
