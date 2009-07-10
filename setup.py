@@ -3,7 +3,7 @@ import sys, os
 
 version = '0.33'
 
-setup(name='ohrio',
+setup(name='nohrio',
       version=version,
       description="Binary manipulation and text serialization of OHRRPGCE formats",
       long_description="""\

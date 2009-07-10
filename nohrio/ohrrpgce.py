@@ -1,10 +1,98 @@
+# ****************************
+# Ohrrpgce Data I/O system
+# ****************************
+#
+# :Version: 1
+# :Author: David Gowers <00ai99@gmail.com>
+#
+#
+# .. contents::
+#
+# Preface
+# +++++++++++++++++++++
+#
+# Changelog
+# ===============
+# see :doc: git-changelog
+#
+# Introduction
+# =============
+#
+# OHRRPGCE data is currently pretty inaccessible, despite
+# the advances of rpgdirs, most things are opaque binary blobs.
+# There are several related issues to address:
+#
+# * transferring data between OHRRPGCE rpg files
+# * inspection and modification of data (eg. easy construction
+#   of helper tools)
+# * wider-world portability (SQL querying? grepping?)
+#
+# It was initially (ill)-conceived as a simple hack as I was polishing
+# my understanding of numpy dtypes -- 'well, we can dump this to YAML,
+# it's not too hard; and we can get all sorts of nice side effects from that,'
+#
+# This looked nice, but data nesting required a more methodical approach
+# than I was willing to apply. Development crawled along for a while --
+# one of the things I got right was that NumPy dtyping would allow
+# simple maintenance and even
+#
+# .. todo:: simple multi-version support
+# So even as I was baffled over it's ultimate fate, I felt secure in
+# adding support for more dtypes.
+#
+# This distraction arose from a shallow understanding of YAML -- and my
+# everpresent frantic approach.
+#
+# I began to understand this would not be so simple, and refactored the
+# code from a mess of bits embedded in a doctest, into this file --
+# ``ohrrpgce.py``
+#
+# More recently, I found pylit_ and, understanding that literate
+# programming will help me to moderate my franticnesses and be more
+# rational, I embarked on converting ``ohrrpgce.py`` to pylit_ format
+# -- which is a mix of two of my joys in programming, ReStructuredText
+# and Python :)
+#
+# I'll now attempt to clearly conceptualize this system.
+#
+# NOHRIO
+# ========
+#
+# NOHRIO is the name of this module.
+# It's N___ OHR I/O (nice? neat? nifty? nictating?)
+# Pronunciation: Noh Rio
+#
+# Code
+# +++++++++
+#
+# Setup
+# ===============
+#
+# We use numpy to specify, load, and save all of OHRRPGCE's
+# formats. Its dtype system is extremely powerful, and the
+# nesting is key to 'nice' access and slicing-up of the data.
+#
+
 import numpy as np
 import os
 
-# EMACS M-x delete-trailing-whitespace is your friend!
+# Helper data
+# ----------------
+#
+# This is kind of a mess of macro-ish things that
+# simplify construction of dtypes :|
+#
+
 
 BLOAD_HEADER = ('bload_header', (np.uint8, 7))
 BLOAD_SIZE = 7
+
+# H is the most common datatype in OHRRPGCE.
+# ``numpy.dtype ('h')`` gives you an int16 dtype
+# however, ``numpy.dtype ('H') gives you a uint16 dtype :(
+#
+# think this out better.
+#
 
 H = np.int16
 def fieldlist_to_dtype (fields):
@@ -536,3 +624,4 @@ dtypes['stf'] = [('items', (dtypes['_stf_item'], 50))]
 
 
 
+# .. _pylit: http://pylit.berlios.de/examples/index.html
