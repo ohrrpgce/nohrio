@@ -186,6 +186,68 @@ def pad (filename, granularity, groupsize = 1, headersize = 0):
     nrecords = (filesize - headersize) / granularity
     return nrecords
 
+# Wrappers
+# ===========
+#
+# XXX these virtualize things in a way contradictory to the
+# ohr / bin / text trichotomy:
+#
+# nohrio conceptualizes of three classes of format for OHR data to be
+# stored in.
+#
+# 1. plain. textual or trivially converted to text. eg YAML, internal
+#    dictionary format.
+#    This data must be self-encapsulated
+#    (ie. it can refer to other objects,
+#    however understanding its meaning is not dependent on
+#    outside factors.)
+#
+#    Note that only a certain subset of XML can qualify here
+#    -- that which uses no attributes.
+#
+#    It must behave like a dict; especially, it must accept and store arbitrary
+#    key values, and it must represent itself as MyClass(dict-style init params).
+#    it should serialize as YAML like:
+#
+#    .. codeblock:: yaml
+#
+#       myclass : #(lower cased)
+#           key : value
+#           key : value
+#
+# 2. OHR native. weird hacks, possibly with weirdly hacky headers.
+#
+# 3. Binary (sane). In a self-describing format such as SQLite, HDF5,
+#    or numpy storage (in memory or on disk).
+#    Known junk bytes are expected to be discarded,
+#    bytes of unknown meaning must be preserved verbatim.
+#
+# In the case of #2, aggregation schemes are strictly limited.
+# In the case of #1 and #3, aggregation schemes are flexible.
+# #3 will generally add description of what items are aggregated
+# as a separate object per array. #1 may embed this data in the object
+# itself.
+#
+# both #1 and #3 can hold information beyond the 'base set' --
+# eg YAML supports arbitrary keys, and HDF5 supports complex array
+# attributes. #2 explicitly discards this information.
+# Storing it inside the RPG file is undesirable because it cannot be
+# guaranteed to be in sync (and after a little editing, may almost be
+# guaranteed not to be in sync.)
+#
+# *PS*. we can use SHA-1 hashing to determine whether metadata is up to date
+# (ie. is metadata about exactly the same object.)
+#
+#
+# To simplify this scheme, I also designate the following data transformation flow:
+#
+# OHR <> binary <> plain
+#
+# That is, conversion is done between OHR and binary;
+# and binary and plain; but not OHR and plain.
+#
+#
+
 class fixBits (object):
     fields = ['attackitems', 'weappoints', 'stuncancel',
               'defaultdissolve', 'defaultdissolveenemy',
