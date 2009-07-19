@@ -85,7 +85,7 @@ config.AddVariables(
     ("opts", "extra builder options to use", None),
     ListVariable("install", "targets to install", ["html"], targetnames),
     PathVariable("instdir", "installation directory", "/usr/local/doc",
-                 PathVariable.PathIsDirCreate),
+                 PathVariable.PathAccept),
     EnumVariable("pkgtype", "package type to build with 'scons package'",
                  "zip", ["zip", "targz", "tarbz2"], ignorecase = False),
     BoolVariable("cache", "whether to cache settings in %s" % cachefile, False),
