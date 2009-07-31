@@ -467,18 +467,6 @@ dtypes = {
                           nitems_consumed = (INT, 3),
                           description = fvstr (38)),
 
-    # note: memmapping with this dtype causes a crash!
-    # load the data into a normal array with this dtype,
-    # or use the full spliced dtype above.
-    'attack.bin' : make ('captionpt2 basedef_stat',
-                         'settag tagcond tagcheck settag2 tagcond2 tagcheck2 bitsets3',
-                         'description consumeitem nitems_consumed soundeffect',
-                         'stat_preftarget',
-                         bitsets3 = ('B', 128 / 8),
-                         captionpt2 = 'S36',
-                         description = fvstr (38),
-                         consumeitem = (INT, 3),
-                         nitems_consumed = (INT, 3)),
     'binsize.bin' : make ('attack.bin stf songdata.bin sfxdata.bin map',
                           'menus.bin menuitem.bin uicolors.bin say'),
     'browse.txt' : [('longname', _browse_base_dtype), ('about', _browse_base_dtype)],
@@ -516,14 +504,6 @@ dtypes = {
                   stats = STATS_DTYPE,
                   unused = (INT, 28),
                   unused2 = (INT, 45)),
-    'dt6' : make ('picture palette animpattern targetclass targetsetting',
-                  'damage_eq aim_math baseatk_stat cost xdamage chainto chain_percent',
-                  'attacker_anim attack_anim attack_delay nhits target_stat',
-                  'preftarget bitsets1 name captiontime captionpt1',
-                  bitsets1 = ('B', 64 / 8),
-                  cost = [('hp', INT), ('mp', INT), ('money', INT)],
-                  name = [('length', INT), ('unused', INT), ('value', 'S20')],
-                  captionpt1 = fvstr (4)),
     'efs' : [('frequency', INT),('formations',(INT, 20)), ('wasted', (INT, 4))],
     'for' : make ('enemies background music backgroundframes backgroundspeed unused',
                   enemies = (make ('type x y unused'), 8), unused = (INT, 4)),
@@ -573,15 +553,6 @@ dtypes = {
                   'npcanddoor_loading tileandwall_loading bitsets savoffset layer_tilesets',
                   'n_npc_instances', savoffset = xycoord_dtype, bitsets = ('B', 2),
                   layer_tilesets = (INT, 3)),
-
-# .. _mas:
-#
-# Old master palettes
-# -------------------
-#
-# :obsolete: Yes
-
-    'mas' : _rgb16_dtype,
 
 # .. _mxs:
 #
@@ -683,6 +654,54 @@ dtypes = {
                   'ondismount overridewalls blockedby mountfrom dismount_to elevation reserved',
                   name = vstr (16), bitsets = (np.uint8, 4), reserved = (INT, 18)),
     }
+
+
+# Deprecated dtypes
+# ==================
+
+deprecated_dtypes = {
+
+# Second part of attack data
+# ---------------------------
+#
+# .. note::
+#
+#     memmapping with this dtype causes a crash!
+#     load the data into a normal array with this dtype,
+#     or use the full spliced dtype 'attack.full'
+
+    'attack.bin' : make ('captionpt2 basedef_stat',
+                         'settag tagcond tagcheck settag2 tagcond2 tagcheck2 bitsets3',
+                         'description consumeitem nitems_consumed soundeffect',
+                         'stat_preftarget',
+                         bitsets3 = ('B', 128 / 8),
+                         captionpt2 = 'S36',
+                         description = fvstr (38),
+                         consumeitem = (INT, 3),
+                         nitems_consumed = (INT, 3)),
+
+# First part of attack data
+# ---------------------------
+
+    'dt6' : make ('picture palette animpattern targetclass targetsetting',
+                  'damage_eq aim_math baseatk_stat cost xdamage chainto chain_percent',
+                  'attacker_anim attack_anim attack_delay nhits target_stat',
+                  'preftarget bitsets1 name captiontime captionpt1',
+                  bitsets1 = ('B', 64 / 8),
+                  cost = [('hp', INT), ('mp', INT), ('money', INT)],
+                  name = [('length', INT), ('unused', INT), ('value', 'S20')],
+                  captionpt1 = fvstr (4)),
+
+# .. _mas:
+#
+# Old master palettes
+# -------------------
+#
+# :obsolete: Yes
+
+    'mas' : _rgb16_dtype,
+
+}
 
 def names (nameliststring, length = -1, **aliases):
     tmp = nameliststring.split(';')
@@ -839,8 +858,10 @@ def print_array (arr):
         fieldname = field[0]
         value = arr[fieldname]
         if value.shape == ():
+
 # strangely, arr.tolist() on a scalar array returns a scalar not a list.
 # also, returns a tuple for complex records.
+
             value = value.tolist()
         print "    %s: %r" % (fieldname, value)
 
