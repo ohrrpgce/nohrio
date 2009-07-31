@@ -1,3 +1,16 @@
-All data copied from Vikings of Midgard.
-This is a partial copy -- some files are omitted.
+nohrio test data info
+=======================
 
+All data copied from Vikings of Midgard (found @ 'vikings.rpgdir' in the wip branch of ohrrpgce SVN):
+
+   svn://gilgamesh.hamsterrepublic.com/ohrrpgce/wip
+
+This is a partial copy -- some files are omitted, which means this
+is NOT a functioning .rpgdir that you could play with OHRRPGCE game player.
+Check out the below if you want a playable copy.
+
+As a OHRRPGCE user you should already know about Vikings of Midgard, but
+if you don't, 
+see:
+
+   http://hamsterrepublic.com/ohrrpgce/index.php/Game_Vikings_of_Midgard.html
