@@ -229,7 +229,7 @@ def pad (filename, granularity, groupsize = 1, headersize = 0):
 # That is, conversion is done between OHR and binary;
 # and binary and plain; but not OHR and plain.
 #
-# Q: Why can’t we just have #1 and #2 without #3?
+# Q: Why can't we just have #1 and #2 without #3?
 #    Balance between inspectability and ease of modification.
 #    Want to multiply all enemies HP by 1.5,
 #    and have enemy data in a NumPy array or memmap?
