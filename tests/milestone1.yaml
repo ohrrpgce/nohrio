@@ -1,0 +1,271 @@
+---
+# this document contains one YAML document for each test
+#
+
+# a bug in numpy (1.3.0) prevents memmapped use of attack.bin dtype
+# this is work-aroundable; fortunately attack.bin is really
+# weird anyway, it needs a special interface.
+
+nrecords: 4
+recordsize: 0x00ca
+filename: "attack.full"
+skippedbytes: 0x000
+
+binaryrecords:
+- 01000200000000000000000000000000000000000000000000000000020000000000010000000000000000000000000006000000410074007400610063006b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d000000
+- 0c003c000000010000000300030005000000000000000000000000000100000000000100000000000110000000000228070000005200650063006f00760065007200000000000000000010005265636f7665727320313030204850730000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000
+- 0c0036000000010000000300030005000000000000000000000000000000000000000100010000000100000000000238040000004d0061006e00610000000000000000000000000000000f005265636f76657220313030204d5073000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000
+- 0c00120000000a000000030003000500000000000000a6ff0000000000000000000001000000000001000000000002680a0000004c0069006600650070006f00740069006f006e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008000000
+
+yamlrecords:
+- attack:
+    picture: 1
+    palette: 2
+    animpattern: 0
+    targetclass: 0
+    targetsetting: 0
+    damage_eq: 0
+    aim_math: 0
+    baseatk_stat: 0
+    cost:
+      hp: 0
+      mp: 0
+      money: 0
+    xdamage: 0
+    chainto: 0
+    chain_percent: 0
+    attacker_anim: 2
+    attack_anim: 0
+    attack_delay: 0
+    nhits: 1
+    target_stat: 0
+    preftarget: 0
+    bitsets1: [0, 0, 0, 0, 0, 0, 0, 0]
+    name: Attack # requires automangling
+    captiontime: 0
+    caption: ''
+    basedef_stat: 0
+    settag: 0
+    tagcond: 0
+    tagcheck: 0
+    settag2: 0
+    tagcond2: 0
+    tagcheck2: 0
+    bitsets2: [0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    description: ''
+    consumeitem: [0, 0, 0]
+    nitems_consumed: [0, 0, 0]
+    soundeffect: 15
+    stat_preftarget: 0
+- attack:
+    picture: 12
+    palette: 60
+    animpattern: 0
+    targetclass: 1
+    targetsetting: 0
+    damage_eq: 3
+    aim_math: 3
+    baseatk_stat: 5
+    cost: [0, 0, 0]
+    xdamage: 0
+    chainto: 0
+    chain_percent: 0
+    attacker_anim: 1
+    attack_anim: 0
+    attack_delay: 0
+    nhits: 1
+    target_stat: 0
+    preftarget: 0
+    bitsets1: [ 1, 16,  0,  0,  0,  0,  2, 40]
+    name: Recover
+    captiontime: 0
+    caption: Recovers 100 HPs
+    basedef_stat: 0
+    settag: 0
+    tagcond: 0
+    tagcheck: 0
+    settag2: 0
+    tagcond2: 0
+    tagcheck2: 0
+    bitsets2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    description: ''
+    consumeitem: [0, 0, 0]
+    nitems_consumed: [0, 0, 0]
+    soundeffect: 8
+    stat_preftarget: 0
+
+- attack:
+    picture: 12
+    palette: 54
+    animpattern: 0
+    targetclass: 1
+    targetsetting: 0
+    damage_eq: 3
+    aim_math: 3
+    baseatk_stat: 5
+    cost: [0, 0, 0]
+    xdamage: 0
+    chainto: 0
+    chain_percent: 0
+    attacker_anim: 0
+    attack_anim: 0
+    attack_delay: 0
+    nhits: 1
+    target_stat: 1
+    preftarget: 0
+    bitsets1: [ 1,  0,  0,  0,  0,  0,  2, 56]
+    name: 'Mana'
+    captiontime: 0
+    caption: 'Recover 100 MPs'
+    basedef_stat: 0
+    settag: 0
+    tagcond: 0
+    tagcheck: 0
+    settag2: 0
+    tagcond2: 0
+    tagcheck2: 0
+    bitsets2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    description: ''
+    consumeitem: [0, 0, 0]
+    nitems_consumed: [0, 0, 0]
+    soundeffect: 8
+    stat_preftarget: 0
+
+- attack:
+    picture: 12
+    palette: 18
+    animpattern: 0
+    targetclass: 10
+    targetsetting: 0
+    damage_eq: 3
+    aim_math: 3
+    baseatk_stat: 5
+    cost: [0, 0, 0]
+    xdamage: -90
+    chainto: 0
+    chain_percent: 0
+    attacker_anim: 0
+    attack_anim: 0
+    attack_delay: 0
+    nhits: 1
+    target_stat: 0
+    preftarget: 0
+    bitsets1: [1,   0,   0,   0,   0,   0,   2, 104]
+    name: Lifepotion
+    captiontime: 0
+    caption: ''
+    basedef_stat: 0
+    settag: 0
+    tagcond: 0
+    tagcheck: 0
+    settag2: 0
+    tagcond2: 0
+    tagcheck2: 0
+    bitsets2: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    description: ''
+    consumeitem: [0, 0, 0]
+    nitems_consumed: [0, 0, 0]
+    soundeffect: 8
+    stat_preftarget: 0
+
+---
+nrecords : 1
+recordsize: 0x0012
+filename: "binsize.bin"
+skippedbytes: 0x000
+
+binaryrecords:
+- 7a005400200022003200300040007e009a01
+
+yamlrecords:
+- binarysizes:
+    attack.bin: 0x7a
+    stf: 0x54 #??
+    songdata.bin: 0x20
+    sfxdata.bin: 0x22
+    map: 0x32
+    menus.bin: 0x30
+    menuitem.bin: 0x40
+    uicolors.bin: 0x7e
+    say: 0x19a
+
+---
+nrecords : 1
+recordsize: 0x0050
+filename: "browse.txt"
+skippedbytes: 0x000
+
+binaryrecords:
+- 190056696b696e6773206f66204d69646761726420283230303829007321a700e700a200c400e7001c00416e20657870616e6465642074616c65206f662056696b696e677321a700e700a200c400e700
+
+yamlrecords:
+- browseinfo:
+    longname : Vikings of Midgard (2008)
+    about : An expanded tale of Vikings!
+
+---
+nrecords : 16
+recordsize: 0x0010
+filename: "viking.pal"
+skippedbytes: 0x010
+
+binaryrecords:
+- 000802030405064b07090a0b0c0d0e0f
+- 69f1fffcf9f6f33a373431999693915a
+- 009031f5933496f89936fc38f19e3f0f
+- 0017f31a930896f81e9a1ffcf17f3f0f
+- 0020232527935296c798569b3ef15a0f
+- 0091f3937596f89977fc7af19c8e3e0f
+- 006192f46394f865989afc68f17e3f0f
+- 6af45234955798f836fc9d5938f15c0f
+- 00111618444649f31af74dfc9a9ff10f
+- 009131933496f8079936fcfdf17e3f0f
+- 0014f4311833f837fcf1798e585a5e0f
+- 00309132933496f9999a36fc38f13aff
+- 0091f3f69496f999fc37fef17a8e5aff
+- 00343632f13893f4963a999cf89ffcff
+- 0031f63375f935fc37fe38f17a7e3eff
+- 00222527299131933496f936fc38f1ff
+
+yamlrecords:
+- palette16:
+    indices: [0, 8, 2, 3, 4, 5, 6, 75, 7, 9, 10, 11, 12, 13, 14, 15]
+- palette16:
+    indices: [105, 241, 255, 252, 249, 246, 243, 58, 55, 52, 49, 153, 150, 147, 145,
+      90]
+- palette16:
+    indices: [0, 144, 49, 245, 147, 52, 150, 248, 153, 54, 252, 56, 241, 158, 63,
+      15]
+- palette16:
+    indices: [0, 23, 243, 26, 147, 8, 150, 248, 30, 154, 31, 252, 241, 127, 63, 15]
+- palette16:
+    indices: [0, 32, 35, 37, 39, 147, 82, 150, 199, 152, 86, 155, 62, 241, 90, 15]
+- palette16:
+    indices: [0, 145, 243, 147, 117, 150, 248, 153, 119, 252, 122, 241, 156, 142,
+      62, 15]
+- palette16:
+    indices: [0, 97, 146, 244, 99, 148, 248, 101, 152, 154, 252, 104, 241, 126, 63,
+      15]
+- palette16:
+    indices: [106, 244, 82, 52, 149, 87, 152, 248, 54, 252, 157, 89, 56, 241, 92,
+      15]
+- palette16:
+    indices: [0, 17, 22, 24, 68, 70, 73, 243, 26, 247, 77, 252, 154, 159, 241, 15]
+- palette16:
+    indices: [0, 145, 49, 147, 52, 150, 248, 7, 153, 54, 252, 253, 241, 126, 63, 15]
+- palette16:
+    indices: [0, 20, 244, 49, 24, 51, 248, 55, 252, 241, 121, 142, 88, 90, 94, 15]
+- palette16:
+    indices: [0, 48, 145, 50, 147, 52, 150, 249, 153, 154, 54, 252, 56, 241, 58, 255]
+- palette16:
+    indices: [0, 145, 243, 246, 148, 150, 249, 153, 252, 55, 254, 241, 122, 142, 90,
+      255]
+- palette16:
+    indices: [0, 52, 54, 50, 241, 56, 147, 244, 150, 58, 153, 156, 248, 159, 252,
+      255]
+- palette16:
+    indices: [0, 49, 246, 51, 117, 249, 53, 252, 55, 254, 56, 241, 122, 126, 62, 255]
+- palette16:
+    indices: [0, 34, 37, 39, 41, 145, 49, 147, 52, 150, 249, 54, 252, 56, 241, 255]
+
+---
