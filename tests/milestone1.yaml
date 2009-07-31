@@ -204,6 +204,311 @@ yamlrecords:
     about : An expanded tale of Vikings!
 
 ---
+nrecords : 3
+recordsize: 0x0142
+filename: "defpass.bin"
+skippedbytes: 0x000
+
+binaryrecords:
+- 0f0000000f000f000f00000000000000000000000000000000000000000000000f0000000f000b000f000f000f000000000000000f000f000f000f000f000f0084000f000f0084000f00840084000000000000000f000b000f000f000f0000000b000b000f000f000f000f000f00000000000f0000000f000f000f000f000b000f000f000f000f000f000f000f000f000f000f000f000f000900010003000f0000000000000000000f000f000f000f000f000f000f000f0009000100030000000b000f000f000f000f000f00000000000f0000000f000f000f000f00010001000f000f000f000000000000000f000f000f00000000000f000f0000000f00000000000000000000000000000000000f000b000f000b00000000000000000000000000000000000000000000000f000f00000000000000000000000000000000005c11
+- 000000000000000000000f000f000f000f000f000f0000000f000000000000000b00000000000000000000000f0000000f0000000f000f000f000000000000000f000f000000000000000f000f000f000f000f000f000f000f000f00000000000900010003000f000f0000000f000000000000000f000f000f0000000000000008000f0002000f000f000f000f000000000000000000000000000000000000000a000f000f008000800000000f000000000000000000000000000000000000008f008f008f00800080000f000f000000000000000000000000000000000000000f0001000f000f000f000f000f000f000c0006000900030000000000000000000f000f00000000000f000900090009000f0003000300030000000000000000000f000f00000000000f000c000c000c000f000600060006000c000600000000005c11
+- 00000900010003000000000000000000000000000000000000000000000000000b0008000f0002000000000000000000000000000000000000000000000000000f000a000f000f00000000000000000000000000000000000000000000000000000000000f000f00000000000000000000000000000000000000000000000000000000000c0006000f0000000f000000000000000000000000000000000000000f000f000f00000000000f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f000f000f0000000f00000000000000000000000000000000000000000000000f000f000f0000000f00000000000000000000000000000000000000000000005c11
+
+yamlrecords:
+- default_passability:
+    passable: [15, 0, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               15, 0, 15, 11, 15, 15, 15, 0, 0, 0, 15, 15, 15, 15, 15, 15,
+               132, 15, 15, 132, 15, 132, 132, 0, 0, 0, 15, 11, 15, 15, 15, 0,
+               11, 11, 15, 15, 15, 15, 15, 0, 0, 15, 0, 15, 15, 15, 15, 11,
+               15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 9, 1, 3,
+               15, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 9, 1, 3,
+               0, 11, 15, 15, 15, 15, 15, 0, 0, 15, 0, 15, 15, 15, 15, 1,
+               1, 15, 15, 15, 0, 0, 0, 15, 15, 15, 0, 0, 15, 15, 0, 15,
+               0, 0, 0, 0, 0, 0, 0, 0, 15, 11, 15, 11, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 15, 15, 0, 0, 0, 0, 0, 0, 0,
+               0]
+    __magic: 4444
+- default_passability:
+    passable: [0, 0, 0, 0, 0, 15, 15, 15, 15, 15, 15, 0, 15, 0, 0, 0, 11,
+               0, 0, 0, 0, 0, 15, 0, 15, 0, 15, 15, 15, 0, 0, 0, 15,
+               15, 0, 0, 0, 15, 15, 15, 15, 15, 15, 15, 15, 15, 0, 0, 9,
+               1, 3, 15, 15, 0, 15, 0, 0, 0, 15, 15, 15, 0, 0, 0, 8,
+               15, 2, 15, 15, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10,
+               15, 15, 128, 128, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 143,
+               143, 143, 128, 128, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
+               1, 15, 15, 15, 15, 15, 15, 12, 6, 9, 3, 0, 0, 0, 0, 15,
+               15, 0, 0, 15, 9, 9, 9, 15, 3, 3, 3, 0, 0, 0, 0, 15,
+               15, 0, 0, 15, 12, 12, 12, 15, 6, 6, 6, 12, 6, 0, 0]
+    __magic: 4444
+- default_passability:
+    passable: [0, 9, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11,
+               8, 15, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
+               10, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 15, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 12, 6, 15, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
+               15, 15, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
+               15, 15, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15,
+               15, 15, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+---
+nrecords : 8
+recordsize: 0x0002
+filename: "defpal4.bin"
+skippedbytes: 0x000
+
+binaryrecords:
+- '0000'
+- '0100'
+- '0200'
+- '0300'
+- '0400'
+- '0500'
+- '0600'
+- '0700'
+
+yamlrecords:
+- default_palette:
+    palette : 0
+- default_palette:
+    palette : 1
+- default_palette:
+    palette : 2
+- default_palette:
+    palette : 3
+- default_palette:
+    palette : 4
+- default_palette:
+    palette : 5
+- default_palette:
+    palette : 6
+- default_palette:
+    palette : 7
+
+---
+
+nrecords : 1
+recordsize: 0x07d0
+filename: "viking.d01.linear"
+skippedbytes: 0x000
+
+binaryrecords:
+- 00001a00010000000000020005000100000000000400030001000000000006000800010000000000090007000100000000000a000c000100000000000d000b000100000000000f00110001000000000010000e00010000000000120014000100000000001500130001000000000016001800010000000000190017000100000000001b0001000200000000001d001f000100000000001e001c00010000000000200001000000d6ff00002000010013002a00000021000000020000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000ffff0000000000000000
+
+# the below 12k dump made using:
+#
+# s = "[the above hex]".decode('hex')
+#
+# l = {'doorlinks': [dict (zip (
+#      'srcdoor destdoor destmap condtag1 condtag2'.split(),
+#       struct.unpack_from('<5h', s, i*10))) for i in range(200)]}
+#
+
+yamlrecords:
+  doorlinks:
+  - {condtag1: 0, condtag2: 0, destdoor: 26, destmap: 1, srcdoor: 0}
+  - {condtag1: 0, condtag2: 0, destdoor: 5, destmap: 1, srcdoor: 2}
+  - {condtag1: 0, condtag2: 0, destdoor: 3, destmap: 1, srcdoor: 4}
+  - {condtag1: 0, condtag2: 0, destdoor: 8, destmap: 1, srcdoor: 6}
+  - {condtag1: 0, condtag2: 0, destdoor: 7, destmap: 1, srcdoor: 9}
+  - {condtag1: 0, condtag2: 0, destdoor: 12, destmap: 1, srcdoor: 10}
+  - {condtag1: 0, condtag2: 0, destdoor: 11, destmap: 1, srcdoor: 13}
+  - {condtag1: 0, condtag2: 0, destdoor: 17, destmap: 1, srcdoor: 15}
+  - {condtag1: 0, condtag2: 0, destdoor: 14, destmap: 1, srcdoor: 16}
+  - {condtag1: 0, condtag2: 0, destdoor: 20, destmap: 1, srcdoor: 18}
+  - {condtag1: 0, condtag2: 0, destdoor: 19, destmap: 1, srcdoor: 21}
+  - {condtag1: 0, condtag2: 0, destdoor: 24, destmap: 1, srcdoor: 22}
+  - {condtag1: 0, condtag2: 0, destdoor: 23, destmap: 1, srcdoor: 25}
+  - {condtag1: 0, condtag2: 0, destdoor: 1, destmap: 2, srcdoor: 27}
+  - {condtag1: 0, condtag2: 0, destdoor: 31, destmap: 1, srcdoor: 29}
+  - {condtag1: 0, condtag2: 0, destdoor: 28, destmap: 1, srcdoor: 30}
+  - {condtag1: -42, condtag2: 0, destdoor: 1, destmap: 0, srcdoor: 32}
+  - {condtag1: 42, condtag2: 0, destdoor: 1, destmap: 19, srcdoor: 32}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 2, srcdoor: 33}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+  - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+
+---
 nrecords : 16
 recordsize: 0x0010
 filename: "viking.pal"
