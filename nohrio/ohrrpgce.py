@@ -824,6 +824,23 @@ dtypes['stt'] = [(name, [('length','B'),('value', 'S%d' % (10 + ((length - 1) * 
 
 dtypes['stf'] = [('items', (dtypes['_stf_item'], 50))]
 
+# Debug tools
+# =============
+
+def print_array (arr):
+    """Iterate over fields of dtype, print value of arr[fieldname] for each.
+
+    Normally applied on arrays of shape (1,)"""
+    for field in arr.dtype.descr:
+        fieldname = field[0]
+        value = arr[fieldname]
+        if value.shape == ():
+# strangely, arr.tolist() on a scalar array returns a scalar not a list.
+# also, returns a tuple for complex records.
+            value = value.tolist()
+        print "    %s: %r" % (fieldname, value)
+
+
 # Attic
 # ======
 #
