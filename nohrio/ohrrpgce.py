@@ -437,19 +437,35 @@ _spell_list = ([('attack', INT), ('level', INT)], (4, 24))
 
 
 dtypes = {
-    # the totality of attack data (concatenated from DT0 and ATTACK.BIN)
-    '_attack' : make ('picture palette animpattern targetclass targetsetting',
-                         'damage_eq aim_math baseatk_stat cost xdamage chainto chain_percent',
-                         'attacker_anim attack_anim attack_delay nhits target_stat',
-                         'preftarget bitsets1 name captiontime caption basedef_stat',
-                         'settag tagcond tagcheck settag2 tagcond2 tagcheck2 bitsets2',
-                         'description consumeitem nitems_consumed soundeffect',
-                         'stat_preftarget',
-                         bitsets1 = ('B', 64 / 8), bitsets2 = ('B', 128 / 8),
-                         cost = [('hp', INT), ('mp', INT), ('money', INT)],
-                         name = [('length', INT), ('unused', INT), ('value', (INT, 10))],
-                         caption = fvstr (38),
-                         description = fvstr (38)),
+# Attack data
+# ============
+#
+# a concatenation of DT6 and ATTACK.BIN.
+#
+# To avoid hacks,
+# we do not negotiate with attack.bin or dt6, only the sane spliced data.
+#
+# Backwards compatibility may require you to chop fields off the end here
+# until dtype.itemsize matches the size specified in BINSIZE.BIN.
+#
+    'attack.full' : make ('picture palette animpattern targetclass targetsetting',
+                          'damage_eq aim_math baseatk_stat cost xdamage chainto chain_percent',
+                          'attacker_anim attack_anim attack_delay nhits target_stat',
+                          'preftarget bitsets1 name captiontime caption basedef_stat',
+                          'settag tagcond tagcheck settag2 tagcond2 tagcheck2 bitsets2',
+                          'description consumeitem nitems_consumed soundeffect',
+                          'stat_preftarget',
+                          bitsets1 = ('B', 64 / 8), bitsets2 = ('B', 128 / 8),
+                          cost = [('hp', INT), ('mp', INT), ('money', INT)],
+                          name = [('length', INT), ('unused', INT), ('value', (INT, 10))],
+                          caption = fvstr (40),
+                          consumeitem = (INT, 3),
+                          nitems_consumed = (INT, 3),
+                          description = fvstr (38)),
+
+    # note: memmapping with this dtype causes a crash!
+    # load the data into a normal array with this dtype,
+    # or use the full spliced dtype above.
     'attack.bin' : make ('captionpt2 basedef_stat',
                          'settag tagcond tagcheck settag2 tagcond2 tagcheck2 bitsets3',
                          'description consumeitem nitems_consumed soundeffect',
