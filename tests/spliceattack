@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+#
+# lasnu 'dt6' vreji ce 'attacks.bin' vreji 
+#
+# splice dt6+attack.bin records to produce attack.full
+#
+
+import os
+
+dt6_length = 80
+attackbin_length = 122 # keep in sync with binsize.bin
+
+assert (os.path.getsize ('data/viking.dt6') % dt6_length) == 0
+assert (os.path.getsize ('data/attack.bin') % attackbin_length) == 0
+
+
+nrecords = os.path.getsize ('data/viking.dt6') / dt6_length
+anrecords = os.path.getsize ('data/attack.bin') / attackbin_length
+print (nrecords, anrecords)
+assert nrecords == anrecords
+
+d = open ('data/viking.dt6','rb')
+a = open ('data/attack.bin','rb')
+out = open ('data/attack.full','wb')
+
+count = nrecords
+
+while nrecords > 0:
+    out.write(d.read (dt6_length))
+    out.write(a.read (attackbin_length))
+    nrecords -= 1
+
+out.close()
+
+print ('%d records written' % count)
