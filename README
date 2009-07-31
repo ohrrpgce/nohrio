@@ -1,3 +1,26 @@
+nohrio
+======
+
+nohrio is a project designed to facilitate OHRRPGCE data manipulation utilities and 
+human inspection of data, by providing:
+
+a ) numpy.memmap based interface for directly manipulating OHRRPGCE fixed-length-record based data files. 
+
+b) a human readable and editable YAML serialization of all records, upon which standard tools like 'grep' and 'diff' are applicable
+
+c) sane, readily updateable binary serialization of the insane-in-spots OHRRPGCE formats
+
+
+OHRRPGCE: http://gilgamesh.hamsterrepublic.com/wiki/ohrrpgce/index.php/Main_Page
+
+Requires NumPy and PyYAML.
+For building docs, requires Sphinx, SCons, and PyLit
+(http://pylit.berlios.de/)
+
+
+old README
+---------------
+
 This is the OHRRPGCE I/O module, extracted from the depths of my misc doctests module
 so I could.. do *unit*-testing on them :)
 It handles OHRRPGCE data formats directly and can easily be used to make mass changes like cleaning strings.
