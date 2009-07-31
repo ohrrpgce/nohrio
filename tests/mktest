@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+import sys
+import os
+
+if len (sys.argv) < 4:
+    print ('Usage: %s <filename> <skipbytes> <recordlength> [nrecords]' % os.path.basename (sys.argv[0]))
+    sys.exit (0)
+
+skip = int (sys.argv[2])
+recordlength = int (sys.argv[3])
+nrecords = 1
+if len (sys.argv) > 4:
+    nrecords = int (sys.argv[4])
+filename = sys.argv[1]
+if '.' not in filename: # 'veh' -> 'viking.veh'
+    filename = 'viking.' + filename
+filename = os.path.join ('data', filename)
+f = open (filename, 'rb')
+f.read (skip)
+l = [f.read(recordlength).encode('hex') for i in range (nrecords)]
+import yaml
+print ('nrecords : %d\nrecordsize: 0x%04x\nfilename: "%s"\nskippedbytes: 0x%03x\n' %
+          (nrecords, recordlength, os.path.basename (filename), skip))
+print (yaml.dump({'binaryrecords': l}, default_flow_style = False))
+print ("yamlrecords:\n- # record 1 \n- # record %d" % nrecords)
