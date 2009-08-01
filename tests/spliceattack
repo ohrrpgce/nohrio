@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 #
-# lasnu 'dt6' vreji ce 'attacks.bin' vreji 
+# lasnu 'dt6' vreji ce 'attacks.bin' vreji
 #
 # splice dt6+attack.bin records to produce attack.full
+#
+# in nohrio tests dir, I use this like:
+#
+# ./spliceattack data/viking.dt6 data/attack.bin data/attack.full
+#
 #
 
 import os
@@ -10,18 +15,22 @@ import os
 dt6_length = 80
 attackbin_length = 122 # keep in sync with binsize.bin
 
-assert (os.path.getsize ('data/viking.dt6') % dt6_length) == 0
-assert (os.path.getsize ('data/attack.bin') % attackbin_length) == 0
+dt6filename = sys.argv[1]
+attackfilename = sys.argv[2]
+finalfilename = sys.argv[3]
+
+assert (os.path.getsize (dt6filename) % dt6_length) == 0
+assert (os.path.getsize (attackfilename) % attackbin_length) == 0
 
 
-nrecords = os.path.getsize ('data/viking.dt6') / dt6_length
-anrecords = os.path.getsize ('data/attack.bin') / attackbin_length
+nrecords = os.path.getsize (dt6filename) / dt6_length
+anrecords = os.path.getsize (attackfilename) / attackbin_length
 print (nrecords, anrecords)
 assert nrecords == anrecords
 
-d = open ('data/viking.dt6','rb')
-a = open ('data/attack.bin','rb')
-out = open ('data/attack.full','wb')
+d = open (dt6filename,'rb')
+a = open (attackfilename,'rb')
+out = open (finalfilename,'wb')
 
 count = nrecords
 
