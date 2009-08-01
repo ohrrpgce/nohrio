@@ -358,7 +358,7 @@ def get_str8 (src):
 
 def seq_to_str (src):
     """convert a length,..,[charvalue,charvalue,..] sequence to a normal string."""
-    return "".join([chr(v) for v in src[-1][:src[0]])
+    return "".join([chr(v) for v in src[-1][:src[0]]])
 
 def adjust_for_binsize (dtype, binsize):
     dtsize = np.dtype (dtype).itemsize
