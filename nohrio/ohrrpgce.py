@@ -850,20 +850,29 @@ dtypes['stf'] = [('items', (dtypes['_stf_item'], 50))]
 # Debug tools
 # =============
 
-def print_array (arr):
+def print_array (arr, inline = False):
     """Iterate over fields of dtype, print value of arr[fieldname] for each.
 
     Normally applied on arrays of shape (1,)"""
+    import sys
+    format = '    %s: %r\n'
+    if inline:
+        sys.stdout.write ("  - {")
+        format = "%s: %r, "
     for field in arr.dtype.descr:
         fieldname = field[0]
         value = arr[fieldname]
         if value.shape == ():
+            value = value.tolist()
+        sys.stdout.write  (format % (fieldname, value))
+    if inline:
+        sys.stdout.write ("}\n")
+    sys.stdout.flush()
 
 # strangely, arr.tolist() on a scalar array returns a scalar not a list.
 # also, returns a tuple for complex records.
 
-            value = value.tolist()
-        print "    %s: %r" % (fieldname, value)
+
 
 
 # Attic
