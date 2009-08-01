@@ -855,6 +855,7 @@ def print_array (arr, inline = False):
 
     Normally applied on arrays of shape (1,)"""
     import sys
+    import numpy as np
     format = '    %s: %r\n'
     if inline:
         sys.stdout.write ("  - {")
@@ -863,6 +864,10 @@ def print_array (arr, inline = False):
         fieldname = field[0]
         value = arr[fieldname]
         if value.shape == ():
+            value = value.tolist()
+        elif value.shape[0] == 1: #discard leading ones in shape
+            value = value[0]
+        if type (value) == np.ndarray:
             value = value.tolist()
         sys.stdout.write  (format % (fieldname, value))
     if inline:
