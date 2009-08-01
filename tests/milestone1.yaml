@@ -1,7 +1,8 @@
 ---
-# this document contains one YAML document for each test
+# .. highlight:: yaml
 #
-
+# this document contains one YAML document for each test.
+#
 # a bug in numpy (1.3.0) prevents memmapped use of attack.bin dtype
 # this is work-aroundable; fortunately attack.bin is really
 # weird anyway, it needs a special interface.
@@ -93,7 +94,6 @@ yamlrecords:
     nitems_consumed: [0, 0, 0]
     soundeffect: 8
     stat_preftarget: 0
-
 - attack:
     picture: 12
     palette: 54
@@ -130,7 +130,6 @@ yamlrecords:
     nitems_consumed: [0, 0, 0]
     soundeffect: 8
     stat_preftarget: 0
-
 - attack:
     picture: 12
     palette: 18
@@ -507,6 +506,120 @@ yamlrecords:
   - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
   - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
   - {condtag1: 0, condtag2: 0, destdoor: 0, destmap: 0, srcdoor: -1}
+
+---
+nrecords : 1
+recordsize: 0x0258
+filename: "viking.dox.linear"
+skippedbytes: 0x000
+
+binaryrecords:
+- 14001f00010014002100010026001b00010026001a00010027000e00010027000d0001002a00140001002a00130001002c00140001002c00130001001d001a0001001d001900010030001d00010031001d00010031001c0001000f00260001000f00280001001400090001001400070001000b0010000100090010000100140020000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+yamlrecords:
+- door_definitions:
+  - {x: 20, y: 31, bitsets: 1, }
+  - {x: 20, y: 33, bitsets: 1, }
+  - {x: 38, y: 27, bitsets: 1, }
+  - {x: 38, y: 26, bitsets: 1, }
+  - {x: 39, y: 14, bitsets: 1, }
+  - {x: 39, y: 13, bitsets: 1, }
+  - {x: 42, y: 20, bitsets: 1, }
+  - {x: 42, y: 19, bitsets: 1, }
+  - {x: 44, y: 20, bitsets: 1, }
+  - {x: 44, y: 19, bitsets: 1, }
+  - {x: 29, y: 26, bitsets: 1, }
+  - {x: 29, y: 25, bitsets: 1, }
+  - {x: 48, y: 29, bitsets: 1, }
+  - {x: 49, y: 29, bitsets: 1, }
+  - {x: 49, y: 28, bitsets: 1, }
+  - {x: 15, y: 38, bitsets: 1, }
+  - {x: 15, y: 40, bitsets: 1, }
+  - {x: 20, y: 9, bitsets: 1, }
+  - {x: 20, y: 7, bitsets: 1, }
+  - {x: 11, y: 16, bitsets: 1, }
+  - {x: 9, y: 16, bitsets: 1, }
+  - {x: 20, y: 32, bitsets: 1, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+  - {x: 0, y: 0, bitsets: 0, }
+
+
 
 ---
 nrecords : 16
