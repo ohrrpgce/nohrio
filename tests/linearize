@@ -4,30 +4,41 @@ import os
 
 # reformat a file full of 16bit INTs in planar formats, eg XXXXXXXXYYYYYYYY
 # to linear format XYXYXYXYXYXYXYXY
+#
+# TODO:
+#
+#  * - (stdin) as filename
+#  * omitting output filename (stdout)
+#  * consume only the data needed at once (eg 64000 bytes for til/mxs)
+#
 
 if len (sys.argv) < 4:
-    print ('Usage: %s <filename> <skipbytes> <recordlength> <nplanes> <outfilename>' % os.path.basename (sys.argv[0]))
+    print ('Usage: %s <filename> <skipbytes> <recordlength> <nplanes> [unit] <outfilename> ' % os.path.basename (sys.argv[0]))
     sys.exit (0)
 
 skip = int (sys.argv[2])
 recordlength = int (sys.argv[3])
 nplanes = int (sys.argv[4])
-outfilename = sys.argv[5]
+unit = 2 # 16bit int by default
+if len (sys.argv) > 6:
+    unit = int (sys.argv[5])
+    outfilename = sys.argv[6]
+else:
+    outfilename = sys.argv[5]
 filename = sys.argv[1]
 if '.' not in filename: # 'veh' -> 'viking.veh'
     filename = 'viking.' + filename
-filename = os.path.join ('data', filename)
 f = open (filename, 'rb')
 f.read (skip)
 content = f.read()
 macrorecord_size = recordlength * nplanes
 assert (len (content) % macrorecord_size) == 0
-output = open (os.path.join ('data', outfilename), 'wb')
+output = open (outfilename, 'wb')
 
 for j in range (len (content) / (recordlength * nplanes)):
     planes = [content[(j * macrorecord_size) + (i * recordlength): 
               (j * macrorecord_size) + ((i + 1) * recordlength)] for i in range(nplanes)]
-    for i in range (recordlength / 2):
+    for i in range (recordlength / unit):
         for plane in range (nplanes):
-            output.write (planes[plane][i * 2:(i + 1) * 2])
+            output.write (planes[plane][i * unit:(i + 1) * unit])
 
