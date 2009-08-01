@@ -20,10 +20,14 @@ filename = os.path.join ('data', filename)
 f = open (filename, 'rb')
 f.read (skip)
 content = f.read()
-assert (len (content) % recordlength) == 0
-planes = [content[i * recordlength: (i + 1) * recordlength] for i in range(nplanes)]
+macrorecord_size = recordlength * nplanes
+assert (len (content) % macrorecord_size) == 0
 output = open (os.path.join ('data', outfilename), 'wb')
-for i in range (recordlength / 2):
-    for plane in range (nplanes):
-        output.write (planes[plane][i * 2:(i + 1) * 2])
+
+for j in range (len (content) / (recordlength * nplanes)):
+    planes = [content[(j * macrorecord_size) + (i * recordlength): 
+              (j * macrorecord_size) + ((i + 1) * recordlength)] for i in range(nplanes)]
+    for i in range (recordlength / 2):
+        for plane in range (nplanes):
+            output.write (planes[plane][i * 2:(i + 1) * 2])
 
