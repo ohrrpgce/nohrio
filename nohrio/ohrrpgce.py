@@ -507,7 +507,7 @@ dtypes = {
     'efs' : [('frequency', INT),('formations',(INT, 20)), ('wasted', (INT, 4))],
     'for' : make ('enemies background music backgroundframes backgroundspeed unused',
                   enemies = (make ('type x y unused'), 8), unused = (INT, 4)),
-    'fnt' : [('characters8x8', np.uint8, (256, 8))],
+    'fnt' : [('characters', [('bitmaps', np.uint8, (256, 8))])],
     'gen' : make ('maxmap title titlemusic victorymusic battlemusic',
                   'passcodeversion passcoderotator newpasscode newpasscode_unused',
                   'oldpasscode',
