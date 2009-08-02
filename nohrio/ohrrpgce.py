@@ -343,7 +343,7 @@ class archiNym (object):
 def set_str16 (dest, src): # 16bit/8bit len, 16bit chars
     assert len (src) <= (len (dest['value']) / 2)
     dest['length'] = len(src)
-    dest['value'] = "".join([char + '.' for char in src] + ['\x00\x00'])
+    dest['data'] = "".join([char + '.' for char in src] + ['\x00\x00'])
 
 def set_str8 (dest, src): # 16 or 8bit header, 8bit chars
     assert len (src) <= len (dest['value'])
@@ -351,7 +351,7 @@ def set_str8 (dest, src): # 16 or 8bit header, 8bit chars
     dest['value'] = src + '\x00'
 
 def get_str16 (src):
-    return src['value'][::2]
+    return src['data'][::2]
 
 def get_str8 (src):
     return src['value']
@@ -461,7 +461,7 @@ dtypes = {
                           'stat_preftarget',
                           bitsets1 = ('B', 64 / 8), bitsets2 = ('B', 128 / 8),
                           cost = [('hp', INT), ('mp', INT), ('money', INT)],
-                          name = [('length', INT), ('unused', INT), ('value', (INT, 10))],
+                          name = [('length', INT), ('unused', INT), ('data', (np.character, 10*2))],
                           caption = fvstr (40),
                           consumeitem = (INT, 3),
                           nitems_consumed = (INT, 3),
@@ -485,7 +485,7 @@ dtypes = {
                   stats = STATS0_99_DTYPE,
                   spells = _spell_list,
                   bitsets = (np.uint8, 48 / 8),
-                  spelllist_name = ([('length', INT), ('value', (np.character, 10*2))], 4),
+                  spelllist_name = ([('length', INT), ('data', (np.character, 10*2))], 4),
                   spelllist_type = (INT, 4),
                   handcoord = (xycoord_dtype, 2),
                   unused = (INT, 5)),
