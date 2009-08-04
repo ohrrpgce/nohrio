@@ -1131,6 +1131,177 @@ yamlrecords:
 
 
 ---
+
+nrecords : 4
+recordsize: 0x00c8
+filename: "viking.itm"
+skippedbytes: 0x000
+
+binaryrecords:
+- 000056004900430054004f005200590021000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+- 0500a0004d00650061006400730000000000150052006500730074006f007200650073002000610020006800650072006f002700730020004800500073005000730000000000000000000000000000000000000000000000000000000a0002000000000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+- 0600a0004800650072006200730000000000150052006500730074006f007200650073002000610020006800650072006f002700730020004d0050007300500073000000000000000000000000000000000000000000000000000000140003000000000000000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+- 0600a00048006f006e006500790072000000170052006500730074006f007200650073002000610020006800650072006f00200074006f0020006c006900660065000000000000000000000000000000000000000000000000000000320004000000000000000400000000000000000002000200000000000000000002000000000000007e00000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+
+yamlrecords:
+- ITEM:
+    name: ''
+    info: ''
+    value: 0
+    attack: 0
+    weaponattack: 0
+    equippable: 0
+    teach: 0
+    oobuse: 0
+    weaponpic: 0
+    weaponpal: 0
+    bonuses:  {acc: 0, ctr: 0, def: 0, dog: 0,
+              foc: 0, hp: 0, mag: 0, mp: 0, spd: 0,
+              str: 0, wil: 0, xhits: 0}
+    equippableby: [0, 0, 0, 0, 0, 0, 0, 0]
+    bitsets: [0, 0, 0, 0, 0, 0]
+    consumability: 0
+    own_tag: 0
+    in_inventory_tag: 0
+    equipped_tag: 0
+    equippedby_active_tag: 0
+    frame2handle: {x: 0, y: 0}
+    frame1handle: {x: 0, y: 0}
+    unused: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+- ITEM:
+    name: '\xA0Mead'
+    info: Restores a hero's HPs
+    value: 0
+    attack: 10
+    weaponattack: 2
+    equippable: 0
+    teach: 0
+    oobuse: 0
+    weaponpic: 2
+    weaponpal: 0
+    bonuses: {acc: 0, ctr: 0, def: 0, dog: 0,
+              foc: 0, hp: 0, mag: 0, mp: 0, spd: 0,
+              str: 0, wil: 0, xhits: 0}
+    equippableby: [0, 0, 0, 0, 0, 0, 0, 0]
+    bitsets: [0, 0, 0, 0, 0, 0]
+    consumability: 0
+    own_tag: 1
+    in_inventory_tag: 0
+    equipped_tag: 0
+    equippedby_active_tag: 0
+    frame2handle: {x: 0, y: 0}
+    frame1handle: {x: 0, y: 0}
+    unused: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+- ITEM:
+    name: '\xA0Herbs'
+    info: Restores a hero's MPs
+    value: 0
+    attack: 20
+    weaponattack: 3
+    equippable: 0
+    teach: 0
+    oobuse: 0
+    weaponpic: 3
+    weaponpal: 0
+    bonuses: (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    equippableby: [0, 0, 0, 0, 0, 0, 0, 0]
+    bitsets: [0, 0, 0, 0, 0, 0]
+    consumability: 0
+    own_tag: 1
+    in_inventory_tag: 0
+    equipped_tag: 0
+    equippedby_active_tag: 0
+    frame2handle: {x: 0, y: 0}
+    frame1handle: {x: 0, y: 0}
+    unused: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+- ITEM:
+    name: '\xa0Honey'
+    info: Restores a hero to life
+    value: 0
+    attack: 50
+    weaponattack: 4
+    equippable: 0
+    teach: 0
+    oobuse: 0
+    weaponpic: 4
+    weaponpal: 0
+    bonuses: (0, 0, 0, 2, 2, 0, 0, 0, 0, 2, 0, 0)
+    equippableby: [0, 0, 126, 0, 0, 0, 0, 0]
+    bitsets: [0, 0, 0, 0, 0, 0]
+    consumability: 0
+    own_tag: 1
+    in_inventory_tag: 0
+    equipped_tag: 0
+    equippedby_active_tag: 0
+    frame2handle: {x: 0, y: 0}
+    frame1handle: {x: 0, y: 0}
+    unused: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+---
+nrecords : 8
+recordsize: 0x000a
+filename: "viking.l01.linear"
+skippedbytes: 0x000
+
+binaryrecords:
+- '04000000040000000600'
+- 08000000050000000200
+- 08000000080000001500
+- 21000000040000000a00
+- 08000000090000001600
+- 07000000080000001600
+- 08000000070000001600
+- 09000000080000001600
+
+yamlrecords:
+- NPCLOCATION:
+    x: 4
+    y: 0
+    id: 4
+    dir: 0
+    walkframe: 6
+- NPCLOCATION:
+    x: 8
+    y: 0
+    id: 5
+    dir: 0
+    walkframe: 2
+- NPCLOCATION:
+    x: 8
+    y: 0
+    id: 8
+    dir: 0
+    walkframe: 21
+- NPCLOCATION:
+    x: 33
+    y: 0
+    id: 4
+    dir: 0
+    walkframe: 10
+- NPCLOCATION:
+    x: 8
+    y: 0
+    id: 9
+    dir: 0
+    walkframe: 22
+- NPCLOCATION:
+    x: 7
+    y: 0
+    id: 8
+    dir: 0
+    walkframe: 22
+- NPCLOCATION:
+    x: 8
+    y: 0
+    id: 7
+    dir: 0
+    walkframe: 22
+- NPCLOCATION:
+    x: 9
+    y: 0
+    id: 8
+    dir: 0
+    walkframe: 22
+---
 nrecords : 16
 recordsize: 0x0010
 filename: "viking.pal"
