@@ -18,12 +18,25 @@ For building docs, requires Sphinx, SCons, and PyLit
 (http://pylit.berlios.de/)
 
 
-old README
----------------
 
-This is the OHRRPGCE I/O module, extracted from the depths of my misc doctests module
-so I could.. do *unit*-testing on them :)
-It handles OHRRPGCE data formats directly and can easily be used to make mass changes like cleaning strings.
-Simple formats are already YAML serializable
+Credits
+-------
 
-Next is to test the robustness of that implementation, then to support more complex formats.
+James Paige : 
+  Created the OHRRPGCE, through which I have learnt a surprising amount about fileformats.
+  James would tell you not to use it as an example! And I would agree -- 
+  it's a better counterexample. James is also a really nice guy.
+
+Fenrir-Lunaris : 
+  Created Vikings of Midgard, for which part of it's aim is to show off features.
+  Gave me permission to use VoM lumps for my test suite, for which they are ideal for aforementioned
+  reasons (And well, I like the game). 
+  Also an artistic inspiration, as both an example and counter-example.
+
+Myself : 
+  Wrote quite a few utilities for OHRRPGCE, and made the new master palette for it
+  with a good deal of research and experimentation. Without those I would never have made these, 
+  this is a total paradigm shift (my old utilities were written when OHR ran on DOS :)
+
+A vast array of XML-abusers:
+  Tremendously effective counter-examples. XML is not a Data Language, it's a Markup Language!
