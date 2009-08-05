@@ -1109,7 +1109,15 @@ yamlrecords:
     starty: 57
     startmap: 28
     onetimenpc_indexer: 169
-    onetimenpc_bits: [254, 255, 199, 159, 255, 255, 239, 255, 255, 251, 255, 255, 223, 123, 255, 255, 255, 255, 255, 255, 183, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    onetimenpc_bits: [254, 255, 199, 159, 255, 255, 239, 255, 255, 251, 255,
+                      255, 223, 123, 255, 255, 255, 255, 255, 255, 183, 3, 0,
+                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                      0, 0, 0, 0, 0]
     def_deathsfx: 0
     maxsong: 46
     acceptsfx: 6
@@ -1301,6 +1309,1719 @@ yamlrecords:
     id: 8
     dir: 0
     walkframe: 22
+
+---
+nrecords : 100
+recordsize: 0x001e
+filename: "viking.n01"
+skippedbytes: 0x007
+
+binaryrecords:
+- 00000000000000004a020000000000000200000000000200000000000000
+- 0000000000000000000001000000000002004e0000005e00120000000000
+- 03000300080002000e000100000000000000fbff00000000000000000000
+- 040004000800020012000100000000000000fbff00000000000000000000
+- 050005000800020016000100000000000000fbff00000000000000000000
+- 06000600000004001f000100000000000000fbff00000000000000000000
+- 07000700080002001b000100000000000000fbff00000000000000000000
+- 080008000800020023000100000000000000fbff00000000000000000000
+- 090009000800020027000100000000000000fbff00000000000000000000
+- 0a0003000000030009000000000000000000000000000000000000000000
+- 01000100080001003d000100000001000000050070ff0000000000000000
+- 0d0032000000000000000000000000000000000000000000000000000000
+- '000000000000000040000000000000000000000000000000000000000000'
+- 12003e000200020045000100000000000000000000000000000000000000
+- '000000000000000046000000000000000000000000000000000000000000'
+- 1e006900010004004c000100000001000000000000000000000000000000
+- 0b0068000100020049000100000001000000000000000000000000000000
+- 3a003d00010004004e000100000001000000000000000000000000000000
+- 00000000000000009a000000000000000100fbff00000000000000000000
+- 21005200080002003e00010000000100000070ff00000000000000000000
+- 1d003500030001008a020000000000000000adff00000000000000000000
+- 000000000000000000000000000000000200adff00000000000000000000
+- 00000000000000001b040000000000000200720000008300000000000000
+- 0300ffff00000400000000000000000000009c0000000000000000000000
+- 6f00ffff00000400000000000000000000009c0000000000000000000000
+- 4300ffff00000400000000000000000000009c0000000000000000000000
+- 6100ffff00000400000000000000000000009c0000000000000000000000
+- 5e00ffff00000400000000000000000000009c0000000000000000000000
+- 00000000000000002606000000000000000000000000a900000000000000
+- 00000000000000002606000000000000000000000000a800000000000000
+- 000000000000000028060000000000000000000000000000000000000000
+- 00000000000000002e060000000000000000000000000000000000000000
+- 00000000000000002706000000000000000000000000aa00000000000000
+- 00000000000000002f060000000000000000000000000000000000000000
+- 0000000000000000b8050000000000000000000000000000000000000000
+- 2100ffff08000400c5040100000001000000900000000000000000000000
+- 0000ffff0000000030060000000000000000000000000000000000000000
+- 0000ffff0000000031060000000000000000000000000000000000000000
+- 0000ffff0000000032060000000000000000000000000000000000000000
+- 0000ffff0000000036060000000000000000000000000000000000000000
+- 0000ffff0000000037060000000000000000000000000000000000000000
+- 0000ffff0000000038060000000000000000000000000000000000000000
+- 0000ffff0000000039060000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+- 0000ffff0000000000000000000000000000000000000000000000000000
+
+yamlrecords:
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 586
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 2
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 2
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 1
+    giveitem: 0
+    pushability: 0
+    activation: 2
+    appear_if_tag1: 78
+    appear_if_tag2: 0
+    usability: 94
+    trigger: 18
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 3
+    palette: 3
+    movetype: 8
+    speed: 2
+    showtext: 14
+    activate_action: 1
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: -5
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 4
+    palette: 4
+    movetype: 8
+    speed: 2
+    showtext: 18
+    activate_action: 1
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: -5
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 5
+    palette: 5
+    movetype: 8
+    speed: 2
+    showtext: 22
+    activate_action: 1
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: -5
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 6
+    palette: 6
+    movetype: 0
+    speed: 4
+    showtext: 31
+    activate_action: 1
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: -5
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 7
+    palette: 7
+    movetype: 8
+    speed: 2
+    showtext: 27
+    activate_action: 1
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: -5
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 8
+    palette: 8
+    movetype: 8
+    speed: 2
+    showtext: 35
+    activate_action: 1
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: -5
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 9
+    palette: 9
+    movetype: 8
+    speed: 2
+    showtext: 39
+    activate_action: 1
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: -5
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 10
+    palette: 3
+    movetype: 0
+    speed: 3
+    showtext: 9
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 1
+    palette: 1
+    movetype: 8
+    speed: 1
+    showtext: 61
+    activate_action: 1
+    giveitem: 0
+    pushability: 1
+    activation: 0
+    appear_if_tag1: 5
+    appear_if_tag2: -144
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 13
+    palette: 50
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 64
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 18
+    palette: 62
+    movetype: 2
+    speed: 2
+    showtext: 69
+    activate_action: 1
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 70
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 30
+    palette: 105
+    movetype: 1
+    speed: 4
+    showtext: 76
+    activate_action: 1
+    giveitem: 0
+    pushability: 1
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 11
+    palette: 104
+    movetype: 1
+    speed: 2
+    showtext: 73
+    activate_action: 1
+    giveitem: 0
+    pushability: 1
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 58
+    palette: 61
+    movetype: 1
+    speed: 4
+    showtext: 78
+    activate_action: 1
+    giveitem: 0
+    pushability: 1
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 154
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 1
+    appear_if_tag1: -5
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 33
+    palette: 82
+    movetype: 8
+    speed: 2
+    showtext: 62
+    activate_action: 1
+    giveitem: 0
+    pushability: 1
+    activation: 0
+    appear_if_tag1: -144
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 29
+    palette: 53
+    movetype: 3
+    speed: 1
+    showtext: 650
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: -83
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 2
+    appear_if_tag1: -83
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 1051
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 2
+    appear_if_tag1: 114
+    appear_if_tag2: 0
+    usability: 131
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 3
+    palette: -1
+    movetype: 0
+    speed: 4
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 156
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 111
+    palette: -1
+    movetype: 0
+    speed: 4
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 156
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 67
+    palette: -1
+    movetype: 0
+    speed: 4
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 156
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 97
+    palette: -1
+    movetype: 0
+    speed: 4
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 156
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 94
+    palette: -1
+    movetype: 0
+    speed: 4
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 156
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 1574
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 169
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 1574
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 168
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 1576
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 1582
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 1575
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 170
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 1583
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: 0
+    movetype: 0
+    speed: 0
+    showtext: 1464
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 33
+    palette: -1
+    movetype: 8
+    speed: 4
+    showtext: 1221
+    activate_action: 1
+    giveitem: 0
+    pushability: 1
+    activation: 0
+    appear_if_tag1: 144
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 1584
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 1585
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 1586
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 1590
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 1591
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 1592
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 1593
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+- NPCDEF:
+    picture: 0
+    palette: -1
+    movetype: 0
+    speed: 0
+    showtext: 0
+    activate_action: 0
+    giveitem: 0
+    pushability: 0
+    activation: 0
+    appear_if_tag1: 0
+    appear_if_tag2: 0
+    usability: 0
+    trigger: 0
+    script_arg: 0
+    vehicle: 0
+
+
+
 ---
 nrecords : 16
 recordsize: 0x0010

@@ -1,8 +1,14 @@
+"""Ignore this file, it is old cruft and will go away very soon."""
+
+
 # print array as nice YAML
 # XXX to be robust, we should stop relying on numpy repr()
 # and do our own slow, reliable printing.
 
 import numpy as np
+
+
+# CRUFT
 
 def fix_tuples (s):
     if '(' not in s and ')' not in s:
