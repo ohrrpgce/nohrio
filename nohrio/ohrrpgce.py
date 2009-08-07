@@ -555,7 +555,7 @@ dtypes = {
 # -----------------
 #
 
-    'pal' : ('indices', 'B', 16),
+    'pal' : [('indices', 'B', 16)],
 
 # .. _palettes_bin:
 #
