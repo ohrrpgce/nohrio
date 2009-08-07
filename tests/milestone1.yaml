@@ -3,6 +3,29 @@
 #
 # this document contains one YAML document for each test.
 #
+# Milestone 1:
+#   All data loadable and convertible from and to readable yaml
+#   (consequently also in a nice python dictionary/list/scalar structure)
+#   Notably includes:
+#
+#   * Automatically decide whether to use inline or block formatting
+#     for sub-mappings and sub-sequences based on their size
+#   * Automatically ignores keys not associated with the real dtype, when
+#     copying data from python-structure to array.
+#     This allows you to insert custom data in any mapping.
+#   * CAPITALIZED_DTYPE convention makes it possible to mix multiple
+#     different dtypes in a document and easily load them all correctly.
+#   * Strings are escaped to allow representing non-ASCII values in strings.
+#     Implemented as a layer on top of YAML, transparently un/escaped.
+#     Programs that want to load the YAML we produce 100% correctly
+#     must handle unescaping on load and escaping on save.
+#
+#   And notably excludes:
+#
+#   * nice 'enumeration' support (eg 'attacker_anim : null')
+#   * simplified bitset support ('bitsets': [ABSORBS_ELEM1, MP_IDIOT])
+#
+#
 # a bug in numpy (1.3.0) prevents memmapped use of attack.bin dtype
 # this is work-aroundable; fortunately attack.bin is really
 # weird anyway, it needs a special interface.
