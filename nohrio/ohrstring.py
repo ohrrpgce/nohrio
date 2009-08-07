@@ -10,6 +10,11 @@
 # If you want to set multiple strings, create an array of the appropriate
 # dtype -- ``[('length', int16 or int8), ('value', int16 or int8, maxlength)]``
 # , store your values with set_*, and assign them to the target array range.
+#
+#
+# Beware: all set_* functions will truncate the output if you provide a value
+# too long to fit.
+
 
 def set_str16 (dest, src): # 16bit/8bit len, 16bit chars
     assert len (src) <= (len (dest['value']) / 2)
@@ -27,3 +32,11 @@ def get_str16 (src):
 def get_str8 (src):
     return src['value']
 
+# the format used by OHRRPGCE .SAV gold field.
+# reads/writes an integer value <-> a 16bit string 9_6
+
+def get_intstr16 (src):
+    return int (get_str16(src))
+
+def set_intstr16 (dest, src):
+    set_str16 (dest, str (src))
