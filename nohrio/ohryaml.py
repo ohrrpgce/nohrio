@@ -87,10 +87,34 @@ def array2py (array):
 # #. ROXEN!
 
 
-lookup = {'NPCDEFS':'n', 'MAPNAMES':'mn',
-          'NPCLOCS' :'l.linear', 'GENERAL_DATA':'gen'}
+lookup = {'GENERAL_DATA': 'gen',
+          'NPCDEFS'  : 'n',
+          'MAPNAMES' : 'mn',
+          'NPCLOCS'  : 'l.linear',
+          'MAPINFO'  : 'map',
+          'PALETTE16' : 'pal',
+          }
 
 def partial_resort (node, dtype = None):
+    """Deeply re-sort the nodes contained in node so they match dtype ordering.
+
+    Notes
+    -----
+
+    keys are sorted in two separate sets; the set which contains
+    keys mentioned in the dtype, and the set which doesn't.
+
+    The first of these sets is sorted according to position in the dtype.
+    The second is sorted alphabetically.
+    Then they are concatenated (first + second), so
+    all the important properties are written first.
+
+    Dtypes are detected via key names, so partial_resort()
+    can handle multiple different dtypes in a single document.
+
+    Sorting is done **in place**. This has implications for recursion.
+
+    """
     from yaml import MappingNode, SequenceNode
     from ohrrpgce import dtypes, np
     if type (node) == MappingNode:
@@ -102,38 +126,89 @@ def partial_resort (node, dtype = None):
             for key, value in node.value:
                 keycontent = key.value
                 if keycontent.isupper and keycontent in lookup:
-                    print ('found dtype %s' % keycontent)
                     partial_resort (value, dtype = np.dtype (dtypes[lookup[keycontent]]))
                 #elif keycontent in dtype.names and dtype[keycontent].char != 'V':
                 #    partial_resort (value, dtype = dtype[keycontent])
         else:
-            print ('ordering..')
-#
-# order the key,value pairs as we can
             ordered = []
             unordered = []
             names = dtype.names
-            print (names)
             for key, value in node.value:
                 keycontent = key.value
+                if keycontent == 'savoffset':
+                    import pdb
+                    pdb.set_trace()
+                    print (key, value)
                 if keycontent in names:
                     if type (value) == MappingNode:
-                        print ('map')
-                        ordered.append((key, partial_resort(value, dtype[keycontent])))
+                        partial_resort(value, dtype[keycontent])
+                        ordered.append((key, value))
                     else:
-                        print ('ord')
+                        # demangle strings-which-contained-non-ascii
+                        if value.tag == 'tag:yaml.org,2002:binary':
+                            value.value = value.value.decode('base64').encode('string_escape')
+                            value.tag = 'tag:yaml.org,2002:str'
+                            value.style = None
                         ordered.append((key, value))
                 else:
-                    print ('unord')
                     unordered.append((key, value))
             ordered.sort (key = lambda v: names.index (v[0].value))
             unordered.sort ()
-            print ('old node value %r' % node.value)
-            print ('new node value %r' % node.value)
             node.value = ordered + unordered
     elif type (node) == SequenceNode:
         for value in node.value:
             partial_resort (value, dtype = dtype) # dtype is always None here?
+
+def escape_node_strings (node):
+    from yaml import MappingNode, SequenceNode
+    if type (node) == MappingNode:
+        for key, value in node.value:
+            if value.tag == 'tag:yaml.org,2002:binary':
+                value.value = value.value.decode('base64').encode('string_escape')
+                value.tag = 'tag:yaml.org,2002:str'
+                value.style = None
+            elif value.tag == 'tag:yaml.org,2002:str':
+                value.value = value.value.encode('string_escape')
+            if type (value) in (MappingNode, SequenceNode):
+                escape_node_strings (value)
+    elif type (node) == SequenceNode:
+        for childnode in node.value:
+            escape_node_strings (childnode)
+
+def unescape_object_strings (object):
+    from yaml import MappingNode, SequenceNode
+    if type (object) == dict:
+        for key, value in object.items():
+            if type (value) == str:
+                object[key]= value.decode('string_escape')
+            elif type (value) in (dict, list):
+                unescape_object_strings (value)
+    elif type (object) == SequenceNode:
+        for item in object:
+            unescape_object_strings (item)
+
+
+# YAML dumping and loading
+# -------------------------
+#
+# load() and dump() are wrappers around yaml.load and yaml.dump
+# which handle necessary string value escaping automatically.
+
+def load (string):
+    # load yaml, demangle escaped strings
+    from yaml import safe_load as load_
+    data = load_(string)
+    unescape_object_strings (data)
+    return data
+
+def dump (data):
+    import yaml
+    r = yaml.representer.SafeRepresenter()
+    node = r.represent_data (data)
+    partial_resort (node)
+    escape_node_strings (node)
+    return yaml.serialize (node)
+    # escape strings, dump yaml
 
 def find_dtype (mapping):
     for key in mapping.keys():
