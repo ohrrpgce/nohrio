@@ -24,7 +24,7 @@
 #
 #   * nice 'enumeration' support (eg 'attacker_anim : null')
 #   * simplified bitset support ('bitsets': [ABSORBS_ELEM1, MP_IDIOT])
-#
+#   * nicely formatted image data (hex dump)
 #
 # a bug in numpy (1.3.0) prevents memmapped use of attack.bin dtype
 # this is work-aroundable; fortunately attack.bin is really

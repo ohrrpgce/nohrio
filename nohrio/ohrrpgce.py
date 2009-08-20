@@ -248,7 +248,7 @@ class fixBits (object):
               'shopsounds', 'extended_npcs', 'heroportrait',
               'textbox_portrait', 'npclocation_format', ]
     def __init__ (self, filename, **kwargs):
-        self.file = open (filename, 'rwb+')
+        self.file = open (filename, 'rb+')
         for k, v in kwargs.items():
             setattr (self, k, v)
     def save (self, f):
