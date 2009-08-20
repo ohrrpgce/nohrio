@@ -447,8 +447,8 @@ dtypes = {
     'd' : planar_dtype ('srcdoor destdoor destmap condtag1 condtag2', 100, INT),
     'd.linear' : make ('srcdoor destdoor destmap condtag1 condtag2'),
     'dox' : planar_dtype ('x y bitsets',100, INT),
-    'dt0' : make ('name battlesprite battlepalette walksprite walkpalette defaultlevel defaultweapon',
-                  'stats spells portrait bitsets spelllist_name portrait_palette spelllist_type',
+    'dt0' : make ('name battlepic battlepal walkpic walkpal defaultlevel defaultweapon',
+                  'stats spells portraitpic bitsets spelllist_name portraitpal spelllist_type',
                   'have_tag alive_tag leader_tag active_tag',
                   'maxnamelength handcoord',
                   " ".join (["%sframe" % name for name in 'stand step attacka attackb cast hurt weak dead \
