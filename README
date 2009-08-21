@@ -29,11 +29,27 @@ Completeness:
  b) is mostly complete.
  c) is just begun
 
+Mission statement
+-----------------
+
+The ultimate goal of the nohrio project is to inspire the creation
+of a system which renders the nohrio project obsolete.
+
+Perhaps you find that confusing and recursive.
+The point is: as per systemantics_ , as systems increase in complexity, age,
+and usage, their implicit goal moves towards self-preservation -- until
+eventually 100% of resources are dedicated to that task.
+
+So I'm defining the goal of this system in a way to directly thwart that.
+
+Some of the non-obvious ways this goal could be fulfilled:
+
+ * migrating OHRRPGCE fileformats to be self-describing
 
 Updating from gitorious
 -----------------------
 
-Chances are that you got your copy of nohrio via ``git clone git://gitorious.org/nohrio/nohrio``.
+Chances are that you got your copy of nohrio via ``git clone git://gitorious.org/nohrio/nohrio.git``.
 
 In case you don't know how to update it, this is how; run the following command in the nohrio directory:
 
@@ -64,8 +80,7 @@ On linux you will need to prepend ``sudo`` to those commands
 Start up an ipython session (or well, just a Python session -- but ipython is
 vastly better, believe me. ) (http://ipython.scipy.org)
 
->>> import nohrio.ohrrpgce as ohr
->>> from nohrio.ohryaml import array2py
+>>> from nohrio.ohrrpgce import *
 
 .. load an array from hexdump
    poke it around a bit
@@ -73,6 +88,32 @@ vastly better, believe me. ) (http://ipython.scipy.org)
    write some YAML from it
    calculate a diff between it and another record
    handle multiple records -- overwrite one with another.
+
+.. read lumps inline from a packed RPG file (can even be writable -- however, is fixed in size
+   (you can't write past the array end to add more records)
+
+   arr = mmap (filename, dtype, offset = offset, shape = shape)
+
+   The key here is specifying the shape. it's quite easy -- if you know you have 20 records (either by
+   reading GEN data or calculations based on lump size), just specify 20.
+
+   if you are in the tests/data directory, the following will mmap records 4-9 of EFS
+   (there are 17 records total)
+
+   >>> import numpy as np
+   >>> arr = mmap ('viking.efs', dtype = dtypes['efs'], np.dtype (dtypes['efs']).itemsize * 4)
+   >>> arr.shape
+   (5,)
+
+   When you want to read inline from an rpg file, the only difference is,
+   you must also add the starting offset of the lump in the RPG file
+   to the 'offset' value passed to mmap.
+
+   (we don't currently have a wrapper class to virtualize RPG files, it is planned.)
+
+   You should also note that we don't currently deal directly with dt0 and attack.bin, since they are in
+   a quite bizarre 'needs-stapling-together' format. So you cannot entirely avoid unlumping if you want
+   to read attack data -- we need to do the joining, then memmap the resulting file.
 
 .. filter an image (eg. skew)
 
@@ -158,6 +199,8 @@ TeeEmCee :
   Initial testing and feedback. It's easy, in your own intimate knowledge of a software
   system you created, to be completely out of touch with 'what things people
   need to know'. He helped remedy that :)
+  Also wrote the first non-trivial program that uses nohrio -- 'colouruse.py' which counts
+  usage of master palette colors throughout an RPGDir.
 
 Myself :
   Wrote quite a few utilities for OHRRPGCE, and made the new master palette for it
@@ -166,3 +209,5 @@ Myself :
 
 A vast array of XML-abusers:
   Tremendously effective counter-examples. XML is not a Data Language, it's a Markup Language!
+
+.. _systemantics: http://en.wikipedia.org/Systemantics
