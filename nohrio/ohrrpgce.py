@@ -241,32 +241,54 @@ def pad (filename, granularity, groupsize = 1, headersize = 0):
 #    speed criteria. So if this is satisfactory, you could exclude the
 #    text format instead.
 
+# The following two classes both accept either a filename or a file handle
+# (which must support the ``seek()``, ``write()`` and ``read()`` methods')
+#
+# when accessing RPG files 'inline' (without unlumping them first)
+# you should specify offset like this::
+#
+#     offset = rpgfile.tell() # this should point at the start of the lump data
+#     fixbits = fixBits (rpgfile, offset)
+
+def filename_or_handle (f, mode):
+    if type (f) in (str, unicode):
+        return open (f, mode)
+    return f
+
 class fixBits (object):
     fields = ['attackitems', 'weappoints', 'stuncancel',
               'defaultdissolve', 'defaultdissolveenemy',
               'pushnpcbug_compat', 'default_maxitem', 'blankdoorlinks',
               'shopsounds', 'extended_npcs', 'heroportrait',
               'textbox_portrait', 'npclocation_format', ]
-    def __init__ (self, filename, **kwargs):
-        self.file = open (filename, 'rb+')
+    def __init__ (self, file, offset = 0, **kwargs):
+        self.file = filename_or_handle (file, 'rb+')
+        self.origin = offset
+        self.file.seek (offset)
         for k, v in kwargs.items():
             setattr (self, k, v)
     def save (self, f):
-        self.file.seek (0)
+        self.file.seek (self.origin)
         f.write (self.file.read())
     def tostring (self):
-        self.file.seek (0)
+        self.file.seek (self.origin)
         return self.file.read()
     def __getitem__ (self, k):
+        if type (k) == slice:
+            return [self.__getattr__ (v) for v in self.fields[k]]
         return self.__getattr__ (self.fields[k])
     def __setitem__ (self, k, v):
-        self.__setattr__ (self.fields[k], v)
+        if type (k) == slice:
+            for key, value in zip (self.fields[k], v):
+                self.__setattr__ (key, value)
+        else:
+            self.__setattr__ (self.fields[k], v)
     def __getattr__ (self, k):
         try:
             k = object.__getattribute__ (self, 'fields').index (k)
         except ValueError:
             return object.__getattribute__ (self, k)
-        self.file.seek (k / 8)
+        self.file.seek (self.origin + (k / 8))
         result = ord (self.file.read(1)) & (1 << k % 8)
         if result > 0:
            return 1
@@ -278,13 +300,13 @@ class fixBits (object):
         except ValueError:
             object.__setattr__ (self, k, v)
             return
-        self.file.seek (k / 8)
+        self.file.seek (self.origin + (k / 8))
         value = ord (self.file.read (1))
         if value & (1 << k % 8):
             value ^= (1 << k % 8)
         if v:
             value |= (1 << k % 8)
-        self.file.seek (k / 8)
+        self.file.seek (self.origin + (k / 8))
         self.file.write (chr (value))
     def __repr__ (self):
         kwargs = ", ".join (['%s = %d' % (name, v) for name, v in zip (self.fields, self)])
@@ -294,21 +316,36 @@ class fixBits (object):
     def __gc__ (self):
         self.file.close()
 
+#
+# archinym.lmp
+# ---------------
+#
+# Read-write if accessing an unlumped file,
+# read-only if accessing a section of an rpg file 'inline'.
+# This is because the size of the lump may change during writing.
+#
+
 class archiNym (object):
-    def __init__ (self, filename, **args):
-        self.file = open (filename, 'rwb+')
+    def __init__ (self, file, offset = 0, **args):
+        mode = 'rb+'
+        if offset > 0:
+            mode = 'rb'
+        self.file = filename_or_handle (file, mode)
+        self.origin = offset
+        if offset:
+            self.file.seek (offset)
         for k, v  in enumerate (args):
             self[k] = v
     def __getitem__ (self, k):
         assert (-1 < k < 2)
-        self.file.seek (0)
+        self.file.seek (self.origin)
         for i in range (k):
             self.file.readline()
         return self.file.readline().rstrip()
     def __setitem__ (self, k, v):
         assert (-1 < k < 2)
         everything = [self[0], self[1]]
-        self.file.seek (0)
+        self.file.seek (self)
         everything [k] = v
         for value in everything:
             self.file.write (value + '\x0d\x0a')
