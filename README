@@ -198,7 +198,7 @@ Fenrir-Lunaris :
 TeeEmCee :
   Initial testing and feedback. It's easy, in your own intimate knowledge of a software
   system you created, to be completely out of touch with 'what things people
-  need to know'. He helped remedy that :)
+  need to know'. He helped remedy that, and spotted a Windows-only bug :)
   Also wrote the first non-trivial program that uses nohrio -- 'colouruse.py' which counts
   usage of master palette colors throughout an RPGDir.
 

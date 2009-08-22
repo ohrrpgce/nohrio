@@ -400,10 +400,13 @@ _say_conditionals_dtype += [('hero', _saytagpair_dtype), ('jumptoafter', _saytag
 _say_conditionals_dtype += [('money', _saytagpair_dtype), ('usedoor', _saytagpair_dtype)]
 _say_conditionals_dtype += [('items', [('tagcheck', INT), ('item', INT), ('heroswap', INT), ('herolock', INT)])]
 
+# Shapes of pt? graphics data
+# ===========================
+#
+# frames, h, w order (ie on-disk format)
 
-ptshapes = ((32,40,8), (34, 34, 1), (50, 50, 1), (80, 80, 1), (20, 20, 8),
-            (24, 24, 2), (50, 50, 3), (16, 16, 16), (50, 50, 1))
-"""Shapes of pt? graphics data."""
+ptshapes = ((8, 40, 32), (1, 34, 34), (1, 50, 50), (1, 80, 80), (20, 20, 8),
+            (2, 24, 24), (3, 50, 50), (16, 16, 16), (1, 50, 50))
 
 _spell_list = ([('attack', INT), ('level', INT)], (4, 24))
 
