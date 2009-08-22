@@ -818,6 +818,7 @@ class Gfx4bpp (tuple):
 for i, data in enumerate (ptshapes):
     w, h, frames = data
     dtypes['pt%d' % i] = [('pixels', (np.uint8, (w/2) * h * frames))]
+    dtypes['alt-pt%d' % i] = [('images', np.uint8, (frames, h, w / 2))]
     textserialize_dtype_tweaks['pt%d' % i] = {'pixels' : Gfx4bpp ((w, h, frames))}
 
 del w, h, frames, i, data
@@ -887,6 +888,16 @@ def print_array (arr, inline = False):
     if inline:
         sys.stdout.write ("}\n")
     sys.stdout.flush()
+
+# FIX also handle big hex strings (eg gfx) here if possible
+# done by setting node style = '|'
+# and inserting '\n' in the string after every [WIDTH]
+# characters
+# then after loading, we must strip the '\n'
+#
+# such strings are always
+# serialized as part of a mapping; other mapping
+# pairs specify width and height.
 
 # strangely, arr.tolist() on a scalar array returns a scalar not a list.
 # also, returns a tuple for complex records.
