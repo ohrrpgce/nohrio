@@ -576,6 +576,24 @@ dtypes = {
 # til_ is also the same format
 
     'mxs' : [('planes', (np.uint8, (4, 16000)))],
+
+# some variant dtypes.
+#
+# ``mxs.linear`` is the sensible format that I wish OHR used.
+# it is good for external serializations. Ignore it otherwise.
+#
+# ``mxs.planar`` is somewhat in-between -- it presents a planar
+# view on 80x200 bitmaps. This is fully accurate to the OHRRPGCE file format;
+# it may replace ``mxs`` dtype in the future.
+#
+# to translate between them:
+#
+# ``for i in range (4): linear[:,i::4] = planar[i]``
+#
+
+    'mxs.planar' : [('pixels', (np.uint8, (4, 200, 80)))],
+    'mxs.linear' : [('pixels', (np.uint8, (200, 320)))],
+
     'menuitem.bin' : make ('membership caption sort_order type subtype',
                            'tagcond1 tagcond2 settag toggletag bitsets extra',
                            extra = (INT,3), bitsets = ('B',2), caption = fvstr (38)),
@@ -772,6 +790,9 @@ del _browse_base_dtype
 
 
 dtypes['til'] = dtypes['mxs']
+dtypes['til.linear'] = dtypes['mxs.linear']
+dtypes['til.planar'] = dtypes['mxs.planar']
+
 
 # gfx4bpp
 # =======
