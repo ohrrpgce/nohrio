@@ -609,11 +609,11 @@ dtypes = {
                         'textalign minwidth maxwidth border_thickness',
                         name = fvstr (20), bitsets = ('B', 2),
                         offset = xycoord_dtype, anchor = xycoord_dtype),
-    'mn' : [('name', [('length', 'B'), ('value', 'S79')])],
-    'n' : [('npc', make ('picture palette movetype speed showtext',
-                         'activate_action giveitem pushability activation',
-                         'appear_if_tag1 appear_if_tag2 usability trigger',
-                         'script_arg vehicle'))],
+    'mn' : [('length', 'B'), ('value', 'S79')],
+    'n' : make ('picture palette movetype speed showtext',
+                'activate_action giveitem pushability activation',
+                'appear_if_tag1 appear_if_tag2 usability trigger',
+                'script_arg vehicle'),
 
 # .. _pal:
 #
