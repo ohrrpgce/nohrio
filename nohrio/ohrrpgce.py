@@ -128,6 +128,14 @@ def fvstr (maxlen):
     return [('length', INT), ('value', (np.character, maxlen))]
 
 # some formats have all the x, then all the y, ..
+#
+# .. warning::
+#
+#     This function is obsolete!
+#     Using order = 'F' parameter to mmap
+#     allows planar on-disk format with completely
+#     reasonable indexing.
+#     Use the 'linear' variants of the dtype with order = 'F'.
 
 def planar_dtype (fieldnames, num, dtype, bload = False):
     dt = []
