@@ -145,6 +145,52 @@ def planar_dtype (fieldnames, num, dtype, bload = False):
         dt.append ((field, (dtype, num)))
     return np.dtype (dt)
 
+# Certain sorts of simple analysis prefer flattened dtypes.
+
+def flatten_dtype (dtype, prefix = '', suffix = ''):
+    """Eliminate dtype nesting.
+
+    Returns
+    --------
+    flattened : dtype
+                With the same fields (essentially)
+                in the same order,
+                with no nesting
+
+    Notes
+    ------
+
+    foo/bar field becomes foobar field.
+    1d arrays foo/bar+foo/bif become
+    foobar0, foobif0, foobar1, foobif1, ..
+    """
+    import numpy as np
+    dtype = dtype.descr
+    newdtype = []
+    for item in dtype:
+        multiple = len (item) == 3
+        if type (item[1]) == list:
+            if multiple:
+                for i in range (item[2]):
+                    flattened = flatten_dtype (np.dtype (item[1]),
+                                               prefix + item[0] + suffix,
+                                               suffix + str (i))
+                    newdtype.extend (flattened.descr)
+            else:
+                flattened = flatten_dtype (np.dtype (item[1]),
+                                           prefix + item[0] + suffix,
+                                           suffix)
+                newdtype.extend (flattened.descr)
+        else:
+            if multiple:
+                for i in range (item[2]):
+                    newdtype.append (('%s%s%s%d' % (prefix,
+                                                    item[0], suffix, i),
+                                     item[1]))
+            else:
+                newdtype.append ((prefix + item[0] + suffix, item[1]))
+    return np.dtype (newdtype)
+
 def fix_stringjunk (arr, fields = None, doubled = False):
     fields = fields or arr.dtype.names
     for name in fields:
