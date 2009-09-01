@@ -101,9 +101,9 @@ def fieldlist_to_dtype (fields):
     fields = fields.split()
     return [(field,INT) for field in fields]
 
-def mmap (fname, dtype, offset = 0, shape = None):
+def mmap (fname, dtype, offset = 0, shape = None, order = 'C'):
     return np.memmap (fname, dtype = dtype, mode = 'r',
-                      offset = offset, shape = shape)
+                      offset = offset, shape = shape, order = order)
 
 def from_fieldnames (*allnames, **corrections):
     names = []
