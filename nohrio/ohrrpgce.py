@@ -145,9 +145,49 @@ def planar_dtype (fieldnames, num, dtype, bload = False):
         dt.append ((field, (dtype, num)))
     return np.dtype (dt)
 
-# Certain sorts of simple analysis prefer flattened dtypes.
 
-def flatten_dtype (dtype, prefix = '', suffix = ''):
+
+
+# Certain sorts of simple analysis prefer flattened dtypes or
+# simplified dtypes.
+#
+# Simplified dtypes
+# =================
+#
+# TeeEmCee raised the issue of field nesting being unnecessarily
+# convoluted.
+#
+# This is my attempt to address the issue;
+
+def simplify_dtype (dtype):
+    """Make things easier for TMC.
+
+    Really, reduces the amount of dereferencing
+    needed to access sufficiently simple dtypes.
+
+    drawing an analogy to paths, we simplify the following:
+
+    name/fields -> fields where name is the only top level field
+
+    name/name/../field -> (dtype of field) where field is the only bottom level field.
+
+    """
+    import numpy as np
+    if type (dtype) != np.dtype:
+        dtype = np.dtype (dtype)
+    dtype = dtype.descr
+    newdtype = []
+    if len (dtype) == 1 and type (dtype[0][1]) == list:
+        newdtype.append (simplify_dtype (np.dtype(dtype[0][1])))
+    else:
+        return dtype
+    while type (newdtype[0]) == list:
+        newdtype = newdtype[0]
+    if len (newdtype) == 1: # single field
+        newdtype = newdtype[0][1:]
+    return np.dtype (newdtype)
+
+def flatten_dtype (dtype, prefix = '', suffix = '', flatten_arrays = False):
     """Eliminate dtype nesting.
 
     Returns
@@ -163,8 +203,13 @@ def flatten_dtype (dtype, prefix = '', suffix = ''):
     foo/bar field becomes foobar field.
     1d arrays foo/bar+foo/bif become
     foobar0, foobif0, foobar1, foobif1, ..
+
+    optionally, 1d subarrays are also flattened.
+    (>=2d subarrays are currently unhandled.)
     """
     import numpy as np
+    if type (dtype) != np.dtype:
+        dtype = np.dtype (dtype)
     dtype = dtype.descr
     newdtype = []
     for item in dtype:
@@ -174,21 +219,23 @@ def flatten_dtype (dtype, prefix = '', suffix = ''):
                 for i in range (item[2]):
                     flattened = flatten_dtype (np.dtype (item[1]),
                                                prefix + item[0] + suffix,
-                                               suffix + str (i))
+                                               suffix + str (i),
+                                               flatten_arrays)
                     newdtype.extend (flattened.descr)
             else:
                 flattened = flatten_dtype (np.dtype (item[1]),
                                            prefix + item[0] + suffix,
-                                           suffix)
+                                           suffix,
+                                           flatten_arrays)
                 newdtype.extend (flattened.descr)
         else:
-            if multiple:
+            if multiple and flatten_arrays:
                 for i in range (item[2]):
                     newdtype.append (('%s%s%s%d' % (prefix,
                                                     item[0], suffix, i),
                                      item[1]))
             else:
-                newdtype.append ((prefix + item[0] + suffix, item[1]))
+                newdtype.append ((prefix + item[0] + suffix,) + item[1:])
     return np.dtype (newdtype)
 
 def fix_stringjunk (arr, fields = None, doubled = False):
