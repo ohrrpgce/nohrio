@@ -1,3 +1,10 @@
+# Graphics reformatting
+# ======================
+#
+# The main graphics reformatting operations required are
+#
+# a) 4bpp packed image -> 8bpp packed image
+
 def shape_bpp_adjust (shape, bpp = 4, srcbpp = 8):
     """Return an appropriate shape for a reduced/increased bitdepth image
 
@@ -45,14 +52,17 @@ def unpack_array (array, srcbpp = 4):
     for i in range (1, nparts):
         masks.append (masks[-1] << (srcbpp * i))
     newshape = shape_bpp_adjust (array.shape, bpp = 8, srcbpp = 4)
-    size = reduce_shape (newshape)
-    unpacked = np.zeros (shape = (size,), dtype = np.uint8)
+#    size = reduce_shape (newshape)
+    unpacked = np.zeros (shape = newshape, dtype = np.uint8)
     for i, mask, shift in zip (range (nparts), masks, shifts):
         unpacked.flat[i::nparts] = (array & mask) << shift
     return unpacked
 
-def unpack_4bpp_array (array):
-    """convert a 4bpp array [.., h, w/2] -> [.., h, w]
+def unpack_4bpp_array (array, transpose = True):
+    """convert a 4bpp array [.., span/2] -> [.., span]
+    where span could be width or height, depending on image format.
+
+    Optionally transpose the last two dimensions.
 
     Examples
     --------
@@ -73,17 +83,21 @@ def unpack_4bpp_array (array):
     Notes
     ------
 
-    The resultant array always has an even-length last dimension.
+    The resultant array always has an even-length last dimension (when considered
+    before transposition of last 2 axes)
 
     """
     import numpy as np
     part1 = array & 0xf
     part2 = (array & 0xf0) >> 4
     newshape = shape_bpp_adjust (array.shape, bpp = 8, srcbpp = 4)
-    size = reduce_shape (newshape)
-    unpacked = np.empty (shape = (size,), dtype = np.uint8)
+    #silly!
+#    size = reduce_shape (newshape)
+    unpacked = np.empty (shape = newshape, dtype = np.uint8)
     unpacked.flat[0::2] = part1
     unpacked.flat[1::2] = part2
-    unpacked.shape = newshape
+#    unpacked.shape = newshape
+    if transpose:
+        return np.swapaxes(unpacked, -1,-2)
     return unpacked
 
