@@ -10,6 +10,7 @@ BLOAD  = 0x4
 SPLICED= 0x8
 
 from nohrio.ohrrpgce import dtypes, deprecated_dtypes
+import struct
 
 # .. todo::
 #
@@ -58,10 +59,13 @@ info = {}
 
 for name, filename in filenames.items():
     flags = 0
+    offset = offsets.get (name, 0)
     for which, flagval in zip ((single, planar, bload, spliced), (SINGLE, PLANAR, BLOAD, SPLICED)):
         if name in which:
             flags |= flagval
-    info[name] = (filename, getdtype(filename), flags, offsets.get(name, 0))
+            if flagval == BLOAD:
+                offset += 7
+    info[name] = (filename, getdtype(filename), flags, offset)
 
 del single
 del planar
