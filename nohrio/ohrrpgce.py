@@ -114,7 +114,7 @@ def from_fieldnames (*allnames, **corrections):
         formats.extend ([INT] * len (somenames))
     for name, format in corrections.items():
         formats[names.index(name)] = format
-    return {'names': names, 'formats': formats}
+    return np.dtype ({'names': names, 'formats': formats})
 
 
 # YAML: identify the object type
@@ -125,7 +125,7 @@ def from_fieldnames (*allnames, **corrections):
 make = from_fieldnames
 
 def fvstr (maxlen):
-    return [('length', INT), ('value', (np.character, maxlen))]
+    return np.dtype([('length', INT), ('value', (np.character, maxlen))])
 
 # some formats have all the x, then all the y, ..
 #
@@ -481,18 +481,18 @@ def adjust_for_binsize (dtype, binsize):
 
 def vstr (len):
     "dtype of an OHRRPGCE string (BYTE length, BYTE-based characters) totaling ``len`` bytes"
-    return [('length', np.uint8),('value', (np.character, len - 1))]
+    return np.dtype ([('length', np.uint8),('value', (np.character, len - 1))])
 
 def vstr2 (len):
     "dtype of an OHRRPGCE string (SHORT length, SHORT-based characters) totaling ``len`` bytes"
-    return [('length', np.uint16),('data', (np.character, (len - 1) * 2))]
+    return np.dtype ([('length', np.uint16),('data', (np.character, (len - 1) * 2))])
 
 _statlist = 'hp mp str acc def dog mag wil spd ctr foc xhits'.split()
 STATS_DTYPE = [(name, INT) for name in _statlist]
 STATS0_99_DTYPE = [(name, (INT, 2)) for name in _statlist]
 xycoord_dtype = [('x', INT), ('y',INT)]
 _browse_base_dtype = [('length', INT), ('value', (np.character, 38))]
-_rgb16_dtype = [('r', np.uint16,), ('g', np.uint16), ('b', np.uint16)]
+_rgb16_dtype = np.dtype ([('r', np.uint16,), ('g', np.uint16), ('b', np.uint16)])
 _saychoice_dtype = [('name' , [('length', 'B'), ('value', 'S14')]), ('tag', INT)]
 _saytagpair_dtype = [('tagcheck', INT), ('param', INT)]
 _say_conditionals_dtype = [('jumptoinstead', _saytagpair_dtype), ('settag', [('tagcheck', INT), ('tagset1', INT), ('tagset2', INT)])]
@@ -582,9 +582,10 @@ dtypes = {
 
     'binsize.bin' : make ('attack.bin stf songdata.bin sfxdata.bin map',
                           'menus.bin menuitem.bin uicolors.bin say'),
-    'browse.txt' : [('longname', _browse_base_dtype), ('about', _browse_base_dtype)],
-    'defpass.bin' : [('passability', (INT, 160)), ('magic', INT)],
-    'defpal%d.bin' : [('palette', INT)],
+    'browse.txt' : np.dtype ([('longname', _browse_base_dtype),
+                              ('about', _browse_base_dtype)]),
+    'defpass.bin' : np.dtype ([('passability', (INT, 160)), ('magic', INT)]),
+    'defpal%d.bin' : np.dtype ([('palette', INT)]),
     'd' : planar_dtype ('srcdoor destdoor destmap condtag1 condtag2', 100, INT),
     'd.linear' : make ('srcdoor destdoor destmap condtag1 condtag2'),
     'dox' : planar_dtype ('x y bitsets',100, INT),
@@ -618,10 +619,11 @@ dtypes = {
                   stats = STATS_DTYPE,
                   unused = (INT, 28),
                   unused2 = (INT, 45)),
-    'efs' : [('frequency', INT),('formations',(INT, 20)), ('wasted', (INT, 4))],
+    'efs' : np.dtype ([('frequency', INT),('formations',(INT, 20)),
+                       ('wasted', (INT, 4))]),
     'for' : make ('enemies background music backgroundframes backgroundspeed unused',
                   enemies = (make ('type x y unused'), 8), unused = (INT, 4)),
-    'fnt' : [('characters', [('bitmaps', np.uint8, (256, 8))])],
+    'fnt' : np.dtype ([('characters', [('bitmaps', np.uint8, (256, 8))])]),
     'gen' : make ('maxmap title titlemusic victorymusic battlemusic',
                   'passcodeversion passcoderotator newpasscode newpasscode_unused',
                   'oldpasscode',
@@ -676,7 +678,7 @@ dtypes = {
 #
 # til_ is also the same format
 
-    'mxs' : [('planes', (np.uint8, (4, 16000)))],
+    'mxs' : np.dtype ([('planes', (np.uint8, (4, 16000)))]),
 
 # some variant dtypes.
 #
@@ -692,8 +694,8 @@ dtypes = {
 # ``for i in range (4): linear[:,i::4] = planar[i]``
 #
 
-    'mxs.planar' : [('pixels', (np.uint8, (4, 200, 80)))],
-    'mxs.linear' : [('pixels', (np.uint8, (200, 320)))],
+    'mxs.planar' : np.dtype ([('pixels', (np.uint8, (4, 200, 80)))]),
+    'mxs.linear' : np.dtype ([('pixels', (np.uint8, (200, 320)))]),
 
     'menuitem.bin' : make ('membership caption sort_order type subtype',
                            'tagcond1 tagcond2 settag toggletag bitsets extra',
@@ -702,7 +704,7 @@ dtypes = {
                         'textalign minwidth maxwidth border_thickness',
                         name = fvstr (20), bitsets = ('B', 2),
                         offset = xycoord_dtype, anchor = xycoord_dtype),
-    'mn' : [('length', 'B'), ('value', 'S79')],
+    'mn' : np.dtype ([('length', 'B'), ('value', 'S79')]),
     'n' : make ('picture palette movetype speed showtext',
                 'activate_action giveitem pushability activation',
                 'appear_if_tag1 appear_if_tag2 usability trigger',
@@ -713,8 +715,9 @@ dtypes = {
 # 16 color palettes
 # -----------------
 #
+# does this need to be un-nested?
 
-    'pal' : [('indices', 'B', 16)],
+    'pal' : np.dtype ([('indices', 'B', 16)]),
 
 # .. _palettes_bin:
 #
@@ -724,8 +727,10 @@ dtypes = {
 # :since: ubersetzung
 # :obsoletes: mas_
 
-    'palettes.bin' : [('color', ([('r', np.uint8,), ('g', np.uint8), ('b', np.uint8)], 256))],
-    'plotscr.lst' : [('id', INT), ('name', fvstr(36))],
+    'palettes.bin' : np.dtype ([('color', ([('r', np.uint8),
+                                            ('g', np.uint8),
+                                            ('b', np.uint8)], 256))]),
+    'plotscr.lst' : np.dtype ([('id', INT), ('name', fvstr(36))]),
 
 # .. _say:
 #
@@ -738,10 +743,10 @@ dtypes = {
                   text = ('S38', 8), reserved1 = 'B', conditional = _say_conditionals_dtype,
                   reserved2 = 'B', choicebitsets = 'B', choice1 = _saychoice_dtype,
                   wasted = 'B', choice2 = _saychoice_dtype),
-    'sfxdata.bin' : [('name', fvstr (30)), ('streaming', INT)],
-    'sho' : [('name', vstr2 (16)), ('nitems', INT), ('bitsets', ('B',2)), ('inncost', INT),
-             ('innscript', INT)],
-    'songdata.bin' : [('name', fvstr (30))],
+    'sfxdata.bin' : np.dtype ([('name', fvstr (30)), ('streaming', INT)]),
+    'sho' : np.dtype ([('name', vstr2 (16)), ('nitems', INT), ('bitsets', ('B',2)),
+                  ('inncost', INT), ('innscript', INT)]),
+    'songdata.bin' : np.dtype ([('name', fvstr (30))]),
     '_stf_item' : make ('name type number in_stock buyreq_tag sellreq_tag buyset_tag sellset_tag',
                   'buyprice req_tradeitem1 selltype sellprice tradefor tradefor_amount',
                   'req_tradeitem1_n req_tradeitem2 req_tradeitem2_n req_tradeitem3',
@@ -754,8 +759,8 @@ dtypes = {
 # Tile animation patterns
 # ------------------------
 
-    'tap' : [('starttile', INT), ('disable_if_tag', INT),
-             ('actiontype', (INT,9)), ('actionparam', (INT,9))],
+    'tap' : np.dtype ([('starttile', INT), ('disable_if_tag', INT),
+                       ('actiontype', (INT,9)), ('actionparam', (INT,9))]),
 
 # .. _tmn:
 #
@@ -832,7 +837,7 @@ deprecated_dtypes = {
 #
 # :obsolete: Yes
 
-    'mas' : _rgb16_dtype,
+    'mas' : np.dtype ([('color', _rgb16_dtype, 256)]),
 
 }
 
@@ -842,6 +847,8 @@ def names (nameliststring, length = -1, **aliases):
         tmp.extend(['UNDEFINED%d' % v for v in range(len(tmp), length)])
     return tmp
 
+# Ignore this for now.
+#
 # .. _textserialize_dtype_tweaks:
 
 textserialize_dtype_tweaks = {
