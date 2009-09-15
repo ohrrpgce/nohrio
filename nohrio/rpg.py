@@ -91,6 +91,22 @@ def unpack_lumpid (lumpid):
     m = lumpid_rex.match (lumpid)
     return m.groupdict()
 
+def read_lumpheader (file):
+    characters = ['']
+    while len(characters) < 14 and characters[-1] != '\x00':
+        characters.append (file.read (1))
+        if characters[-1] == '':
+            if len (characters) != 2:
+                raise IOError ('Broken lump header near end of file')
+            return None, None, None
+    characters = characters[:-1]
+    filename = "".join (characters)
+    size = file.read(4)
+    size = struct.unpack('<I', '%s%s%s%s' % (size[2], size[3],
+                                             size[0], size[1]))[0]
+    return filename, file.tell(), size
+
+
 class RPG (object):
     def load (self, lumpid, write = False, dtype = None):
         lumpdict = unpack_lumpid (lumpid)
@@ -135,7 +151,15 @@ class RPGFile (RPG):
     """
     def __init__ (self, filename):
         # build a table of available lumps
-        pass
+        f = open (filename, 'rb')
+        self.lump_map = {}
+        filename = 'nothing'
+        while filename:
+            filename, offset, size = read_lumpheader (f)
+            if filename:
+                self.lump_map[filename] = (offset, size)
+                f.seek (offset + size)
+        f.close()
 
     def load (self, lumpid, write = False):
         pass
