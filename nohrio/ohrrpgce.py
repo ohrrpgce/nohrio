@@ -97,7 +97,7 @@ BLOAD_SIZE = 7
 #
 
 INT = np.int16
-def fieldlist_to_dtype (fields):
+def XXXfieldlist_to_dtype (fields):
     fields = fields.split()
     return [(field,INT) for field in fields]
 
@@ -105,7 +105,7 @@ def mmap (fname, dtype, offset = 0, shape = None, order = 'C'):
     return np.memmap (fname, dtype = dtype, mode = 'r',
                       offset = offset, shape = shape, order = order)
 
-def from_fieldnames (*allnames, **corrections):
+def make (*allnames, **corrections):
     names = []
     formats = []
     for somenames in allnames:
@@ -122,7 +122,7 @@ def from_fieldnames (*allnames, **corrections):
 #
 # invalid characters like binary 0 should be translated to \\00
 
-make = from_fieldnames
+# make = from_fieldnames
 
 def fvstr (maxlen):
     return np.dtype([('length', INT), ('value', (np.character, maxlen))])
