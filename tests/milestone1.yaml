@@ -18,7 +18,8 @@
 #   * Strings are escaped to allow representing non-ASCII values in strings.
 #     Implemented as a layer on top of YAML, transparently un/escaped.
 #     Programs that want to load the YAML we produce 100% correctly
-#     must handle unescaping on load and escaping on save.
+#     must handle unescaping on load and escaping on save if
+#     they do not use nohrio.
 #
 #   And notably excludes:
 #

@@ -504,7 +504,7 @@ _say_conditionals_dtype += [('items', [('tagcheck', INT), ('item', INT), ('heros
 # Shapes of pt? graphics data
 # ===========================
 #
-# frames, h, w order (ie on-disk format)
+# frames, w, h order (ie on-disk format)
 
 ptshapes = ((8, 32, 40), (1, 34, 34), (1, 50, 50), (1, 80, 80), (8, 20, 20),
             (2, 24, 24), (3, 50, 50), (16, 16, 16), (1, 50, 50))

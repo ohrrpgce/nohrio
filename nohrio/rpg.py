@@ -1,13 +1,39 @@
-single = ('GENERAL',)
-planar = ('NPCDEF', 'DOORLINK')
+# .. note::
+#
+#    For BLOAD lumps, the BLOAD header needs to be updated after expanding the file.
+#
+
+import numpy as np
+
+bload_dtype = np.dtype ([('magic', 'B'),
+                         ('segment', '<H'), ('offset', '<H'),
+                         ('size', '<H')])
+
+def rewrite_bload (filename, memmap):
+    """Rewrite the bload header to match the size of the memmap
+       (assuming that the memmap covers all records.)
+    """
+    tmp = np.memmap (filename, mode = 'wb', offset = 0,
+                     dtype = bload_dtype, shape = ())
+    tmp['magic'] = 0x7d
+    tmp['segment'] = 0x9999
+    tmp['offset'] = 0
+    tmp['size'] = memmap.itemsize * len(memmap)
+    tmp.flush()
+    tmp.close()
+
+single = ('GENERAL', 'OLDMASTERPALETTE')
+planar = ('DOORLINK', 'DOOR', 'NPCDEF', 'NPCLOC')
 bload = ('OLDMASTERPALETTE',)
 spliced = ('ATTACKS',)
+cache = ('DEFPASS',)
 offsets = {'PALETTE' : 16}
 
 SINGLE = 0x1
 PLANAR = 0x2
 BLOAD  = 0x4
 SPLICED= 0x8
+CACHE  = 0x16
 
 from nohrio.ohrrpgce import dtypes, deprecated_dtypes
 import struct
@@ -32,17 +58,26 @@ filenames = {
 # or a new fileformat altogether (RELOAD).
 
  'ATTACKS' : '>attack.full',
+ 'ATTACKGFX' : '~.pt6'
  'BROWSEINFO' : 'browse.txt',
  'DOORLINK' : '\\mapd',
  'ENEMY' : '~.dt1',
+ 'LARGEENEMYGFX' : '~.pt3',
+ 'MEDENEMYGFX' : '~.pt2',
+ 'SMALLENEMYGFX' : '~.pt1',
  'FONT' : '~.fnt',
  'GENERAL' : '~.gen',
  'HERO' : '~.dt0',
+ 'HEROGFX' : '~.pt0',
  'OLDMASTERPALETTE' : '~.mas',
  'MASTERPALETTE' : 'palettes.bin',
  'NPCDEF' : '\\mapn',
  'PALETTE' : '~.pal',
+ 'PORTRAITGFX' : '~.pt8',
+ 'TEXTBOXGFX' : '~.pt7',
  'VEHICLE' : '~.veh',
+ 'WALKGFX' : '~.pt4',
+ 'WEAPONGFX' : '~.pt5',
  }
 
 def getdtype (filename):
