@@ -144,31 +144,7 @@ def read_lumpheader (file):
 
 class RPG (object):
     def load (self, lumpid, write = False, dtype = None):
-        lumpdict = unpack_lumpid (lumpid)
-        if 'mapid' in lumpdict or 'slice' in lumpdict:
-            raise NotImplemented()
-        try:
-            info = info[lumpid]
-        except KeyError:
-            if not dtype:
-                raise ValueError ('dtype must be specified when loading file directly')
-            info = (lumpid, dtype,) + dtype_to_lumpid (dtype)[2:]
-        dtype = info[1]
-        flags = info[2]
-        offset = info[3]
-        order = 'C'
-        shape = None
-        if flags & PLANAR:
-            order = 'F'
-        if flags & SINGLE:
-            shape = ()
-        # TODO: handle slicing here -- alter offset and shape
-        filename = info[0]
-        mode = "r"
-        if write:
-            mode = "r+"
-        result = np.memmap (filename, dtype = dtype, mode = mode, shape = shape, order = order, offset = offset)
-        return result
+        pass
         # return a memmap or array
     def save (self, arr, lumpid):
         # write, creating file if necessary
@@ -196,8 +172,32 @@ class RPGFile (RPG):
                 f.seek (offset + size)
         f.close()
 
-    def load (self, lumpid, write = False):
-        pass
+    def load (self, lumpid, write = False, dtype = None):
+lumpdict = unpack_lumpid (lumpid)
+        if 'mapid' in lumpdict or 'slice' in lumpdict:
+            raise NotImplemented()
+        try:
+            info = info[lumpid]
+        except KeyError:
+            if not dtype:
+                raise ValueError ('dtype must be specified when loading file directly')
+            info = (lumpid, dtype,) + dtype_to_lumpid (dtype)[2:]
+        dtype = info[1]
+        flags = info[2]
+        offset = info[3]
+        order = 'C'
+        shape = None
+        if flags & PLANAR:
+            order = 'F'
+        if flags & SINGLE:
+            shape = ()
+        # TODO: handle slicing here -- alter offset and shape
+        filename = info[0]
+        mode = "r"
+        if write:
+            mode = "r+"
+        result = np.memmap (filename, dtype = dtype, mode = mode, shape = shape, order = order, offset = offset)
+        return result
 
     def save (self, arr, lumpid):
         pass
