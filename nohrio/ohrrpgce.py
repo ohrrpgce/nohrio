@@ -537,7 +537,7 @@ _spell_list = ([('attack', INT), ('level', INT)], (4, 24))
 # * heroes_
 # * battles_
 
-_attack_chain_info = make ('attack cond_type cond_value cond_value2 bitsets',
+_attack_chain_info = make ('attack cond_type rate cond_value cond_value2 bitsets',
                            bitsets = ('B', 2))
 #
 # General
@@ -569,13 +569,13 @@ dtypes = {
 # until dtype.itemsize matches the size specified in BINSIZE.BIN.
 #
     'attack.full' : make ('picture palette animpattern targetclass targetsetting',
-                          'damage_eq aim_math baseatk_stat cost xdamage chainto chaincond_value',
+                          'damage_eq aim_math baseatk_stat cost xdamage chainto','chain_percent',
                           'attacker_anim attack_anim attack_delay nhits target_stat',
                           'preftarget bitsets1 name captiontime caption basedef_stat',
                           'settag tagcond tagcheck settag2 tagcond2 tagcheck2 bitsets2',
                           'description consumeitem nitems_consumed soundeffect',
-                          'stat_preftarget chaincond_type chaincond_value2',
-                          'chain_bitsets else_chain instead_chain'
+                          'stat_preftarget chaincond_type chaincond_value',
+                          'chaincond_value2 chain_bitsets else_chain instead_chain'
                           bitsets1 = ('B', 64 / 8), bitsets2 = ('B', 128 / 8),
                           cost = [('hp', INT), ('mp', INT), ('money', INT)],
                           name = [('length', INT), ('unused', INT), ('data', (np.character, 10*2))],
