@@ -126,6 +126,11 @@ vastly better, believe me. ) (http://ipython.scipy.org)
      line[:] = line[int (offset):].tolist() + line[:int (offset)].tolist()
      offset += step
 
+.. since:: 
+
+   We now have a higher-level interface to RPG files and RPGdirs,
+   which is accessed through the nohrio.rpg module.
+
 
 Building docs
 -------------
