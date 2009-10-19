@@ -153,6 +153,15 @@ class RPG (object):
     def grow (self, lumpid, newsize, template = None):
         pass
 
+    def upgrade (self, lumpid):
+        pass
+
+    def maxrecord (self, lumpid):
+        pass
+
+    def recordlength (self, lumpid):
+        pass
+
 class RPGFile (RPG):
     """Handler for 'inline' I/O of RPG lumps
 
@@ -173,7 +182,7 @@ class RPGFile (RPG):
         f.close()
 
     def load (self, lumpid, write = False, dtype = None):
-lumpdict = unpack_lumpid (lumpid)
+        lumpdict = unpack_lumpid (lumpid)
         if 'mapid' in lumpdict or 'slice' in lumpdict:
             raise NotImplemented()
         try:
@@ -200,7 +209,17 @@ lumpdict = unpack_lumpid (lumpid)
         return result
 
     def save (self, arr, lumpid):
-        pass
+        lumpdict = unpack_lumpid (lumpid)
+        slice = lumpdict['slice']
+        id = lumpdict['lumpid']
+        if slice > self.maxrecord (lumpid):
+            raise NotImplementedError() # TODO: expand the lump as a temporary file.
+        if arr.dtype.itemsize != self.recordlength(id):
+            raise UpgradeRequired (id, self.recordlength(id))
+        if len(arr) != len (slice):
+            raise ValueError ("Won't write array"
+                  " of inappropriate size %d to %s" % (len(arr), len(slice)))
+        pass # XXX actually write something
 
     def extract (self, destination, lumpname = '*'):
         pass
