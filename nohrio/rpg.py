@@ -191,21 +191,25 @@ class RPGFile (RPG):
             if not dtype:
                 raise ValueError ('dtype must be specified when loading file directly')
             info = (lumpid, dtype,) + dtype_to_lumpid (dtype)[2:]
+        # TODO: handle dtype here
         dtype = info[1]
         flags = info[2]
         offset = info[3]
         order = 'C'
-        shape = None
+        # TODO: handle slicing here -- alter offset and shape
+        filename = info[0]
+        baseoffset, basesize = self.lump_map[filename]
+        shape = basesize / dtype.itemsize
         if flags & PLANAR:
             order = 'F'
         if flags & SINGLE:
             shape = ()
-        # TODO: handle slicing here -- alter offset and shape
-        filename = info[0]
         mode = "r"
         if write:
             mode = "r+"
-        result = np.memmap (filename, dtype = dtype, mode = mode, shape = shape, order = order, offset = offset)
+        # the following is WRONG.
+        # it should ignore filename
+        result = np.memmap (filename, dtype = dtype, mode = mode, shape = shape, order = order, offset = baseoffset + offset)
         return result
 
     def save (self, arr, lumpid):
@@ -226,4 +230,43 @@ class RPGFile (RPG):
 
 
 class RPGDir (RPG):
+    def __init__ (self, directory):
+        self.directory = os.path.abspath (directory)
+        self.lumps = glob.glob (os.path.join (directory, '*'))
+        self.lumps = [os.path.basename (v) for v in self.lumps]
+        # read GEN and notice what our lump prefix is.
+
+    def load (self, lumpid, write = False, dtype = None):
+        lumpdict = unpack_lumpid (lumpid)
+        if 'mapid' in lumpdict or 'slice' in lumpdict:
+            raise NotImplemented()
+        try:
+            info = info[lumpid]
+        except KeyError:
+            if not dtype:
+                raise ValueError ('dtype must be specified when loading file directly')
+            info = (lumpid, dtype,) + dtype_to_lumpid (dtype)[2:]
+        dtype = info[1]
+        flags = info[2]
+        offset = info[3]
+        order = 'C'
+        shape = None
+        if flags & PLANAR:
+            order = 'F'
+        if flags & SINGLE:
+            shape = ()
+        # TODO: handle slicing here -- alter offset and shape
+        filename = info[0]
+        if '.' in filename:
+            filename = self.lump_prefix + filename
+        if filename not in self.lumps:
+            raise IOError ('Lump %r not found in RPGDir!' % filename)
+        filename = os.path.join (self.directory, filename)
+        mode = "r"
+        if write:
+            mode = "r+"
+        result = np.memmap (filename, dtype = dtype, mode = mode, shape = shape, order = order, offset = offset)
+        return result
+
+
     pass
