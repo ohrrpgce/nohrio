@@ -361,7 +361,7 @@ class fixBits (object):
               'defaultdissolve', 'defaultdissolveenemy',
               'pushnpcbug_compat', 'default_maxitem', 'blankdoorlinks',
               'shopsounds', 'extended_npcs', 'heroportrait',
-              'textbox_portrait', 'npclocation_format', ]
+              'textbox_portrait', 'npclocation_format', 'initdamagedisplay']
     def __init__ (self, file, offset = 0, **kwargs):
         self.file = filename_or_handle (file, 'rb+')
         self.origin = offset
