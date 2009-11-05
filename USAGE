@@ -1,0 +1,16 @@
+List of possible demos
+-----------------------
+
+COMPLETE THIS DOCUMENT! (contributions welcome, especially ones simultaneously suggesting API conventions)
+
+* patch a few fields of GEN and add a few more records somewhere..
+  Say we add a new background (perhaps it could be procedurally generated.)
+
+* use external tools to filter data
+** Count remaining doors on a map : 'ohr2yaml vikings.|grep "x: 0, y: 0"|wc -l'
+*** alt: use arrays to count remaining doors on a map : 
+    'numfreedoors = doors[doors['x'] == 0 && doors['y'] == 0].shape[0]'
+** apply a graphical filter to attacks..
+   say an animated effect.
+   'ohr2image viking.pt6[
+   

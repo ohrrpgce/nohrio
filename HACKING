@@ -1,0 +1,14 @@
+
+Style / philosophy
+------------------
+
+Of course, if you haven't done so yet, do 'import this'; all of those apply here! :)
+
+Further:
+
+* Given the choice between tolerably stupid behaviour and clever behaviour, choose stupid.
+  The difference between the two is in code-path straightforwardness; When something
+  goes wrong with stupid code, it tends to be obvious. When something goes wrong with
+  clever code, it tends to seem arcane. Reject all non-trivial automagic.
+* Code review. Don't try to hide your mistakes, or present only 'finished' code
+  (as if there is such a thing.)
