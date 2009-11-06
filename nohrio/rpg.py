@@ -4,6 +4,7 @@
 #
 
 import numpy as np
+import os
 
 bload_dtype = np.dtype ([('magic', 'B'),
                          ('segment', '<H'), ('offset', '<H'),
@@ -22,12 +23,14 @@ def rewrite_bload (filename, memmap):
     tmp.flush()
     tmp.close()
 
-single = ('GENERAL', 'OLDMASTERPALETTE')
+single = ('FONT', 'GENERAL', 'OLDMASTERPALETTE')
 planar = ('DOORLINK', 'DOOR', 'NPCDEF', 'NPCLOC')
 bload = ('OLDMASTERPALETTE',)
 spliced = ('ATTACKS',)
 cache = ('DEFPASS',)
 offsets = {'PALETTE' : 16}
+
+shape_instead_of_dtype = {'PALETTE': ((16,), 'B')}
 
 SINGLE = 0x1
 PLANAR = 0x2
@@ -95,11 +98,13 @@ info = {}
 for name, filename in filenames.items():
     flags = 0
     offset = offsets.get (name, 0)
+    shape_dtype_sub = None
     for which, flagval in zip ((single, planar, bload, spliced), (SINGLE, PLANAR, BLOAD, SPLICED)):
         if name in which:
             flags |= flagval
             if flagval == BLOAD:
                 offset += 7
+    # XXX shape_instead_of_dtype support?
     info[name] = (filename, getdtype(filename), flags, offset)
 
 del single
@@ -119,12 +124,17 @@ import numpy as np
 # all records (as in '[:]')
 # slices may not specify a step size -- this is locked at 1
 lumpid_rex = re.compile ('((?P<mapid>[0-9]+):)?(?P<lumpid>[A-Za-z0-9]+)'
-                         '(\\[(?P<slice>[0-9:]+)\\])')
+                         '(\\[(?P<slice>[0-9:]+)\\])?')
 
 
 def unpack_lumpid (lumpid):
     m = lumpid_rex.match (lumpid)
-    return m.groupdict()
+    dict = m.groupdict()
+    for key in dict.keys():
+        if dict[key] == None:
+            del dict[key]
+    dict['lumpid'] = dict['lumpid'].upper()
+    return dict
 
 def read_lumpheader (file):
     characters = ['']
@@ -141,6 +151,20 @@ def read_lumpheader (file):
                                              size[0], size[1]))[0]
     return filename, file.tell(), size
 
+
+def guess_lump_prefix (lumplist):
+    """Given a list of lump names, without path, guess the lump-prefix."""
+    leftpart = [v[:v.find('.')] for v in lumplist]
+    lump_prefix = None
+    unique = set (leftpart)
+    for v in unique:
+        # in the test data, 43 of the prefix are found
+        # in OHRRPGCE.NEW,  38 of the prefix are found out
+        # of total 57 lumps
+        if leftpart.count(v) > 16:
+            lump_prefix = v
+            break
+    return lump_prefix
 
 class RPG (object):
     def load (self, lumpid, write = False, dtype = None):
@@ -179,6 +203,7 @@ class RPGFile (RPG):
             if filename:
                 self.lump_map[filename] = (offset, size)
                 f.seek (offset + size)
+        self.lump_prefix = guess_lump_prefix (self.lump_map.keys())
         f.close()
 
     def load (self, lumpid, write = False, dtype = None):
@@ -231,24 +256,27 @@ class RPGFile (RPG):
 
 class RPGDir (RPG):
     def __init__ (self, directory):
+        import glob
         self.directory = os.path.abspath (directory)
         self.lumps = glob.glob (os.path.join (directory, '*'))
         self.lumps = [os.path.basename (v) for v in self.lumps]
         # read GEN and notice what our lump prefix is.
+        # for now, hackhackhack:
+        self.lump_prefix = guess_lump_prefix (self.lumps)
 
     def load (self, lumpid, write = False, dtype = None):
         lumpdict = unpack_lumpid (lumpid)
         if 'mapid' in lumpdict or 'slice' in lumpdict:
             raise NotImplemented()
         try:
-            info = info[lumpid]
+            inforecord = info[lumpdict['lumpid']]
         except KeyError:
             if not dtype:
                 raise ValueError ('dtype must be specified when loading file directly')
-            info = (lumpid, dtype,) + dtype_to_lumpid (dtype)[2:]
-        dtype = info[1]
-        flags = info[2]
-        offset = info[3]
+            inforecord = (lumpid, dtype,) + dtype_to_lumpid (dtype)[2:]
+        dtype = inforecord[1]
+        flags = inforecord[2]
+        offset = inforecord[3]
         order = 'C'
         shape = None
         if flags & PLANAR:
@@ -256,9 +284,9 @@ class RPGDir (RPG):
         if flags & SINGLE:
             shape = ()
         # TODO: handle slicing here -- alter offset and shape
-        filename = info[0]
-        if '.' in filename:
-            filename = self.lump_prefix + filename
+        filename = inforecord[0]
+        if '~' in filename:
+            filename = filename.replace ('~', self.lump_prefix)
         if filename not in self.lumps:
             raise IOError ('Lump %r not found in RPGDir!' % filename)
         filename = os.path.join (self.directory, filename)
