@@ -58,7 +58,7 @@ filenames = {
 # or a new fileformat altogether (RELOAD).
 
  'ATTACKS' : '>attack.full',
- 'ATTACKGFX' : '~.pt6'
+ 'ATTACKGFX' : '~.pt6',
  'BROWSEINFO' : 'browse.txt',
  'DOORLINK' : '\\mapd',
  'ENEMY' : '~.dt1',
