@@ -55,8 +55,6 @@ In case you don't know how to update it, this is how; run the following command 
 
 ``git pull --rebase``
 
-If you have made your own changes, you may not want to rebase --
-I have not had any experience with this yet, please talk to me if you have!
 If you are doing your own development on a branch (recommended),
 you will want to switch back to 'master' branch before running ``git pull --rebase``,
 using the command ``git checkout master``
@@ -109,7 +107,7 @@ vastly better, believe me. ) (http://ipython.scipy.org)
    you must also add the starting offset of the lump in the RPG file
    to the 'offset' value passed to mmap.
 
-   (we don't currently have a wrapper class to virtualize RPG files, it is planned.)
+   (we currently have a wrapper class to virtualize RPG files /RPGdirs, it is very work-in-progress)
 
    You should also note that we don't currently deal directly with dt0 and attack.bin, since they are in
    a quite bizarre 'needs-stapling-together' format. So you cannot entirely avoid unlumping if you want
