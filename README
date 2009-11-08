@@ -130,6 +130,11 @@ vastly better, believe me. ) (http://ipython.scipy.org)
    which is accessed through the nohrio.rpg module.
 
 
+.. you can extract multiple fields like this
+
+>>> array[['maxmap','maxtileset','maxnpcpic']]
+(48, 153, 20)
+
 Building docs
 -------------
 

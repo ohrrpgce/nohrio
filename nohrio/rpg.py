@@ -29,6 +29,7 @@ bload = ('OLDMASTERPALETTE', 'GENERAL')
 spliced = ('ATTACKS',)
 cache = ('DEFPASS',)
 offsets = {'PALETTE' : 16}
+binsized = {'MENU' : 'menu'}
 
 shape_instead_of_dtype = {'PALETTE': ((16,), 'B')}
 
@@ -59,25 +60,47 @@ filenames = {
 
 # may change in future, james has a plan to either migrate it to a spliced format
 # or a new fileformat altogether (RELOAD).
+#
 
  'ATTACKS' : '>attack.full',
  'ATTACKGFX' : '~.pt6',
+ 'BACKGROUND' : '~.mxs',
+ 'BINARYSIZE' : 'binsize.bin',
  'BROWSEINFO' : 'browse.txt',
+ 'DEFAULTPASS' : 'defpass.bin',
+ 'DEFAULTPALETTE' : 'defpal%d.bin',
  'DOORLINK' : '\\mapd',
+ 'DOOR' : '~.dox',
  'ENEMY' : '~.dt1',
  'LARGEENEMYGFX' : '~.pt3',
  'MEDENEMYGFX' : '~.pt2',
  'SMALLENEMYGFX' : '~.pt1',
  'FONT' : '~.fnt',
+ 'FORMATION' : '~.for',
+ 'FORMATIONSET' : '~.efs',
  'GENERAL' : '~.gen',
  'HERO' : '~.dt0',
  'HEROGFX' : '~.pt0',
+ 'ITEM' : '~.itm',
+ 'MAPINFO' : '~.map',
+ 'MAPNAME' : '~.mn',
  'OLDMASTERPALETTE' : '~.mas',
  'MASTERPALETTE' : 'palettes.bin',
- 'NPCDEF' : '\\mapn',
+ 'MENU' : 'menus.bin',
+ 'MENUITEM' : 'menuitem.bin',
+ 'NPCDEFINITION' : '\\mapn',
+ 'NPCLOCATION' : '\\mapl',
  'PALETTE' : '~.pal',
  'PORTRAITGFX' : '~.pt8',
+ 'SCRIPTLIST' : 'plotscr.lst',
+ 'SFXINFO' : 'sfxdata.bin',
+ 'SHOP' : '~.sho',
+ 'SONGINFO' : 'songdata.bin',
+ 'TAGNAME' : '~.mn',
+ 'TEXTBOX' : '~.say',
  'TEXTBOXGFX' : '~.pt7',
+ 'TILESET' : '~.til',
+ 'TILEANIMATION' : '~.tap',
  'VEHICLE' : '~.veh',
  'WALKGFX' : '~.pt4',
  'WEAPONGFX' : '~.pt5',
@@ -105,6 +128,7 @@ for name, filename in filenames.items():
             if flagval == BLOAD:
                 offset += 7
     # XXX shape_instead_of_dtype support?
+    # XXX incorporate binsized data support
     info[name] = (filename, getdtype(filename), flags, offset)
 
 del single
