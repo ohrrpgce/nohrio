@@ -19,7 +19,7 @@ OHRRPGCE: http://gilgamesh.hamsterrepublic.com/wiki/ohrrpgce/index.php/Main_Page
 Requires NumPy; requires PyYAML if you want to serialize to/ read from YAML.
 
 Setuptools or Distribute are required; if you don't have one of them, setuptools will automatically
-be installed when you run 'python setup.py build'
+be installed when you run ``python setup.py build``
 
 For building docs, requires Sphinx, SCons, and PyLit
 (http://pylit.berlios.de/)

@@ -25,7 +25,7 @@ def rewrite_bload (filename, memmap):
 
 single = ('FONT', 'GENERAL', 'OLDMASTERPALETTE')
 planar = ('DOORLINK', 'DOOR', 'NPCDEF', 'NPCLOC')
-bload = ('OLDMASTERPALETTE',)
+bload = ('OLDMASTERPALETTE', 'GENERAL')
 spliced = ('ATTACKS',)
 cache = ('DEFPASS',)
 offsets = {'PALETTE' : 16}
@@ -211,18 +211,18 @@ class RPGFile (RPG):
         if 'mapid' in lumpdict or 'slice' in lumpdict:
             raise NotImplemented()
         try:
-            info = info[lumpid]
+            inforecord = info[lumpid]
         except KeyError:
             if not dtype:
                 raise ValueError ('dtype must be specified when loading file directly')
-            info = (lumpid, dtype,) + dtype_to_lumpid (dtype)[2:]
+            inforecord = (lumpid, dtype,) + dtype_to_lumpid (dtype)[2:]
         # TODO: handle dtype here
-        dtype = info[1]
-        flags = info[2]
-        offset = info[3]
+        dtype = inforecord[1]
+        flags = inforecord[2]
+        offset = inforecord[3]
         order = 'C'
         # TODO: handle slicing here -- alter offset and shape
-        filename = info[0]
+        filename = inforecord[0]
         baseoffset, basesize = self.lump_map[filename]
         shape = basesize / dtype.itemsize
         if flags & PLANAR:
@@ -293,8 +293,8 @@ class RPGDir (RPG):
         mode = "r"
         if write:
             mode = "r+"
-        result = np.memmap (filename, dtype = dtype, mode = mode, shape = shape, order = order, offset = offset)
+        result = np.memmap (filename, dtype = dtype, mode = mode,
+                            shape = shape, order = order,
+                            offset = offset)
         return result
 
-
-    pass
