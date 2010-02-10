@@ -96,6 +96,9 @@ BLOAD_SIZE = 7
 # think this out better.
 #
 
+# .. note:
+#          may need to alias dtypes if running on a non-little-endian
+#          architecture.
 INT = np.int16
 def XXXfieldlist_to_dtype (fields):
     fields = fields.split()

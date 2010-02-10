@@ -190,6 +190,24 @@ def guess_lump_prefix (lumplist):
             break
     return lump_prefix
 
+def lumpname_ok (name):
+    "Return False for corrupted or non canonical lump names, True otherwise."
+    import re
+    if len (name) > 50:
+        return False
+    else:
+        m = re.match ('[A-Za-z0-9._-]+', name)
+        if m.end() != (len (name)):
+            return False
+    return True
+
+def lumpnames_dont_collide (names):
+    if len (names) > len (set([v.lower() for v in names])):
+        return False
+    return True
+
+
+
 class RPG (object):
     def load (self, lumpid, write = False, dtype = None):
         pass
@@ -225,8 +243,14 @@ class RPGFile (RPG):
         while filename:
             filename, offset, size = read_lumpheader (f)
             if filename:
+                if not self.lumpname_ok (filename):
+                    raise IOError ('corrupted or non canonical lump name %r' % filename)
                 self.lump_map[filename] = (offset, size)
                 f.seek (offset + size)
+
+        if not lumpnames_dont_collide (lump_map.keys()):
+            raise IOError ('Conflicting lump names (duplicated, or identical except for case)')
+
         self.lump_prefix = guess_lump_prefix (self.lump_map.keys())
         f.close()
 
@@ -284,6 +308,13 @@ class RPGDir (RPG):
         self.directory = os.path.abspath (directory)
         self.lumps = glob.glob (os.path.join (directory, '*'))
         self.lumps = [os.path.basename (v) for v in self.lumps]
+        for filename in self.lumps:
+            if not self.lumpname_ok (filename):
+                raise IOError ('corrupted or non canonical lump name %r' % filename)
+
+        if not lumpnames_dont_collide (lumps):
+            raise IOError ('Conflicting lump names (duplicated, or identical except for case)')
+
         # read GEN and notice what our lump prefix is.
         # for now, hackhackhack:
         self.lump_prefix = guess_lump_prefix (self.lumps)
