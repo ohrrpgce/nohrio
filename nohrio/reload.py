@@ -34,6 +34,19 @@ def read_reload_header(f):
     f.seek (13)
     return table
 
+def read_string (f):
+    length = read_vli(f)
+    return f.read (length)
+
+def write_string (f, value):
+    write_vli (f, len(value))
+    f.write(value)
+
+for v in 'byte short int bigint double'.split(' '):
+    size = locals()['_%s' % v].size
+    exec ('def read_%s (f):\n    return _%s.unpack (f.read (%d))[0]\n' % (v,v, size))
+    exec ('def write_%s (f, v):\n    f.write(_%s.pack (v))\n' % (v,v))
+
 element_reader = {
     0 : lambda v: None,
     1 : read_byte,
@@ -191,18 +204,4 @@ def write_stringtable (f, table):
         write_vli (len(s))
         f.write (s)
 
-
-#
-for v in 'byte short int bigint double'.split(' '):
-    size = locals()['_%s' % v].size
-    exec ('def read_%s (f):\n    return _%s.unpack (f.read (%d))[0]\n' % (v,v, size))
-    exec ('def write_%s (f, v):\n    f.write(_%s.pack (v))\n' % (v,v))
-
-def read_string (f):
-    length = read_vli(f)
-    return f.read (length)
-
-def write_string (f, value):
-    write_vli (f, len(value))
-    f.write(value)
 
