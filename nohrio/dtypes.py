@@ -6,7 +6,7 @@
 from ohrrpgce import dtypes as _dt
 import numpy as np
 dt = {}
-for name, dtype in _dt.items:
+for name, dtype in _dt.items():
     dt[name] = np.dtype (dtype)
 
 # World domination
