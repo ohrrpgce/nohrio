@@ -39,3 +39,19 @@ Element ('root', None, [])
 
 >>> root == root2
 True
+
+Child nodes
+--------------
+
+>>> root.add_child (r.Element('integerness', 999))
+>>> root
+Element ('root', None, [Element ('integerness', 999, [])])
+
+>>> s = SIO()
+>>> root.write_root(s)
+>>> raw = s.getvalue()
+>>> raw
+
+>>> root2 = r.read (SIO (raw))
+>>> root2 == root
+True

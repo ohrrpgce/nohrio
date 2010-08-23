@@ -92,6 +92,12 @@ element_size = {
 
 class strtable (list):
     __slots__ = ()
+    def __getitem__ (self, i):
+        try:
+            return list.__getitem__(self, i)
+        except IndexError:
+            raise IndexError ('index %d/%d out of range; %r' % (i,len(self), self))
+
     def getindex (self, string):
         try:
             i = self.index(string)
@@ -146,13 +152,14 @@ class Element (object):
     def elementinfo (self):
         "Return `elementtype`, `datasize`"
         data = self.data
+        datatype = type (data)
         if data == None:
             elementtype = 0
             elementsize = 0
         elif datatype == str:
             elementtype = 6
-            datasize = len (data)
-            datasize += vli_size (datasize)
+            elementsize = len (data)
+            elementsize += vli_size (elementsize)
         elif datatype in (int, long, float):
             if datatype == float:
                 elementtype = 5
@@ -166,7 +173,7 @@ class Element (object):
                 elif absval < 2147483648:
                     elementtype = 3
                 # XXX will silently overflow for integers too big to store in a BIGINT!
-            datasize = element_size[elementtype]
+            elementsize = element_size[elementtype]
         return elementtype, elementsize
     def size (self, table):
         """Return total on-disk size of this node, including child nodes.
