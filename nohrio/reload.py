@@ -37,10 +37,10 @@ def read_reload_header(f):
                       'Header string %r doesn\'t look like a RELOAD header')
     check_or_message (f, 1, (ord, 1), NotImplemented,
                       'RELOAD version %d not understood.')
-    check_or_message (f, 4, (lambda v: struct.unpack('I',v), 13),
+    check_or_message (f, 4, (lambda v: struct.unpack('I',v)[0], 13),
                       ValueError,
-                      'RELOAD version 01 should always have header size=13, not %s')
-    string_table_pos = struct.unpack('I', f.read(4))
+                      'RELOAD version 01 should always have header size=13, not %r')
+    string_table_pos = struct.unpack('I', f.read(4))[0]
     f.seek (string_table_pos)
     table = read_stringtable (f)
     f.seek (13)
@@ -70,7 +70,7 @@ element_reader = {
     }
 
 element_writer = {
-    0 : lambda v: None,
+    0 : lambda f,v: None,
     1 : write_byte,
     2 : write_short,
     3 : write_int,
@@ -100,6 +100,19 @@ class strtable (list):
             i = len(self) - 1
         return i
 
+def _elements_equal (x, y):
+    if x.name != y.name:
+        return False
+    if len(x.children) != len (y.children):
+        return False
+    if set([v.name for v in x.children]).difference (set([v.name for v in y.children])):
+        return False
+    # XXX assumes child nodes are sorted in identical order
+    for child1, child2 in zip (x.children, y.children):
+        if _elements_equal (child1, child2) != True:
+            return False
+    return True
+
 class Element (object):
     __slots__ = ('name','data','children')
     def __init__ (self, name, data = None, children = None):
@@ -111,6 +124,9 @@ class Element (object):
             self.children = []
     def __repr__ (self):
         return "%s (%r, %r, %r)" % (self.__class__.__name__, self.name, self.data, self.children)
+    def __eq__ (self, y):
+        return _elements_equal (self, y)
+
     def add_child (self, child):
         for ch in self.children:
             if child.name == ch.name:
@@ -151,6 +167,7 @@ class Element (object):
                     elementtype = 3
                 # XXX will silently overflow for integers too big to store in a BIGINT!
             datasize = element_size[elementtype]
+        return elementtype, elementsize
     def size (self, table):
         """Return total on-disk size of this node, including child nodes.
 
@@ -165,16 +182,32 @@ class Element (object):
         elementtype, datasize = self.elementinfo ()
         if elementtype == None:
                 raise ValueError ('Couldn\'t determine the data type')
-        tagnameindex = table.getindex (name)
+        tagnameindex = table.getindex (self.name)
         # tagname elemtype data nchildren=0 childdata=None
         totalsize = vli_size (tagnameindex) + 1 + datasize + vli_size(0) + 0
         write_int (f, totalsize)
         write_vli (f, tagnameindex)
         write_byte (f, elementtype)
-        element_writer [elementtype](f,data)
+        element_writer [elementtype] (f, self.data)
         write_vli (f, len(self.children))
         for ch in self.children:
             ch.write (f, table)
+    def write_root (self, f):
+        """Write the node and all it's children, as a full RELOAD document (ie as if it were the root node).
+
+        The canonical usage of this is upon the actual root node,
+        but it can also be used to extract any subtree.
+        """
+        f.write('RELD\x01')
+        f.write(struct.pack('I', 13))
+        stringtable_metapos = f.tell()
+        f.write('    ')
+        table = build_stringtable (self)
+        self.write(f, table)
+        string_table_pos = f.tell()
+        write_stringtable (f, table)
+        f.seek (stringtable_metapos)
+        f.write (struct.pack('I', string_table_pos))
 
 def read_element (f, table, recurse = True):
     """Return the next Element in `f`
@@ -204,12 +237,12 @@ def read_element (f, table, recurse = True):
         while nchildren != 0:
             children.append(Ellipsis)
     result = Element (name, data, children)
+    return result
     #return size, name, data, nchildren, f.tell ()
 
 
 def read_vli (f):
     v1 = ord(f.read(1))
-    #print ('v1 %02x' % v1)
     mul = 1
     value = v1 & 0x3f
     shift = 6
@@ -217,7 +250,6 @@ def read_vli (f):
         mul = -1
     while (v1 & 0x80):
         v1 = ord(f.read(1))
-        #print ('v1 %02x' % v1)
         value |= (v1 & 0x7f) << shift
         shift += 7
     value *= mul
@@ -235,7 +267,6 @@ def write_vli (f, value):
     shift = 6
     if value > 0x3f:
         tmp = value >> shift
-        print ('->%d' % tmp)
         while (tmp) != 0:
             if tmp > 0x7f:
                 f.write (chr ((tmp & 0x7f)|0x80))
@@ -254,26 +285,24 @@ def vli_size (v):
         bytes += 1
     return bytes
 
-def write_reload_header (f, document):
-    f.write('RELD\x01')
-    f.write(struct.pack('I', 13))
-    raise NotImplemented ('string table handling not yet implemented')
-
 def read_stringtable (f):
     nstrings = read_vli (f)
+    if nstrings == 0:
+        raise ValueError ('0-length string table (?)')
     results = strtable()
     while nstrings > 0 :
         length = read_vli(f)
         content = f.read(length)
         if len(content) != length:
             raise ValueError ('Truncated string table')
+        results.append (content)
         nstrings-= 1
     return results
 
 def write_stringtable (f, table):
     write_vli (f, len (table))
     for s in table:
-        write_vli (len(s))
+        write_vli (f, len(s))
         f.write (s)
 
 def _find_names (root, names = None):
@@ -296,7 +325,7 @@ def build_stringtable (root):
     occurrences = _find_names (root)
     table = [(k,v) for k, v in occurrences.items()]
     table.sort (key = lambda v: v[1], reverse = True)
-    table = [k for k,v in table]
+    table = strtable ([k for k,v in table])
     return table
 
 def clean_stringtable (root, table):
@@ -312,3 +341,10 @@ def scan_nodes (f, table):
     # for nodes with nchildren > 0, make two entries '%s' and '%s/'.
     # the latter will be of type `dict`, the former of type `int`
     raise NotImplemented ()
+
+def read (f):
+    table = read_reload_header(f)
+    if len(table) == 0:
+        raise ValueError('0-length string table (?)')
+    return read_element (f, table)
+
