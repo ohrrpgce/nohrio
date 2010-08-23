@@ -276,6 +276,34 @@ def write_stringtable (f, table):
         write_vli (len(s))
         f.write (s)
 
+def _find_names (root, names = None):
+    if names == None:
+        names = {root.name:1}
+    else:
+        names[root.name] = names.get (root.name, 0) + 1
+    for child in root.children:
+        if len(child.children) > 0:
+            _find_names (child, names)
+        else:
+            names[child.name] = names.get (child.name, 0) + 1
+    return names
+
+def build_stringtable (root):
+    """Recursively discover all names in the RELOAD tree and build a string table from them.
+
+    Places most frequently used names first, for best VLI performance.
+    """
+    occurrences = _find_names (root)
+    table = [(k,v) for k, v in occurrences.items()]
+    table.sort (key = lambda v: v[1], reverse = True)
+    table = [k for k,v in table]
+    return table
+
+def clean_stringtable (root, table):
+    """Remove unused entries from a stringtable.
+    Not implemented. May not be needed.
+    """
+    pass
 
 def scan_nodes (f, table):
     """Build a dictionary mapping nodes to their starting offset in the file.
