@@ -84,3 +84,27 @@ Element ('root', None, [Element ('integerness', 999, [])])
 
 >>> root2 == root
 True
+
+Differently typed child nodes
+------------------------------
+
+>>> for name, value in zip ('abcde', (None, -56, 32767, -1048576, 2**48, 99.99, 'ko pilno do')):
+...     root.add_child (r.Element(name, value))
+
+BTW: the None type, as the RELOAD page says, is usable as a child node -- the entire
+node acts as a flag (of whatever the node name specifies.)
+
+>>> root
+Element ('root', None, [Element ('integerness', 999, []), Element ('a', None, []), Element ('b', -56, []), Element ('c', 32767, []), Element ('d', -1048576, []), Element ('e', 281474976710656L, [])])
+
+>>> s = SIO()
+>>> root.write_root(s)
+>>> raw = s.getvalue()
+>>> raw
+>>> s = SIO(raw)
+>>> root2 = r.read(s)
+>>> root2
+Element ('root', None, [Element ('integerness', 999, []), Element ('a', None, []), Element ('b', -56, []), Element ('c', 32767, []), Element ('d', -1048576, []), Element ('e', 281474976710656L, [])])
+
+>>> root2 == root
+True
