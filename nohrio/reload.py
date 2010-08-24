@@ -69,8 +69,11 @@ element_reader = {
     6 : read_string,
     }
 
+def nop (f,v):
+    pass
+
 element_writer = {
-    0 : lambda f,v: None,
+    0 : nop,
     1 : write_byte,
     2 : write_short,
     3 : write_int,
@@ -181,17 +184,18 @@ class Element (object):
         """
         mysize = self.elementinfo()[1]
         headersize = 4 + vli_size (table.getindex (self.name)) + 1 + vli_size (len(self.children))
-        theirsize = sum ([ch.size() for ch in self.children])
+        theirsize = sum ([ch.size(table) for ch in self.children])
         return headersize + mysize + theirsize
     def write (self, f, table):
         """Write this element to `f`.
         """
         elementtype, datasize = self.elementinfo ()
+        datasize = self.size (table)
         if elementtype == None:
                 raise ValueError ('Couldn\'t determine the data type')
         tagnameindex = table.getindex (self.name)
         # tagname elemtype data nchildren=0 childdata=None
-        totalsize = vli_size (tagnameindex) + 1 + datasize + vli_size(0) + 0
+        totalsize = datasize - 4
         write_int (f, totalsize)
         write_vli (f, tagnameindex)
         write_byte (f, elementtype)
@@ -240,9 +244,11 @@ def read_element (f, table, recurse = True):
     if recurse:
         while nchildren != 0:
             children.append (read_element (f, table))
+            nchildren -= 1
     else:
         while nchildren != 0:
             children.append(Ellipsis)
+            nchildren -= 1
     result = Element (name, data, children)
     return result
     #return size, name, data, nchildren, f.tell ()
