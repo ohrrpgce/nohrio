@@ -88,7 +88,7 @@ True
 Differently typed child nodes
 ------------------------------
 
->>> for name, value in zip ('abcde', (None, -56, 32767, -1048576, 2**48, 99.99, 'ko pilno do')):
+>>> for name, value in zip ('abcdefg', (None, -56, 32767, -1048576, 2**48, 99.99, 'ko pilno do')):
 ...     root.add_child (r.Element(name, value))
 
 BTW: the None type, as the RELOAD page says, is usable as a child node -- the entire

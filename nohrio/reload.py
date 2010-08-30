@@ -302,7 +302,7 @@ def read_stringtable (f):
     nstrings = read_vli (f)
     if nstrings == 0:
         raise ValueError ('0-length string table (?)')
-    results = strtable()
+    results = strtable([''])
     while nstrings > 0 :
         length = read_vli(f)
         content = f.read(length)
@@ -313,8 +313,8 @@ def read_stringtable (f):
     return results
 
 def write_stringtable (f, table):
-    write_vli (f, len (table))
-    for s in table:
+    write_vli (f, len (table) - 1)
+    for s in table[1:]:
         write_vli (f, len(s))
         f.write (s)
 
@@ -336,9 +336,10 @@ def build_stringtable (root):
     Places most frequently used names first, for best VLI performance.
     """
     occurrences = _find_names (root)
+    occurrences.pop('', None)
     table = [(k,v) for k, v in occurrences.items()]
     table.sort (key = lambda v: v[1], reverse = True)
-    table = strtable ([k for k,v in table])
+    table = strtable ([''] + [k for k,v in table])
     return table
 
 def clean_stringtable (root, table):
