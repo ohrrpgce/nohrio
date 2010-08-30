@@ -18,8 +18,7 @@ Element ('root', None, [])
 
 >>> raw = s.getvalue()
 >>> raw
-'RELD\x01\r\x00\x00\x00\x14\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x01\x04root'
-
+'RELD\x01\r\x00\x00\x00\x14\x00\x00\x00\x03\x00\x00\x00\x01\x00\x00\x01\x04root'
 
 4 bytes magic + 1 byte version + 4 bytes header size + 4 byte string table offset (... =13 bytes)
 +
@@ -51,8 +50,7 @@ Element ('root', None, [Element ('integerness', 999, [])])
 >>> root.write_root(s)
 >>> raw = s.getvalue()
 >>> raw
-'RELD\x01\r\x00\x00\x00\x1d\x00\x00\x00\x0c\x00\x00\x00\x01\x00\x01\x05\x00\x00\x00\x00\x02\xe7\x03\x00\x02\x0bintegerness\x04root'
-
+'RELD\x01\r\x00\x00\x00\x1d\x00\x00\x00\x0c\x00\x00\x00\x02\x00\x01\x05\x00\x00\x00\x01\x02\xe7\x03\x00\x02\x0bintegerness\x04root'
 
 
 Let's just check that:
@@ -62,11 +60,11 @@ RELD magic
 13   header size
 x1d  stringtable offset (0x1d = 29 decimal)
 x0c   'root' element size (=12 decimal)
-01   'root' tag
+02   'root' tag
 00   'root' type
 01   'root' nchildren
 05   'integerness' size
-00   'integerness' tag
+01   'integerness' tag
 02   'integerness' type (2 == short int)
 x3e7 'integerness' value (999)
 00   'integerness' nchildren
@@ -97,20 +95,22 @@ node acts as a flag (of whatever the node name specifies.)
 >>> root #doctest: +NORMALIZE_WHITESPACE
 Element ('root', None, [Element ('integerness', 999, []), Element ('a', None, []),
 Element ('b', -56, []), Element ('c', 32767, []), Element ('d', -1048576, []),
-Element ('e', 281474976710656L, [])])
+Element ('e', 281474976710656L, []), Element ('f', 99.989999999999995, []),
+Element ('g', 'ko pilno do', [])])
 
 >>> s = SIO()
 >>> root.write_root(s)
 >>> raw = s.getvalue()
 >>> raw
-'RELD\x01\r\x00\x00\x00O\x00\x00\x00>\x00\x00\x00\x06\x00\x06\x05\x00\x00\x00\x05\x02\xe7\x03\x00\x03\x00\x00\x00\x00\x00\x00\x04\x00\x00\x00\x02\x01\xc8\x00\x05\x00\x00\x00\x01\x02\xff\x7f\x00\x07\x00\x00\x00\x04\x03\x00\x00\xf0\xff\x00\x0b\x00\x00\x00\x03\x04\x00\x00\x00\x00\x00\x00\x01\x00\x00\x07\x01a\x01c\x01b\x01e\x01d\x0bintegerness\x04root'
+'RELD\x01\r\x00\x00\x00q\x00\x00\x00`\x00\x00\x00\t\x00\x08\x05\x00\x00\x00\x08\x02\xe7\x03\x00\x03\x00\x00\x00\x01\x00\x00\x04\x00\x00\x00\x03\x01\xc8\x00\x05\x00\x00\x00\x02\x02\xff\x7f\x00\x07\x00\x00\x00\x05\x03\x00\x00\xf0\xff\x00\x0b\x00\x00\x00\x04\x04\x00\x00\x00\x00\x00\x00\x01\x00\x00\x0b\x00\x00\x00\x07\x05\x8f\xc2\xf5(\\\xffX@\x00\x0f\x00\x00\x00\x06\x06\x0bko pilno do\x00\t\x01a\x01c\x01b\x01e\x01d\x01g\x01f\x0bintegerness\x04root'
 
 >>> s = SIO(raw)
 >>> root2 = r.read(s)
 >>> root2 #doctest: +NORMALIZE_WHITESPACE
-Element ('root', None, [Element ('integerness', 999, []),
-Element ('a', None, []), Element ('b', -56, []), Element ('c', 32767, []),
-Element ('d', -1048576, []), Element ('e', 281474976710656L, [])])
+Element ('root', None, [Element ('integerness', 999, []), Element ('a', None, []),
+Element ('b', -56, []), Element ('c', 32767, []), Element ('d', -1048576, []),
+Element ('e', 281474976710656L, []), Element ('f', 99.989999999999995, []),
+Element ('g', 'ko pilno do', [])])
 
 >>> root2 == root
 True
