@@ -94,17 +94,29 @@ Differently typed child nodes
 BTW: the None type, as the RELOAD page says, is usable as a child node -- the entire
 node acts as a flag (of whatever the node name specifies.)
 
->>> root
-Element ('root', None, [Element ('integerness', 999, []), Element ('a', None, []), Element ('b', -56, []), Element ('c', 32767, []), Element ('d', -1048576, []), Element ('e', 281474976710656L, [])])
+>>> root #doctest: +NORMALIZE_WHITESPACE
+Element ('root', None, [Element ('integerness', 999, []), Element ('a', None, []),
+Element ('b', -56, []), Element ('c', 32767, []), Element ('d', -1048576, []),
+Element ('e', 281474976710656L, [])])
 
 >>> s = SIO()
 >>> root.write_root(s)
 >>> raw = s.getvalue()
 >>> raw
+'RELD\x01\r\x00\x00\x00O\x00\x00\x00>\x00\x00\x00\x06\x00\x06\x05\x00\x00\x00\x05\x02\xe7\x03\x00\x03\x00\x00\x00\x00\x00\x00\x04\x00\x00\x00\x02\x01\xc8\x00\x05\x00\x00\x00\x01\x02\xff\x7f\x00\x07\x00\x00\x00\x04\x03\x00\x00\xf0\xff\x00\x0b\x00\x00\x00\x03\x04\x00\x00\x00\x00\x00\x00\x01\x00\x00\x07\x01a\x01c\x01b\x01e\x01d\x0bintegerness\x04root'
+
 >>> s = SIO(raw)
 >>> root2 = r.read(s)
->>> root2
-Element ('root', None, [Element ('integerness', 999, []), Element ('a', None, []), Element ('b', -56, []), Element ('c', 32767, []), Element ('d', -1048576, []), Element ('e', 281474976710656L, [])])
+>>> root2 #doctest: +NORMALIZE_WHITESPACE
+Element ('root', None, [Element ('integerness', 999, []),
+Element ('a', None, []), Element ('b', -56, []), Element ('c', 32767, []),
+Element ('d', -1048576, []), Element ('e', 281474976710656L, [])])
 
 >>> root2 == root
 True
+
+>>> r.reload_from_dict ({'solar': None, 'flares' :
+... { 'are': 10, 'unorange': 1/3.}, 'and': None, 'called': 'solar flares'},'root') #doctest: +NORMALIZE_WHITESPACE
+Element ('root', None, [Element ('and', None, []), Element ('called', 'solar flares', []),
+Element ('flares', None, [Element ('are', 10, []),
+Element ('unorange', 0.33333333333333331, [])]), Element ('solar', None, [])])

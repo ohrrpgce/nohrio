@@ -361,3 +361,17 @@ def read (f):
         raise ValueError('0-length string table (?)')
     return read_element (f, table)
 
+def reload_from_dict (d, name, key = None):
+    root = Element (name)
+    items = d.items()
+    if not key:
+        key = lambda v:v[0]
+    items.sort (key = key)
+    for k,v in items:
+        if type (v) in (long, int, float, str, type(None),):
+            root.add_child (Element (k, v))
+        else:
+            root.add_child (reload_from_dict (v, k))
+    return root
+
+__all__ = ('read','Element','read_vli','write_vli', 'reload_from_dict'),
