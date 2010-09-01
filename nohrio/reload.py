@@ -146,13 +146,10 @@ class Element (object):
     def __eq__ (self, y):
         return self.__hash__() == y.__hash__ ()
     def __hash__ (self):
-        #if self.data == None:
-        #    datahash = 9
-        #else:
-        datahash = hash((self.name, self.data))
+        datahash = (self.name, self.data)
         datatype = element_type[type(self.data)]
-        return hash ((datatype, datahash, len(self.children)) + tuple (
-                      (hash (v) for v in self.children)))
+        return ((datatype, self.name, self.data, len(self.children)) + tuple (
+                      (hash (v) for v in self.children))).__hash__()
 
     def add_child (self, child):
         for ch in self.children:
