@@ -88,6 +88,13 @@ element_size = {
     5 : 8,
     6 : -1}
 
+element_type = {
+    int : 3,
+    long: 4,
+    float: 5,
+    str: 6,
+    type(None): 0}
+
 
 
 class strtable (list):
@@ -106,26 +113,24 @@ class strtable (list):
             i = len(self) - 1
         return i
 
-def _elements_equal (x, y):
-    if x.name != y.name:
-        return False
-    if x.data != y.data:
-        return False
-    if len(x.children) != len (y.children):
-        return False
-    xn = [v.name for v in x.children]
-    yn = [v.name for v in y.children]
-    if set(xn).difference (set(yn)):
-        return False
-    xn.sort()
-    xc = list (x.children)
-    yc = list (y.children)
-    xc.sort(key = lambda v:xn.index(v.name))
-    yc.sort(key = lambda v:xn.index(v.name))
-    for child1, child2 in zip (xc, yc):
-        if _elements_equal (child1, child2) != True:
-            return False
-    return True
+# patch this into the Element class like this:
+#
+# Element.__eq__ = exact_eq
+#
+# if you need an exact comparison.
+#
+# (the default comparison should only give false positives about
+# for about 1 of 2^32 comparisons.
+#
+# just to put things in perspective -- If you have less than 256,000 nodes,
+# or they are very shallowly nested, you probably won't ever find a false positive
+# with the normal non-exact __eq__.)
+#
+# This one is exact, but somewhat slow (as it compares the repr() of both nodes,
+# which means at least 2+len(self.children)+len(y.children) strings are temporarily allocated.)
+#
+def exact_eq (self, y):
+    return repr(self) == repr(y)
 
 class Element (object):
     __slots__ = ('name','data','children')
@@ -139,7 +144,15 @@ class Element (object):
     def __repr__ (self):
         return "%s (%r, %r, %r)" % (self.__class__.__name__, self.name, self.data, self.children)
     def __eq__ (self, y):
-        return _elements_equal (self, y)
+        return self.__hash__() == y.__hash__ ()
+    def __hash__ (self):
+        #if self.data == None:
+        #    datahash = 9
+        #else:
+        datahash = hash((self.name, self.data))
+        datatype = element_type[type(self.data)]
+        return hash ((datatype, datahash, len(self.children)) + tuple (
+                      (hash (v) for v in self.children)))
 
     def add_child (self, child):
         for ch in self.children:
