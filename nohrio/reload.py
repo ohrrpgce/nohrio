@@ -115,22 +115,24 @@ class strtable (list):
 
 # patch this into the Element class like this:
 #
-# Element.__eq__ = exact_eq
+# Element.__eq__ = quick_eq
 #
-# if you need an exact comparison.
+# if you need an quick comparison.
 #
-# (the default comparison should only give false positives about
-# for about 1 of 2^32 comparisons.
+# The default comparison method is slightly slower
+# for typical cases, but perfectly accurate.
+# For cases where many large strings/blobs are being compared,
+# quick_eq should be significantly faster than the default,
+# because it compares hashes rather than actual contents.
 #
-# just to put things in perspective -- If you have less than 256,000 nodes,
-# or they are very shallowly nested, you probably won't ever find a false positive
-# with the normal non-exact __eq__.)
-#
-# This one is exact, but somewhat slow (as it compares the repr() of both nodes,
-# which means at least 2+len(self.children)+len(y.children) strings are temporarily allocated.)
-#
-def exact_eq (self, y):
-    return repr(self) == repr(y)
+# As this method is hash-based, the risk of collision
+# (false assessment of equality) is either 1/2^32 or 1/2^64
+# (according to whether you are running a 32bit or 64bit Python)
+# So you should only concern yourself with the possibility of collisions
+# once your document becomes truly ludicrously huge.
+
+def quick_eq (self, y):
+    return self.__hash__() == y.__hash__ ()
 
 class Element (object):
     __slots__ = ('name','data','children')
@@ -144,7 +146,16 @@ class Element (object):
     def __repr__ (self):
         return "%s (%r, %r, %r)" % (self.__class__.__name__, self.name, self.data, self.children)
     def __eq__ (self, y):
-        return self.__hash__() == y.__hash__ ()
+        if self.name != y.name or self.data != y.data or \
+            (len(self.children) != len(y.children)):
+            return False
+        # assume that for nodes to be equal,
+        # their children must be ordered the same too.
+        # (per Mike's explanation.)
+        for ch1, ch2 in zip(self.children, y.children):
+            if ch1.__eq__(ch2) != True:
+                return False
+        return True
     def __hash__ (self):
         datahash = (self.name, self.data)
         datatype = element_type[type(self.data)]

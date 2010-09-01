@@ -39,6 +39,14 @@ Element ('root', None, [])
 >>> root == root2
 True
 
+(just testing that comparing non-equivalent nodes does indeed result in False)
+
+>>> root != r.Element ('root', 0, [])
+True
+
+>>> root != r.Element ('root', '', [])
+True
+
 Child nodes
 --------------
 
