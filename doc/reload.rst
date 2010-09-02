@@ -128,3 +128,42 @@ True
 Element ('root', None, [Element ('and', None, []), Element ('called', 'solar flares', []),
 Element ('flares', None, [Element ('are', 10, []),
 Element ('unorange', 0.33333333333333331, [])]), Element ('solar', None, [])])
+
+
+Multiple same-named child nodes
+--------------------------------
+
+>>> root = r.Element ('root')
+>>> root.add_child (r.Element('foo',1))
+>>> root.add_child (r.Element('foo',2))
+>>> root
+Element ('root', None, [Element ('foo', 1, []), Element ('foo', 2, [])])
+
+>>> root2 = r.Element ('root')
+>>> root2.add_child (r.Element('foo',2))
+>>> root2.add_child (r.Element('foo',1))
+>>> root2
+Element ('root', None, [Element ('foo', 2, []), Element ('foo', 1, [])])
+
+These two trees are not necessarily equivalent in meaning.
+
+>>> root == root2
+False
+
+But when node order is unimportant, they should be.
+For this application, we have fuzzy_eq ()
+
+>>> root.fuzzy_eq (root2)
+True
+
+
+(further checking that when node content is different, not just reordered, things
+compare as different.)
+
+>>> root.children[0].data = 99
+
+>>> root.fuzzy_eq (root2)
+False
+
+>>> root == root2
+False

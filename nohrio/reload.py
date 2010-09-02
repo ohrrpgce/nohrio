@@ -113,27 +113,6 @@ class strtable (list):
             i = len(self) - 1
         return i
 
-# patch this into the Element class like this:
-#
-# Element.__eq__ = quick_eq
-#
-# if you need an quick comparison.
-#
-# The default comparison method is slightly slower
-# for typical cases, but perfectly accurate.
-# For cases where many large strings/blobs are being compared,
-# quick_eq should be significantly faster than the default,
-# because it compares hashes rather than actual contents.
-#
-# As this method is hash-based, the risk of collision
-# (false assessment of equality) is either 1/2^32 or 1/2^64
-# (according to whether you are running a 32bit or 64bit Python)
-# So you should only concern yourself with the possibility of collisions
-# once your document becomes truly ludicrously huge.
-
-def quick_eq (self, y):
-    return self.__hash__() == y.__hash__ ()
-
 class Element (object):
     __slots__ = ('name','data','children')
     def __init__ (self, name, data = None, children = None):
@@ -156,16 +135,23 @@ class Element (object):
             if ch1.__eq__(ch2) != True:
                 return False
         return True
+    def fuzzy_eq (self, y):
+        """Compare this node with another (in a less strict way than normal __eq__)
+
+        In this case, node order is disregarded:
+        {a:1, a:0} and {a:0, a:1} are considered equal.
+        """
+        return self.__hash__() == y.__hash__ ()
+
     def __hash__ (self):
+        children = [v.__hash__() for v in self.children]
+        children.sort ()
         datahash = (self.name, self.data)
         datatype = element_type[type(self.data)]
-        return ((datatype, self.name, self.data, len(self.children)) + tuple (
-                      (hash (v) for v in self.children))).__hash__()
+        return ((datatype, self.name, self.data, len(self.children)) + tuple (children)
+                      ).__hash__()
 
     def add_child (self, child):
-        for ch in self.children:
-            if child.name == ch.name:
-                raise ValueError ('A child node with name %r is already attached to this node!' % child.name)
         self.children.append (child)
     def del_child (self, child_or_childname):
         if type(child_or_childname) == str:
