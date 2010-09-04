@@ -24,7 +24,7 @@ Starting out.. experiments in OHRRPGCE .GEN
 -------------------------------------------
 
 >>> import numpy as np
->>> from ohrrpgce import *
+>>> from nohrio.ohrrpgce import *
 
 OHRRPGCE uses int16's a lot, so let's use an alias for them:
 

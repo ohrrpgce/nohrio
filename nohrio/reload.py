@@ -387,4 +387,13 @@ def reload_from_dict (d, name, key = None):
             root.add_child (reload_from_dict (v, k))
     return root
 
+def reload_from_seq (s, name):
+    """Convert nested 3-tuples -> RELOAD tree.
+
+    tuples can represent all possible RELOAD trees, unlike normal dictionaries.
+    type(s) == tuple is not required -- just a sequence type.
+    """
+    root = Element (name)
+
+
 __all__ = ('read','Element','read_vli','write_vli', 'reload_from_dict'),

@@ -457,10 +457,13 @@ class archiNym (object):
         return '%s (%r, %r, %r)' % (self.__class__.__name__,
                                     self.file.name,
                                     self[0], self[1])
+    def md5 (self):
+        from hashlib import md5
+        return md5(self[0] + self[1]).hexdigest()
     def _getprefix (self):
-        return self[0]
+        return self[0].lower()
     def _setprefix (self, v):
-        self[0] = v
+        self[0] = v.lower()
     def _getversion (self):
         return self[1]
     def _setversion (self, v):
@@ -635,7 +638,7 @@ dtypes = {
                   enemies = (make ('type x y unused'), 8), unused = (INT, 4)),
     'fnt' : np.dtype ([('characters', [('bitmaps', np.uint8, (256, 8))])]),
     'gen' : make ('maxmap title titlemusic victorymusic battlemusic',
-                  'passcodeversion passcoderotator newpasscode newpasscode_unused',
+                  'passcode_version passcode_rotator newpasscode newpasscode_unused',
                   'oldpasscode',
                   " ".join(['max%spic' % name for name in 'hero','enemy1','enemy2','enemy3','npc','weapon','attack']),
                   " ".join(['max%s' % name for name in 'tileset','attack','hero', 'enemy', 'formation','palette','textbox','plotscript']),
@@ -704,8 +707,8 @@ dtypes = {
 # ``for i in range (4): linear[:,i::4] = planar[i]``
 #
 
-    'mxs.planar' : np.dtype ([('pixels', (np.uint8, (4, 200, 80)))]),
-    'mxs.linear' : np.dtype ([('pixels', (np.uint8, (200, 320)))]),
+    'mxs.planar' : np.dtype ((np.uint8, (4, 200, 80))),
+    'mxs.linear' : np.dtype ((np.uint8, (200, 320))),
 
     'menuitem.bin' : make ('membership caption sort_order type subtype',
                            'tagcond1 tagcond2 settag toggletag bitsets extra',
@@ -956,9 +959,9 @@ class Gfx4bpp (tuple):
 
 for i, data in enumerate (ptshapes):
     w, h, frames = data
-    dtypes['pt%d' % i] = [('pixels', (np.uint8, (w/2) * h * frames))]
+    dtypes['pt%d' % i] = (np.uint8, (w/2) * h * frames)
     dtypes['alt-pt%d' % i] = [('images', np.uint8, (frames, h, w / 2))]
-    textserialize_dtype_tweaks['pt%d' % i] = {'pixels' : Gfx4bpp ((w, h, frames))}
+    #textserialize_dtype_tweaks['pt%d' % i] = {'pixels' : Gfx4bpp ((w, h, frames))}
 
 del w, h, frames, i, data
 

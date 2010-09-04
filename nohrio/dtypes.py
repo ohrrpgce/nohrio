@@ -24,14 +24,15 @@ RECORD_SIZES = dt['binsize.bin']
 # each record considered as (NFRAMES, HEIGHT, WIDTH/2) array of bytes.
 #
 
-HEROGFX
-WALKGFX
-ENEMYGFX_SMALL
-ENEMYGFX_MID
-ENEMYGFX_LARGE
-ATTACKGFX
-TEXTBOXGFX
-PORTRAITGFX
+HEROGFX = dt['pt0']
+WALKGFX = dt['pt4']
+ENEMYGFX_SMALL = dt['pt1']
+ENEMYGFX_MID = dt['pt2']
+ENEMYGFX_LARGE = dt['pt3']
+WEAPONGFX = dt['pt5']
+ATTACKGFX = dt['pt6']
+TEXTBOXGFX = dt['pt7']
+PORTRAITGFX = dt['pt8']
 
 DEFAULTPAL = dt['defpal%d.bin']
 
@@ -72,11 +73,21 @@ FORMATION_SET = dt['efs']
 # Map
 # ----
 
-DOORDEF
-DOORLINKS
+#DOORDEF
+#DOORLINKS
 PASSABILITY_DEFAULTS = dt['defpass.bin']
 
 
 # Interaction
 # -------------
 #
+
+
+
+# classify each dtype at the top level.
+_classes = {
+}
+
+for v in range (0,7+1):
+    _classes[dt['pt%d' % v]] = 'pixels'
+    _classes[dt['alt-pt%d' % v]] = 'packedimage'
