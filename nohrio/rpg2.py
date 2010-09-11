@@ -41,6 +41,13 @@ packed_image_guesses = {
     3750:  (3, 50, 50),
     2048:  (16, 16, 16),}
 
+class AttackData(object):
+    # virtualization of the awkward attack data format,
+    # that needs "stapling together"
+    # Returns a newly allocated BufferArray each time.
+    # when that is deleted or flush()ed, the data gets rewritten to disk.
+    pass
+
 class PackedImageData (OhrData):
     def unpack (self, dest = None, shape = None, transpose = None):
         if not shape:
@@ -121,36 +128,72 @@ class Map (object):
         self.rpg = proxy (rpg)
         #self.filename = map_filename (path, prefix, type, n)
         self.n = n
-        fname = map_filename (self.rpg.path,
-                                    self.rpg.archinym.prefix,
-                                    't', self.n)
+        fname = self.filename % 't'
         w,h = self._read_header (fname)
-        layers = (os.path.getsize (fname) - 11) / (w*h)
+        layers = (os.path.getsize (fname) - 11) // (w*h)
         self.shape = (layers, h, w)
+        # sanity check tile-ish map elements
+        for type in 'ep':
+            w2, h2 = self._read_header (self.filename % type)
+            if w2 != w or h2 != h:
+                raise IOError ('map %d: (tile|wall|foe)maps are of mismatched dimensions!' % self.n)
+        # and other elements:
+        for type, length in (('n', 3007), ('l',3007),('d',2007)):
+            actual_length = os.path.getsize (self.filename % type)
+            if actual_length != length:
+                raise IOError('map %d: %r lump of non-canonical size (%d, expected %d)' %\
+                              (self.n, type, actual_length, length))
     def resize (self, layers, h, w, offset):
         raise NotImplementedError('resize')
     def _read_header (self, filename):
         f = open (filename, 'rb')
         f.read(7)
-        return struct.unpack ('H',f.read(4))
+        result = struct.unpack ('H',f.read(4))
+        if (result[0] * result[1]) % (os.path.getsize (fname) - 11) > 0:
+            raise IOError ('map %d file size is not a multiple of W*H bytes' % self.n)
     def _get_tilemap (self):
-        # get filename
-        # read header
-        # return a
-        pass
+        fname = self.filename % 't'
+        w,h = self._read_header (fname)
+        layers = (os.path.getsize (fname) - 11) // (w*h)
+        self.shape = (layers, h, w)
+        return rpg.data (fname, offset = 11, dtype = 'B', shape = self.shape)
+        # return a memmap with dtype (layers, w, h)
+    def _get_wallmap (self):
+        fname = self.filename % 'p'
+        w,h = self._read_header (fname)
+        shape = (1, h, w)
+        return rpg.data (fname, offset = 11, dtype = 'B', shape = shape)
+    def _get_foemap (self):
+        fname = self.filename % 'e'
+        w,h = self._read_header (fname)
+        shape = (1, h, w)
+        return rpg.data (fname, offset = 11, dtype = 'B', shape = shape)
+
     def _get_doors (self):
         return rpg.data('dox', offset = 600*self.index)
+    def _get_filename (self):
+        return map_filename (self.rpg.path,
+                             self.rpg.archinym.prefix,
+                             '%s', self.n)
 
+    filename = property (_get_doors)
     doors = property (_get_doors)
+    tile = property (_get_tilemap)
+    foe = property (_get_foemap)
+    wall = property (_get_wallmap)
+    # XXX NPC def
+    # XXX NPC loc
 
 class MapManager (object):
-
     def __init__ (self, rpg):
         self.rpg = proxy (rpg)
         self.refs = WeakValueDictionary()
     def add (self):
         raise NotImplementedError ('add map')
     def __contains__ (self, k):
+        tmp = map_filename (self.rpg.path,
+                             self.rpg.archinym.prefix,
+                             't', k)
         return (tmp in self.rpg.manifest)
     def __delitem__ (self, k):
         if type(k) != int:
