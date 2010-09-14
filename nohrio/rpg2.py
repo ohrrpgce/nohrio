@@ -3,7 +3,7 @@ import numpy as np
 from nohrio.lump import read_lumpheader, lumpname_ok, Passcode
 import os
 from nohrio.dtypes import GENERAL, dt
-from nohrio.ohrrpgce import archiNym
+from nohrio.ohrrpgce import archiNym, INT
 from weakref import proxy, WeakValueDictionary
 from struct import unpack
 
@@ -47,6 +47,84 @@ class AttackData(object):
     # Returns a newly allocated BufferArray each time.
     # when that is deleted or flush()ed, the data gets rewritten to disk.
     pass
+
+# automagical virtual dtype hacks for planar data follow :)
+class NpcLocData (memmap, md5Array):
+    def _get_x (self):
+        return self[...,0]
+    def _set_x (self, v):
+        self[...,0] = v
+    def _get_y (self):
+        return self[...,1]
+    def _set_y (self, v):
+        self[...,1] = v
+    def _get_id (self):
+        return self[...,2]
+    def _set_id (self, v):
+        self[...,2] = v
+
+    def _get_dir (self):
+        return self[...,3]
+    def _set_dir (self, v):
+        self[...,3] = v
+    def _get_frame (self):
+        return self[...,4]
+    def _set_frame (self, v):
+        self[...,4] = v
+
+    x = property (_get_x,_set_x)
+    y = property (_get_y,_set_y)
+    id = property (_get_id,_set_id)
+    dir = property (_get_dir,_set_dir)
+    frame = property (_get_frame,_set_frame)
+
+class DoorLinks (memmap, md5Array):
+    def _get_src (self):
+        return self[...,0]
+    def _set_src (self, v):
+        self[...,0] = v
+    def _get_dest (self):
+        return self[...,1]
+    def _set_dest (self, v):
+        self[...,1] = v
+    def _get_destmap (self):
+        return self[...,2]
+    def _set_destmap (self, v):
+        self[...,2] = v
+    def _get_tag1 (self):
+        return self[...,3]
+    def _set_tag1 (self, v):
+        self[...,3] = v
+    def _get_tag2 (self):
+        return self[...,4]
+    def _set_tag2 (self, v):
+        self[...,4] = v
+
+    src = property (_get_src,_set_src)
+    dest = property (_get_dest,_set_dest)
+    destmap = property (_get_destmap,_set_destmap)
+    tag1 = property (_get_tag1,_set_tag1)
+    tag2 = property (_get_tag2,_set_tag2)
+
+class DoorDefs (memmap, md5Array):
+    def _get_x (self):
+        return self[...,0]
+    def _set_x (self, v):
+        self[...,0] = v
+    def _get_y (self):
+        return self[...,1]
+    def _set_y (self, v):
+        self[...,1] = v
+    def _get_bitsets (self):
+        return self[...,2].astype('H')
+    def _set_bitsets (self, v):
+        self[...,2] = np.asarray(v).astype('H')
+
+    x = property (_get_x,_set_x)
+    y = property (_get_y,_set_y)
+    bitsets = property (_get_bitsets,_set_bitsets)
+
+### end planar hacks
 
 class PackedImageData (OhrData):
     def unpack (self, dest = None, shape = None, transpose = None):
@@ -124,8 +202,9 @@ def map_filename (path, prefix, type, n):
     return tmp
 
 class Map (object):
+    #XXX RPGDir-isms (raw filenames.)
     def __init__ (self, rpg, n):
-        self.rpg = proxy (rpg)
+        self.rpg = rpg # rpg always comes from MapManager, which means it is already a proxy
         #self.filename = map_filename (path, prefix, type, n)
         self.n = n
         fname = self.filename % 't'
@@ -148,9 +227,12 @@ class Map (object):
     def _read_header (self, filename):
         f = open (filename, 'rb')
         f.read(7)
-        result = struct.unpack ('H',f.read(4))
-        if (result[0] * result[1]) % (os.path.getsize (fname) - 11) > 0:
-            raise IOError ('map %d file size is not a multiple of W*H bytes' % self.n)
+        result = unpack ('2H',f.read(4))
+        if (os.path.getsize (filename) - 11) % (result[0] * result[1]) > 0:
+            raise IOError (('map %d file size is not a multiple of W*H+11 bytes' % self.n)+\
+                            ' (expected %d*N+11, got %d)' % (result[0]*result[1],
+                                                          os.path.getsize (filename) ))
+        return result
     def _get_tilemap (self):
         fname = self.filename % 't'
         w,h = self._read_header (fname)
@@ -167,22 +249,54 @@ class Map (object):
         fname = self.filename % 'e'
         w,h = self._read_header (fname)
         shape = (1, h, w)
-        return rpg.data (fname, offset = 11, dtype = 'B', shape = shape)
-
+        return self.rpg.data (fname, offset = 11, dtype = 'B', shape = shape)
+    def _get_zonemap (self):
+        raise NotImplementedError ('zonemaps')
     def _get_doors (self):
-        return rpg.data('dox', offset = 600*self.index)
+        return self.rpg.data ('dox',
+                              offset = 600*self.n,
+                              type = DoorDefs,
+                              shape = (100,3),
+                              dtype = INT,
+                              order = 'F',)
+    def _get_doorlinks (self):
+        return self.rpg.data (self.filename % 'd',
+                              offset = 7,
+                              dtype = INT,
+                              shape = (200, 5),
+                              type = DoorLinks,
+                              order = 'F')
+    def _get_npcdefs (self):
+        return self.rpg.data (self.filename % 'n',
+                              offset = 7,
+                              dtype = dt['n'],
+                              shape = (100,))
+    def _get_npclocs (self):
+        return self.rpg.data (self.filename % 'l',
+                         offset = 7,
+                         dtype = INT,
+                         shape = (300,5),
+                         order = 'F').view (type = NpcLocData)
     def _get_filename (self):
         return map_filename (self.rpg.path,
                              self.rpg.archinym.prefix,
                              '%s', self.n)
 
-    filename = property (_get_doors)
+    def __str__ (self):
+        fname = self.filename % 't'
+        w,h = self._read_header (fname)
+        layers = (os.path.getsize (fname) - 11) // (w*h)
+        return '<OHRRPGCE Map, %d layers, %03dx%03d>' % (layers, w, h)
+
+    filename = property (_get_filename)
     doors = property (_get_doors)
+    doorlinks = property (_get_doorlinks)
     tile = property (_get_tilemap)
     foe = property (_get_foemap)
     wall = property (_get_wallmap)
-    # XXX NPC def
-    # XXX NPC loc
+    zone = property (_get_zonemap)
+    npcdefs = property (_get_npcdefs)
+    npclocs = property (_get_npclocs)
 
 class MapManager (object):
     def __init__ (self, rpg):
@@ -195,13 +309,24 @@ class MapManager (object):
                              self.rpg.archinym.prefix,
                              't', k)
         return (tmp in self.rpg.manifest)
+    def _check_id (self, id):
+        if type(id) != int:
+            raise ValueError ('%r is not a valid map id'
+                              ' (not an integer)' % id)
+        if id not in self:
+            raise ValueError ('%r is not a valid map id'
+                              ' (references a map which doesn\'t exist)' % id)
+    def __getitem__ (self, k):
+        self._check_id (k)
+        if k not in self.refs:
+            tmp = Map (self.rpg,k)
+            self.refs[k] = tmp
+        else:
+            tmp = self.refs[k]
+        return tmp
+
     def __delitem__ (self, k):
-        if type(k) != int:
-            raise ValueError ('%r is not a valid map id'
-                              ' (not an integer)' % k)
-        if k not in self:
-            raise ValueError ('%r is not a valid map id'
-                              ' (references a map which doesn\'t exist)' % k)
+        self._check_id (k)
         raise NotImplementedError('delete map')
 
 class RPGHandler (object):
@@ -212,7 +337,7 @@ class RPGHandler (object):
         self.general = self.data ('gen')
         self.passcode = Passcode (self.general)
 
-class RPGFile (object):
+class RPGFile (RPGHandler):
     def __init__ (self, filename, mode):
         f = open (filename, 'rb')
         # mapping, step 1: Detect all lumps.
@@ -245,10 +370,13 @@ class RPGDir (RPGHandler):
         self.mode = mode
         self.path = path
         self.prepare()
+        self.maps = MapManager (self,)
 
-    def data (self, lump, n = None, dtype = None, offset = None, **kwargs):
+    def data (self, lump, n = None, dtype = None, offset = None, type = None, **kwargs):
         """Create a memmap pointing at a given kind of lump"""
         boffset, flags = self._lumpmetadata.get(lump, (0, 0))
+        if type == None:
+            type = OhrData
         if dtype == None:
             dtype = dt.get (lump, None)
         if offset == None:
@@ -270,10 +398,10 @@ class RPGDir (RPGHandler):
             if self.mmaps[filename].dtype == dtype:
                 return self.mmaps[filename]
             del self.mmaps[filename]
-            self.mmaps[filename] = OhrData (filename, mode = self.mode, dtype = dtype, offset = offset)
+            self.mmaps[filename] = type (filename, mode = self.mode, dtype = dtype, offset = offset, **kwargs)
             return self.mmaps[filename]
         else:
-            self.mmaps[filename] = OhrData (filename, mode = self.mode, dtype = dtype, offset = offset)
+            self.mmaps[filename] = type (filename, mode = self.mode, dtype = dtype, offset = offset, **kwargs)
             return self.mmaps[filename]
     def lump_path (self, lump, n = None):
         if n:

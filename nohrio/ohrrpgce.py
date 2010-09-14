@@ -132,13 +132,10 @@ def fvstr (maxlen):
 
 # some formats have all the x, then all the y, ..
 #
-# .. warning::
+# numpy doesn't support that.
+# although if the data is all of same type, then you can create a
+# memmap with Fortran ordering, then indexing the last dim might get what you want.
 #
-#     This function is obsolete!
-#     Using order = 'F' parameter to mmap
-#     allows planar on-disk format with completely
-#     reasonable indexing.
-#     Use the 'linear' variants of the dtype with order = 'F'.
 
 def planar_dtype (fieldnames, num, dtype, bload = False):
     dt = []

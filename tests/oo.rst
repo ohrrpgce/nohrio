@@ -227,8 +227,45 @@ the amount of lumps vary between RPG files.
 For these, we have an interface like this:
 
 >>> d = r.maps[0].doorlinks
+>>> d.md5()
+'680480359d22990aeea8634d800fe370'
 
-(data is lazily mapped, so the map #0 doorlinks will only be memmapped after I access them)
+>>> d[:18] #doctest:+NORMALIZE_WHITESPACE
+DoorLinks([[  0,  26,   1,   0,   0],
+       [  3,   2,   3,   0,   0],
+       [  5,   4,   3,   0,   0],
+       [  7,   6,   3,   0,   0],
+       [  9,   8,   3,   0,   0],
+       [ 11,  10,   3,   0,   0],
+       [ 13,   1,   4, -15,   0],
+       [ 14,   1,   4, -15,   0],
+       [ 13,   1,   5,  15,   0],
+       [ 14,   1,   5,  15,   0],
+       [ 16,   2,  33,   0,   0],
+       [ 18,   2,   8,   0,   0],
+       [ 20,   2,  18,   0,   0],
+       [  0,  26,   1,   0,   0],
+       [ 21,   1,   1,   0,   0],
+       [ -1,   0,   0,   0,   0],
+       [ -1,   0,   0,   0,   0],
+       [ -1,   0,   0,   0,   0]], dtype=int16)
+
+(data is lazily mapped, so the map #0 doorlinks
+are only memmapped after I access them)
+
+As you can see, there are only 15 door links used, out of the maximum 200,
+on map #0.
+
+>>> d = r.maps[0].doors
+>>> d[:4] #doctest:+NORMALIZE_WHITESPACE
+DoorDefs([[20, 31,  1],
+       [20, 33,  1],
+       [38, 27,  1],
+       [38, 26,  1]], dtype=int16)
+
+As you can see, it says [20, 31, 1] for the first door.
+Opening Custom, it is indeed the case that at 20,31 on map 0, there is a door
+(if there wasn't, the last number would be 0, indicating an unused slot.)
 
 
 Saving an image to PNG (requires PIL)
@@ -261,3 +298,5 @@ Here we create a RPGdir ready for writing..
 Flush the changes to disk
 
 >>> pt0.flush()
+
+
