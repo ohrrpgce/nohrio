@@ -257,15 +257,42 @@ As you can see, there are only 15 door links used, out of the maximum 200,
 on map #0.
 
 >>> d = r.maps[0].doors
+>>> d.md5()
+'4172386cc7a3fe4b949a98cae9509af5'
+
 >>> d[:4] #doctest:+NORMALIZE_WHITESPACE
 DoorDefs([[20, 31,  1],
        [20, 33,  1],
        [38, 27,  1],
        [38, 26,  1]], dtype=int16)
 
+
 As you can see, it says [20, 31, 1] for the first door.
 Opening Custom, it is indeed the case that at 20,31 on map 0, there is a door
 (if there wasn't, the last number would be 0, indicating an unused slot.)
+
+Don't do this to check if a door is used:
+
+>>> d[0].bitsets == 1
+DoorDefs(True, dtype=bool)
+
+
+That generally is not what you want.
+Rather, do this:
+
+>>> d.bitsets[0] == 1
+True
+
+
+
+Counting the doors used:
+
+Because only the first bitset in the bitset field
+is ever used, we can get a count of used doors via simply:
+
+>>> d.bitsets.sum()
+22
+
 
 
 Saving an image to PNG (requires PIL)
