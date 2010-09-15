@@ -70,7 +70,7 @@ so the memmap doesn't need to be initialized each time.
 Most things accessible via an RPG are some kind of OhrData.
 
 >>> type(pt0[1])
-<class 'nohrio.rpg2.OhrData'>
+<class 'nohrio.wrappers.OhrData'>
 
 X.shape[0] will typically tell you how many items (graphics, stores, etc)
 are in the lump.
@@ -89,7 +89,7 @@ NOHRIO won't detect the format, you can explicitly give the format:
 (reading just the raw data as a bytestring)
 >>> pt0 = r.data('pt0', dtype = ('B', 32*40*8/2))
 >>> type(pt0[1])
-<class 'nohrio.rpg2.OhrData'>
+<class 'nohrio.wrappers.OhrData'>
 
 >>> pt0[1].md5()
 'da0c94fd56a35d3d9bb1ebdd75baf302'
