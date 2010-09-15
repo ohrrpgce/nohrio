@@ -308,6 +308,31 @@ Now we'll save that set to png.
 #>>> palette = r.palettes
 
 
+Unlumping from an RPG file
+===========================
+
+Please note: before unlumping from a RPGFile, you should first check whether the user
+can provide the correct password, if applicable.
+
+This set of tests requires you to place a copy of or symlink to, testgame/test.rpg from the
+OHRRPGCE repository, into the tests/ directory.
+
+>>> r = RPG ('test.rpg')
+>>> gen = r.unlump ('test.gen')
+>>> gen # doctest:+ELLIPSIS
+'...test.gen'
+
+GEN lumps are always 1007 bytes (7 bload header, 1000 data)
+
+>>> import os
+>>> os.path.getsize (gen)
+1007L
+
+(the above test may fail if you are running too old (<2.6) version of Python.
+nohrio may still work under older versions of Python, but I make no guarantees - I'm focusing
+on supporting 2.6+ (and 3.x when possible))
+
+
 
 Creating a new RPG
 ==================

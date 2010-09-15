@@ -1,4 +1,5 @@
 import re
+import struct
 
 # lumpid is like this:
 # LUMPIDENTIFIER[SUBSCRIPT]

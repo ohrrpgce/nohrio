@@ -1,3 +1,8 @@
+"""OO RPGDir/RPGFile access.
+
+
+"""
+
 from numpy import memmap
 import numpy as np
 from nohrio.lump import read_lumpheader, lumpname_ok, Passcode
@@ -153,23 +158,68 @@ class RPGHandler (object):
         self.passcode = Passcode (self.general)
 
 class RPGFile (RPGHandler):
-    def __init__ (self, filename, mode):
+    def __init__ (self, filename, mode = 'r', unlumpto = None):
         f = open (filename, 'rb')
         # mapping, step 1: Detect all lumps.
+        self.filename = filename
         self._lump_map = {}
+        if unlumpto:
+            self.unlump_dir = unlumpto
+            self.rm_unlump_dir = False
+        else:
+            from tempfile import mkdtemp
+            from os.path import basename
+            self.unlump_dir = mkdtemp (os.path.basename (filename)) # XXX linux-ism
+            self.rm_unlump_dir = True
         filename = 'nothing'
         while filename:
             filename, offset, size = read_lumpheader (f)
             if filename:
-                if not self.lumpname_ok (filename):
+                if not lumpname_ok (filename):
                     raise IOError ('corrupted or non canonical lump name %r' % filename)
-                self._lump_map[filename] = (offset, size)
+                self._lump_map[filename.lower()] = (offset, size)
                 f.seek (offset + size)
+        f.close()
         # mapping, step 2: create corresponding objects for the lumps we know
         # Mapping, final step: catalogue all lumps we don't understand.
         # Init, step 1: read GEN
         # Init, step 2: decode password, creating Passcode object.
-        passcode = Passcode (self.general)
+        #passcode = Passcode (self.general)
+        # unlump
+    def __len__ (self):
+        return len (self._lump_map)
+    def unlump_all (self, dest = None):
+        ordered = self._lump_map.items
+        ordered.sort (key = lambda v:v[1][0])
+        #read them in order.
+        #yield after each lump, so that showing a progress bar is easy.
+        #
+        for lumpname, info in ordered:
+            yield
+            unlump (lumpname, dest)
+    def unlump (self, filename, dest = None):
+        "Unlump a lump, return its final filename with path."
+        filename = filename.lower()
+        if filename not in self._lump_map:
+            raise ValueError ('as for %r: not a known lump within this RPGFile' % filename)
+        offset, size = self._lump_map[filename]
+        if not dest:
+            dest = self.unlump_dir
+        dest = os.path.join (dest, filename)
+        out = open (dest, 'wb')
+        f = open (self.filename, 'rb')
+        f.seek (offset)
+        out.write (f.read (size))
+        f.close()
+        out.close()
+        return dest
+    def __del__ (self):
+        if self.rm_unlump_dir:
+            import glob
+            for fn in glob.glob (os.path.join (self.unlump_dir, '*')):
+                os.remove (fn)
+            os.rmdir (self.unlump_dir)
+
 
 class RPGDir (RPGHandler):
     def __init__ (self, path, mode):
