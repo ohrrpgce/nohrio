@@ -5,7 +5,7 @@
 
 from numpy import memmap
 import numpy as np
-from nohrio.lump import read_lumpheader, lumpname_ok, Passcode
+from nohrio.lump import read_lumpheader, lumpname_ok, Passcode, lump
 import os
 from nohrio.dtypes import GENERAL, dt
 from nohrio.ohrrpgce import archiNym, INT
@@ -150,6 +150,10 @@ class MapManager (object):
         raise NotImplementedError('delete map')
 
 class RPGHandler (object):
+    """Base class for RPG databases.
+
+    Enforces neutral case upon lump names, incidentally.
+    """
     _lumpmetadata = {
        'gen' : (7,0), # offset, flags
     }
@@ -158,8 +162,13 @@ class RPGHandler (object):
         self.passcode = Passcode (self.general)
 
 class RPGFile (RPGHandler):
-    def __init__ (self, filename, mode = 'r', unlumpto = None):
-        f = open (filename, 'rb')
+    """RPGFile reader/writer.
+
+    Can work on whole files, or file handles.
+    """
+    def __init__ (self, filename, mode = 'rb', unlumpto = None):
+        needs_close = False
+        f = open (filename, mode)
         # mapping, step 1: Detect all lumps.
         self.filename = filename
         self._lump_map = {}
@@ -169,34 +178,40 @@ class RPGFile (RPGHandler):
         else:
             from tempfile import mkdtemp
             from os.path import basename
-            self.unlump_dir = mkdtemp (os.path.basename (filename)) # XXX linux-ism
+            if filename:
+                self.unlump_dir = mkdtemp (os.path.basename (filename))
+            else:
+                self.unlump_dir = mkdtemp ()
             self.rm_unlump_dir = True
         filename = 'nothing'
+        self.manifest = []
         while filename:
             filename, offset, size = read_lumpheader (f)
             if filename:
                 if not lumpname_ok (filename):
                     raise IOError ('corrupted or non canonical lump name %r' % filename)
                 self._lump_map[filename.lower()] = (offset, size)
+                self.manifest.append (filename.lower())
                 f.seek (offset + size)
-        f.close()
         # mapping, step 2: create corresponding objects for the lumps we know
         # Mapping, final step: catalogue all lumps we don't understand.
         # Init, step 1: read GEN
         # Init, step 2: decode password, creating Passcode object.
         #passcode = Passcode (self.general)
         # unlump
+        if needs_close:
+            f.close()
     def __len__ (self):
         return len (self._lump_map)
     def unlump_all (self, dest = None):
-        ordered = self._lump_map.items
+        ordered = self._lump_map.keys()
         ordered.sort (key = lambda v:v[1][0])
         #read them in order.
         #yield after each lump, so that showing a progress bar is easy.
         #
-        for lumpname, info in ordered:
-            yield
-            unlump (lumpname, dest)
+        for lumpname in ordered:
+            yield dest or self.unlump_dir
+            self.unlump (lumpname, dest)
     def unlump (self, filename, dest = None):
         "Unlump a lump, return its final filename with path."
         filename = filename.lower()
@@ -236,7 +251,29 @@ class RPGDir (RPGHandler):
         self.path = path
         self.prepare()
         self.maps = MapManager (self,)
-
+    def lump_all (self, dest):
+        tmp = list (self.manifest)
+        tmp.sort()
+        genname = os.path.join (self.path, self.archinym.prefix + '.gen')
+        archname = os.path.join (self.path, 'archinym.lmp')
+        if genname not in tmp:
+            raise IOError ('Missing .GEN lump from %s' % self.path)
+        tmp.remove (genname)
+        tmp.remove (archname)
+        tmp.insert (0, genname) # GEN second-from-front
+        tmp.insert (0, archname) # ARCHINYM.LMP at front.
+        needs_close = False
+        if type (dest) in (str, unicode):
+            if os.path.exists (dest):
+                raise OSError ('Refusing to lump a RPG over the top of an existing file')
+            dest = open (dest, 'wb')
+            needs_close = True
+        for item in tmp:
+            lump (item, dest)
+        if needs_close:
+            dest.close()
+    def lump (self, which, dest):
+        lump (which, dest)
     def data (self, lump, n = None, dtype = None, offset = None, type = None, **kwargs):
         """Create a memmap pointing at a given kind of lump"""
         boffset, flags = self._lumpmetadata.get(lump, (0, 0))
@@ -303,3 +340,55 @@ def RPG (filename, mode = 'r', base = None, dir = False):
         return RPGFile (filename, mode)
     elif 'w' in mode:
         raise NotImplementedError('foo')
+
+def create (dest, prefix, template = None,
+            version = 'nohrio???', dir = False):
+    """Create a new RPG file or dir, possibly from a template.
+    ARCHINYM.LMP info will be rewritten.
+
+    Returns the path to the new rpgfile or rpgdir.
+    """
+    import glob
+    if len (prefix) > (50-4):
+        raise ValueError ('lump prefix too long')
+    if os.path.exists (dest):
+        raise OSError ('Refusing to create a RPG over the top of an existing file/dir')
+    tmpfile = None
+    filename = None
+    if not template:
+        import _newrpg
+        from tempfile import mkstemp
+        from cStringIO import StringIO as SIO
+        data = _newrpg.gunzip ()
+        tmpfile = mkstemp (prefix)[1]
+        f = open (tmpfile,'wb')
+        f.write (data); f.close()
+        filename = tmpfile
+    else:
+        filename = template
+    rpg = RPGFile (filename, 'rb')
+    tempdir = list (rpg.unlump_all ())[0]
+    if tmpfile:
+        os.remove (tmpfile)
+    lmppath = os.path.join (tempdir,'archinym.lmp')
+    from ohrrpgce import archiNym
+    # archiNym implicitly writes a new file, when opened on a
+    # nonexistent path.  This is weird behaviour and I hope
+    # to remedy it.
+    a = archiNym (lmppath, 0, prefix, version)
+    #now rename all relevant lumps to match.
+    for filename in glob.glob (os.path.join (tempdir,'*')):
+        if os.path.basename (filename).startswith('ohrrpgce.'):
+            parts = os.path.split (filename)
+            newfilename = parts[-1].replace('ohrrpgce.', prefix + '.')
+            newfilename = os.path.join (parts[0], newfilename)
+            os.rename (filename, newfilename)
+    if not dir:
+        rpgdir = RPGDir (tempdir, 'r')
+        rpgdir.lump_all (dest)
+        return dest
+    else:
+        #XXX this will fail if the move is over filesystem boundaries IIRC
+        os.rename (tempdir, dest)
+        return dest
+

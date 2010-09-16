@@ -23,7 +23,7 @@ def unpack_lumpid (lumpid):
 
 def read_lumpheader (file):
     characters = ['']
-    while len(characters) < 14 and characters[-1] != '\x00':
+    while len(characters) < 50 and characters[-1] != '\x00':
         characters.append (file.read (1))
         if characters[-1] == '':
             if len (characters) != 2:
@@ -36,6 +36,45 @@ def read_lumpheader (file):
                                              size[0], size[1]))[0]
     return filename, file.tell(), size
 
+
+def write_lumpheader (srcpath, file):
+    """
+
+    >>> f = open ('/tmp/testlmp','wb')
+    >>> s = 'LUMP DATA!!!!!!!'
+    >>> f.write ('LUMP DATA!!!!!!!')
+    >>> f.close ()
+    >>> from cStringIO import StringIO as SIO
+    >>> f = SIO()
+    >>> write_lumpheader (f, '/tmp/testlmp')
+    >>> f = SIO (f.getvalue())
+    >>> name, offset, size = read_lumpheader (f)
+    >>> name == 'testlmp'
+    True
+
+    >>> size == len(s)
+    True
+    """
+    import os
+    base = os.path.basename(srcpath)
+    size = os.path.getsize (srcpath)
+    if len (base) > 50:
+        raise ValueError ('excessively long lump name %r' % base)
+    if '\x00' in base:
+        raise ValueError ('invalid NULs in lump name %r' % base)
+    file.write(base)
+    file.write('\x00')
+    for v in ((size >> 16) & 0xff, (size >> 24) & 0xff  ,size & 0xff, (size >> 8) & 0xff):
+        file.write(chr(v))
+
+def lump (srcpath, file):
+    import os
+    if not os.path.exists (srcpath):
+        raise ValueError ('Can\'t lump from a nonexistent source %r!' % srcpath)
+    write_lumpheader (srcpath, file)
+    f = open (srcpath, 'rb')
+    file.write (f.read())
+    f.close()
 
 def guess_lump_prefix (lumplist):
     """Given a list of lump names, without path, guess the lump-prefix."""

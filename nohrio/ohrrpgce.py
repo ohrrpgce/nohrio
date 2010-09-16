@@ -427,10 +427,13 @@ class fixBits (object):
 #
 
 class archiNym (object):
-    def __init__ (self, file, offset = 0, **args):
+    def __init__ (self, file, offset = 0, *args):
         mode = 'rb+'
         if offset > 0:
             mode = 'rb'
+        if type (file) in (str, unicode):
+            if not os.path.exists (file):
+                mode = 'wb'
         self.file = filename_or_handle (file, mode)
         self.origin = offset
         if offset:
@@ -446,7 +449,7 @@ class archiNym (object):
     def __setitem__ (self, k, v):
         assert (-1 < k < 2)
         everything = [self[0], self[1]]
-        self.file.seek (self)
+        self.file.seek (0)
         everything [k] = v
         for value in everything:
             self.file.write (value + '\x0d\x0a')

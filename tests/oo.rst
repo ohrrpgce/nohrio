@@ -30,7 +30,7 @@ I added that mainly to help with this testing, really  -- you don't really want 
 what all that data looks like, only that it's the same data you were expecting.
 
 >>> r.general.md5()
-'8afd584cdd1f22caf655a9093862e4af'
+'2152290934ff0aa77baac8caf9457ab2'
 
 You can also lookup the dtype and itemsize easily (this is a feature inherited from the
 NumPy implementation of arrays)
@@ -337,9 +337,15 @@ on supporting 2.6+ (and 3.x when possible))
 Creating a new RPG
 ==================
 
-If an appropriate OHRRPGCE.NEW is around, nohrio can use it to create a new RPG file/dir.
+We can create new RPG files/dirs even without any OHRRPGCE.NEW around.
+We have to tell it where to write to, and what prefix to use
+(Yes, it's possible to have rpg files with prefix != filename base.
+Don't do that, it's evil. Perhaps I'll remove that possibility later.)
 
->>> RPG ('/tmp/new.rpg', mode = 'w', base = 'ohrrpgce.new', dir = True)
+>>> from nohrio.rpg2 import create
+>>> pathtorpg = create ('/tmp/test.rpg','test')
+>>> rpg = RPG (pathtorpg, mode = 'r')
+>>> rpg.manifest
 
 Here we create a RPGdir ready for writing..
 
