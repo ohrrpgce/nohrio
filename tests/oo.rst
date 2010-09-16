@@ -357,4 +357,5 @@ Flush the changes to disk
 
 >>> pt0.flush()
 
-
+>>> import os
+>>> os.remove ('/tmp/test.rpg')

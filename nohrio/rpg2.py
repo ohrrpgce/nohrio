@@ -163,12 +163,15 @@ class RPGHandler (object):
 
 class RPGFile (RPGHandler):
     """RPGFile reader/writer.
-
-    Can work on whole files, or file handles.
     """
-    def __init__ (self, filename, mode = 'rb', unlumpto = None):
+    def __init__ (self, filename, mode = 'r', unlumpto = None):
         needs_close = False
-        f = open (filename, mode)
+        openmode = mode
+        if 'b' not in mode:
+            openmode += 'b'
+        else:
+            raise ValueError ('mode must not contain "b" (see numpy.memmap docs)')
+        f = open (filename, openmode)
         # mapping, step 1: Detect all lumps.
         self.filename = filename
         self._lump_map = {}
@@ -193,6 +196,7 @@ class RPGFile (RPGHandler):
                 self._lump_map[filename.lower()] = (offset, size)
                 self.manifest.append (filename.lower())
                 f.seek (offset + size)
+        self.mode = mode
         # mapping, step 2: create corresponding objects for the lumps we know
         # Mapping, final step: catalogue all lumps we don't understand.
         # Init, step 1: read GEN
@@ -242,7 +246,8 @@ class RPGDir (RPGHandler):
         filenames = glob.glob (os.path.join (path,'*') )
         # classify filenames into old-style: WANDER.XYZ
         # and new style: XYZ.ABC
-
+        if 'b' in mode:
+            raise ValueError ('mode must not contain "b" (see numpy.memmap docs)')
         self.archinym = archiNym ([v for v in filenames if v.endswith('archinym.lmp')][0])
         self.manifest = filenames
         from weakref import WeakValueDictionary
@@ -366,7 +371,7 @@ def create (dest, prefix, template = None,
         filename = tmpfile
     else:
         filename = template
-    rpg = RPGFile (filename, 'rb')
+    rpg = RPGFile (filename, 'r')
     tempdir = list (rpg.unlump_all ())[0]
     if tmpfile:
         os.remove (tmpfile)
@@ -383,6 +388,8 @@ def create (dest, prefix, template = None,
             newfilename = parts[-1].replace('ohrrpgce.', prefix + '.')
             newfilename = os.path.join (parts[0], newfilename)
             os.rename (filename, newfilename)
+    # XXX we need to check that all source lumps are arriving safely!
+    # since we generate a file 10k smaller currently..
     if not dir:
         rpgdir = RPGDir (tempdir, 'r')
         rpgdir.lump_all (dest)
