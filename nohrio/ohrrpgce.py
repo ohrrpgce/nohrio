@@ -594,7 +594,7 @@ dtypes = {
                           instead_chain = _attack_chain_info),
 
     'binsize.bin' : make ('attack stf songdata sfxdata map',
-                          'menu menuitem uicolor say'),
+                          'menu menuitem uicolor say npcdef'),
     'browse.txt' : np.dtype ([('longname', _browse_base_dtype),
                               ('about', _browse_base_dtype)]),
     'defpass.bin' : np.dtype ([('passability', (INT, 160)), ('magic', INT)]),
