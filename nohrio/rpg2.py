@@ -52,6 +52,8 @@ class Map (object):
             raise IOError (('map %d file size is not a multiple of W*H+11 bytes' % self.n)+\
                             ' (expected %d*N+11, got %d)' % (result[0]*result[1],
                                                           os.path.getsize (filename) ))
+        if result[0] < 16 or result[1] < 10:
+            raise ValueError ('Map size %dx%d is too small! (minimum 16x10)' % result)
         return result
     def _get_tilemap (self):
         fname = self.filename % 't'
@@ -101,14 +103,25 @@ class Map (object):
         return map_filename (self.rpg.path,
                              self.rpg.archinym.prefix,
                              '%s', self.n)
+    def _get_name (self):
+        tmp = self.rpg.data('mn')[self.n]
+        tmp = list (tmp)
+        return tmp[1][:tmp[0]]
+    def _set_name (self):
+        tmp = self.rpg.data('mn')[self.n]
+        if len (v) > 79:
+            raise ValueError ('map name %s exceeds 79 characters in length' % v)
+        tmp['length'] = len (v)
+        tmp['value'] = v
 
     def __str__ (self):
         fname = self.filename % 't'
         w,h = self._read_header (fname)
         layers = (os.path.getsize (fname) - 11) // (w*h)
-        return '<OHRRPGCE Map, %d layers, %03dx%03d>' % (layers, w, h)
+        return '<OHRRPGCE Map %r, %d layers, %03dx%03d>' % (self.name, layers, w, h)
 
     filename = property (_get_filename)
+    name = property (_get_name, _set_name)
     doors = property (_get_doors)
     doorlinks = property (_get_doorlinks)
     tile = property (_get_tilemap)
@@ -117,6 +130,7 @@ class Map (object):
     zone = property (_get_zonemap)
     npcdefs = property (_get_npcdefs)
     npclocs = property (_get_npclocs)
+
 
 class MapManager (object):
     def __init__ (self, rpg):
@@ -159,7 +173,21 @@ class RPGHandler (object):
     }
     def prepare (self):
         self.general = self.data ('gen')
+        dtype = dt['binsize.bin'].descr
+        size = self.lump_size (self.lump_path('binsize.bin'))
+        if len (dtype) * 2 > size:
+            while len (dtype) * 2 > size:
+                dtype.pop (-1)
+        elif len (dtype) * 2 < size:
+            dtype.append (('unknown',INT, (size - (len (dtype) * 2))/2))
+        self.binsize = self.data (self.lump_path('binsize.bin'),
+                                  dtype = np.dtype (dtype))
         self.passcode = Passcode (self.general)
+    def rename (self, newname):
+        """Rename the rpg file/dir, adjusting the lumps and ARCHINYM.LMP
+        accordingly.
+        """
+        raise NotImplementedError()
 
 class RPGFile (RPGHandler):
     """RPGFile reader/writer.
@@ -237,7 +265,10 @@ class RPGFile (RPGHandler):
             import glob
             for fn in glob.glob (os.path.join (self.unlump_dir, '*')):
                 os.remove (fn)
-            os.rmdir (self.unlump_dir)
+            try:
+                os.rmdir (self.unlump_dir)
+            except OSError:
+                pass
 
 
 class RPGDir (RPGHandler):
@@ -319,6 +350,8 @@ class RPGDir (RPGHandler):
             filename = os.path.join (self.path, lump)
         if filename in self.manifest:
             return filename
+    def lump_size (self, lump):
+        return os.path.getsize (lump)
 
     def __getitem__ (self, k):
         n= None
