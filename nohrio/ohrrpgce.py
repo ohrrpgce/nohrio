@@ -681,8 +681,10 @@ dtypes = {
                   'harmtile_flash foot_offset afterbattle_trigger',
                   'insteadofbattle_trigger each_step_trigger keypress_trigger draw_herosfirst',
                   'npcanddoor_loading tileandwall_loading bitsets savoffset layer_tilesets',
-                  'n_npc_instances', savoffset = xycoord_dtype, bitsets = ('B', 2),
-                  layer_tilesets = (INT, 3)),
+                  'n_npc_instances layer_tilesets2 n_below_layers', savoffset = xycoord_dtype,
+                  bitsets = ('B', 2),
+                  layer_tilesets = (INT, 3),
+                  layer_tilesets2 = (INT, 5)),
 
 # .. _mxs:
 #

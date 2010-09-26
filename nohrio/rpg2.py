@@ -113,6 +113,9 @@ class Map (object):
             raise ValueError ('map name %s exceeds 79 characters in length' % v)
         tmp['length'] = len (v)
         tmp['value'] = v
+    def _get_info (self):
+        #XXX use binsize
+        return (self.rpg.data ('map')[self.n]).view(OhrData)
 
     def __str__ (self):
         fname = self.filename % 't'
@@ -122,6 +125,7 @@ class Map (object):
 
     filename = property (_get_filename)
     name = property (_get_name, _set_name)
+    info = property (_get_info)
     doors = property (_get_doors)
     doorlinks = property (_get_doorlinks)
     tile = property (_get_tilemap)
@@ -180,15 +184,29 @@ class RPGHandler (object):
                 dtype.pop (-1)
         elif len (dtype) * 2 < size:
             dtype.append (('unknown',INT, (size - (len (dtype) * 2))/2))
+        self.passcode = Passcode (self.general)
         self.binsize = self.data (self.lump_path('binsize.bin'),
                                   dtype = np.dtype (dtype))
-        self.passcode = Passcode (self.general)
+        #XXX fixbits
     def rename (self, newname):
         """Rename the rpg file/dir, adjusting the lumps and ARCHINYM.LMP
         accordingly.
         """
         raise NotImplementedError()
+    def _pal16 (self):
+        # XXX assuming new non-bload format
+        return self.data ('.pal', offset = 16)
+    def _pal256 (self):
+        # XXX assuming new non-MAS format
+        if self.has_lump ('palettes.bin')
+            return self.data (self.lump_path ('palettes.bin'),
+                              dtype = [('r', np.uint8),
+                                       ('g', np.uint8),
+                                       ('b', np.uint8)],
+                              offset = 4))
 
+    pal16 = property (_pal16)
+    pal256 = property (_pal256)
 class RPGFile (RPGHandler):
     """RPGFile reader/writer.
     """

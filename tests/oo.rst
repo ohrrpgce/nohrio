@@ -230,6 +230,13 @@ For these, we have an interface like this:
 >>> d.md5()
 '680480359d22990aeea8634d800fe370'
 
+>>> r.maps[0].name
+'Mannheim'
+
+>>> for field in r.maps[0].info.dtype.names:
+...     print ('%s : %r' % (field,r.maps[0].info[field]))
+
+
 >>> d[:18] #doctest:+NORMALIZE_WHITESPACE
 DoorLinks([[  0,  26,   1,   0,   0],
        [  3,   2,   3,   0,   0],
@@ -343,9 +350,9 @@ We have to tell it where to write to, and what prefix to use
 Don't do that, it's evil. Perhaps I'll remove that possibility later.)
 
 >>> from nohrio.rpg2 import create
->>> pathtorpg = create ('/tmp/test.rpg','test')
+>>> pathtorpg = create ('/tmp/test.rpg','test', dir = True)
 >>> rpg = RPG (pathtorpg, mode = 'r')
->>> rpg.manifest
+>>> len (rpg.manifest)
 
 Here we create a RPGdir ready for writing..
 
@@ -358,4 +365,7 @@ Flush the changes to disk
 >>> pt0.flush()
 
 >>> import os
->>> os.remove ('/tmp/test.rpg')
+>>> import glob
+>>> for v in glob.glob ('/tmp/test.rpg/*'):
+...     os.remove (v)
+>>> os.rmdir ('/tmp/test.rpg')

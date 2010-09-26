@@ -101,3 +101,7 @@ def unpack_4bpp_array (array, transpose = True):
         return np.swapaxes(unpacked, -1,-2)
     return unpacked
 
+def palette_rgb (rpg, palette, maspal = 0):
+    "Convert a 16-color palette array (probably of shape 16) into rgb values"
+    return rpg.master_palette[maspal].take (palette)
+

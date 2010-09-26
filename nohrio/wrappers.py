@@ -28,6 +28,9 @@ class OhrData (memmap, md5Array):
         return (dt and k in dt)
     def fields (self):
         return self.dtype.names()
+#    def __array_finalize__ (self, obj):
+#        if hasattr (obj, '__dict__'):
+#            self.__dict__.update (obj.__dict__)
 
 class AttackData(object):
     # virtualization of the awkward attack data format,
