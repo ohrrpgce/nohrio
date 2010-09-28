@@ -66,14 +66,21 @@ BITSETS:
       - [no_onclose, Don't run on-close script]
 ENUMERATIONS:
    ETAGCHECK: &ETAGCHECK
+      dtype : *SHORT
+      N>=0 : [tag$(N)_on, Tag $N == ON]
+      N<0 : [tag$(N)_off, Tag $N == OFF]
+   ETAGSET: &ETAGSET
+      dtype : *SHORT
       N>=0 : [tag$(N)_on, Tag $N = ON]
       N<0 : [tag$(N)_off, Tag $N = OFF]
    EHERO_SPELLLIST : &EHERO_SPELLLIST
+      dtype : *SHORT
       0 : [spells_mp, Spells (MP Based)]
       1 : [spells_levelmp, Spells (FF1 Style)]
       2 : [random, Random Effects]
       3 : [item, Item Consuming]
    ENPC_MOVETYPE : &ENPC_MOVETYPE
+      dtype : *SHORT
       0 : [standstill, Stand Still]
       1 : [    wander, Wander]
       2 : [      pace, Pace]
@@ -84,6 +91,7 @@ ENUMERATIONS:
       7 : [     avoid, Avoid You]
       8 : [   inplace, Walk In Place]
    ENPC_SPEED : &ENPC_SPEED
+      dtype : *SHORT
       0 : [0, '0']
       1 : [1, '1']
       2 : [2, '2']
@@ -91,10 +99,12 @@ ENUMERATIONS:
       4 : [4, '4']
       5 : [5, '5']
    ENPC_ACTIVATED : &ENPC_ACTIVATED
+      dtype : *SHORT
       0 : [     changedir, Change Direction]
       1 : [    faceplayer, Face Player]
       2 : [dontfaceplayer, Do Not Face Player]
    ENPC_PUSHABILITY : &ENPC_PUSHABILITY
+      dtype : *SHORT
       0 : [       off, 'Off']
       1 : [      full, Full]
       2 : [horizontal, Horizontal]
@@ -104,13 +114,40 @@ ENUMERATIONS:
       6 : [      down, Down Only]
       7 : [      left, Left Only]
    ENPC_ACTIVATION : &ENPC_ACTIVATION
+      dtype : *SHORT
       0 : [   use, Use]
       1 : [ touch, Touch]
       2 : [stepon, Step On]
    ETEXTBOX_BOXORSCRIPT : &ETEXTBOX_BOXORSCRIPT
+      dtype : *SHORT
       N>=0 : [textbox$N, Textbox $N]
       -16384<N<0 : [script$(-N), Run script $(-N)]
       N<-16384 : [trigger$(N+16384), Trigger $(N+16384)]
+   ESHOPORINN : &ESHOPORINN
+      dtype : *SHORT
+      0 : [restore, Restore HP/MP]
+      N>0 : [shop$N, Enter Shop $N]
+      N<0 : [inn$N, Enter Inn Costing $(rpg.strings.money)$N]
+   EADDHERO : &EADDHERO
+      dtype : *SHORT
+      0: [nothing, Do Not Add/Remove Heros]
+      N>0 : [add$N, Add Hero $N To The Party]
+      N<0 : [remove$N, Remove Hero $N From The Party]
+   EADDITEM : &EADDITEM
+      dtype : *SHORT
+      0: [nothing, Do Not Add/Remove Items]
+      N>0 : [add$N, Add Item $N To Inventory]
+      N<0 : [remove$N, Remove Item $N From Inventory]
+   ESWAPHERO : &ESWAPHERO
+      dtype : *SHORT
+      0: [nothing, Do Not Swap In/Out Heros]
+      N>0 : [add$N, Swap Hero $N In]
+      N<0 : [remove$N, Swap Hero $N Out]
+    ELOCKHERO : &ELOCKHERO
+      dtype : *SHORT
+      0: [nothing, Do Not Lock/Unlock Heros]
+      N>0 : [add$N, Unlock Hero $N]
+      N<0 : [remove$N, Lock Hero $N]
 ##
 #
 ## #
@@ -132,7 +169,7 @@ attack.bin:
 binsize.bin:
    attrname : binsize
    flags : BASE
-   expected_size : % 2
+   expected_size : '% 2'
 d:
    owner : Map
    attrname : doorlinks
@@ -145,7 +182,9 @@ d:
 dox:
    owner : Map
    attrname : doors
-   fields : [x y bitsets, {RANGE: *SHORTR}]
+   fields :
+            - x y bitsets
+            - RANGE: *SHORTR
    shape: 100
    planar : true
    index: [$owner.n]
@@ -157,14 +196,83 @@ gen:
    REQUIRED : true
 lookup%d.bin:
    attrname : triggers
-   fields : [id name,
-             id : *SHORT
-             name: [str16_8, 36]]
+   fields :
+            - id name
+            - id : *SHORT
+              name: [str16_8, 36]
 menuitem.bin:
    owner : RPG
    attrname : menuitem
-   fields : [membership caption sort_order type subtype tagcond1 tagcond2 settag toggletag bitsets extra,
-             extra : [*SHORT, 3]
-             caption : [str16_8, 38]
-             bitsets : [bitsets, [16, *BMENUITEM]]
-             ]
+   fields :
+            - membership caption sort_order type subtype tagcond1
+              tagcond2 settag toggletag bitsets extra,
+            - extra : [*SHORT, 3]
+              caption : [str16_8, 38]
+              bitsets : [bitsets, [16, *BMENUITEM]]
+say:
+   owner : RPG
+   attrname : textbox
+   fields :
+            - text reserved1 conditional reserved2 choicebitsets
+              choice1 wasted choice2 menuconditional verticalpos
+              shrink textcolor bordercolor backdrop music menu
+              portraittype portraitpic portraitpal portraitx portraity
+            - text : [S38, 8]
+              reserved1 : uint8
+              conditional :
+                 - fields :
+                     - jumpto_instead settag fight inn hero1
+                       jumpto_after money usedoor item hero2
+                     - jumpto_instead:
+                          fields:
+                             - tagcheck param
+                             - tagcheck : *ETAGCHECK
+                               param : *ETEXTBOX_BOXORSCRIPT
+                     - settag:
+                          fields:
+                             - tagcheck tagsets
+                             - tagcheck : *ETAGCHECK
+                               tagsets  : [*ETAGSET, 2]
+                     - formation:
+                          fields:
+                             - tagcheck formation
+                             - tagcheck  : *ETAGCHECK
+                               formation : *SHORT
+                     - inn:
+                          fields:
+                             - tagcheck param
+                             - tagcheck  : *ETAGCHECK
+                               param : *ESHOPORINN
+                     # XXX hero swap/un/lock FUBARness
+                     - hero1:
+                          fields:
+                             - tagcheck add
+                             - tagcheck  : *ETAGCHECK
+                               add : *EADDHERO
+                     - jumpto_after:
+                          fields:
+                             - tagcheck param
+                             - tagcheck : *ETAGCHECK
+                               param : *ETEXTBOX_BOXORSCRIPT
+                     - money:
+                          fields:
+                             - tagcheck amount
+                             - tagcheck : *ETAGCHECK
+                               amount : *SHORT
+                     - usedoor:
+                          fields:
+                             - tagcheck door
+                             - tagcheck : *ETAGCHECK
+                               amount : *SHORT
+                     - item:
+                          fields:
+                             - tagcheck item
+                             - tagcheck : *ETAGCHECK
+                               amount : *EADDITEM
+                     - hero2:
+                          fields:
+                             - swap lock
+                             - swap : *ESWAPHERO
+                               lock : *ELOCKHERO
+              reserved2 : uint8
+              #XXX continue here
