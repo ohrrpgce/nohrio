@@ -198,12 +198,12 @@ class RPGHandler (object):
         return self.data ('.pal', offset = 16)
     def _pal256 (self):
         # XXX assuming new non-MAS format
-        if self.has_lump ('palettes.bin')
+        if self.has_lump ('palettes.bin'):
             return self.data (self.lump_path ('palettes.bin'),
                               dtype = [('r', np.uint8),
                                        ('g', np.uint8),
                                        ('b', np.uint8)],
-                              offset = 4))
+                              offset = 4)
 
     pal16 = property (_pal16)
     pal256 = property (_pal256)
