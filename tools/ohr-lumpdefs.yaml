@@ -36,6 +36,84 @@ STATS0_99:
 ##
 #
 ## #
+##########  Bitsets, enumerations and related weird variants
+## #
+#
+##
+
+BITSETS:
+   BFIXBITS: &BFIXBITS
+      # 0
+      - [attack_items, Zeroed out item cost (ammunition) data in ATTACK.BIN]
+      - [weapon_points, Fixed hero hand positions in DT0]
+      - [stun_cancel_targ, Turned on "Cancel Target's Attack" bit in ATTACK.BIN for old attacks that damage the Stun register]
+      - [default_dissolve, Initialized genEnemyDissolve to default in GEN]
+      - [default_dissolve_enemy, Initialized Enemy dissolves to default in DT1]
+      - [pushnpc_bugcompat, Turned on the Simulate pushable NPC obstruction bug bitset]
+      - [default_maxitem, Stored default max item number from ITM in GEN]
+      - [blank_doorlinks, Marked redundant blank doorlinks as unused]
+      # 8
+      - [shop_sounds, Initialized all the sound effects from gen.itemlearnsfx to gen.cantsellsfx (to one of gen.acceptsfx or gen.cancelsfx))]
+      - [extended_npcs, Initialized all blank NPC data in the empty space at the end of .N## lumps]
+      - [hero_portrait, Initialized Hero portrait data]
+      - [textbox_portrait, Initialized text box portrait data]
+      - [npclocation_format, Converted NPC locations to new format (FIXME: not implemented yet)]
+      - [init_damagedisplay, Initialize default values for damage display time and distance in GEN]
+      # 14
+   BMENUITEM: &BMENUITEM
+      - [hide_when_disabled, Hide when disabled]
+      - [close_menu, Close menu when selected]
+      - [no_onclose, Don't run on-close script]
+ENUMERATIONS:
+   ETAGCHECK: &ETAGCHECK
+      N>=0 : [tag$(N)_on, Tag $N = ON]
+      N<0 : [tag$(N)_off, Tag $N = OFF]
+   EHERO_SPELLLIST : &EHERO_SPELLLIST
+      0 : [spells_mp, Spells (MP Based)]
+      1 : [spells_levelmp, Spells (FF1 Style)]
+      2 : [random, Random Effects]
+      3 : [item, Item Consuming]
+   ENPC_MOVETYPE : &ENPC_MOVETYPE
+      0 : [standstill, Stand Still]
+      1 : [    wander, Wander]
+      2 : [      pace, Pace]
+      3 : [ rightturn, Right Turns]
+      4 : [  leftturn, Left Turns]
+      5 : [randomturn, Random Turns]
+      6 : [     chase, Chase You]
+      7 : [     avoid, Avoid You]
+      8 : [   inplace, Walk In Place]
+   ENPC_SPEED : &ENPC_SPEED
+      0 : [0, '0']
+      1 : [1, '1']
+      2 : [2, '2']
+      3 : [10, '3']
+      4 : [4, '4']
+      5 : [5, '5']
+   ENPC_ACTIVATED : &ENPC_ACTIVATED
+      0 : [     changedir, Change Direction]
+      1 : [    faceplayer, Face Player]
+      2 : [dontfaceplayer, Do Not Face Player]
+   ENPC_PUSHABILITY : &ENPC_PUSHABILITY
+      0 : [       off, 'Off']
+      1 : [      full, Full]
+      2 : [horizontal, Horizontal]
+      3 : [  vertical, Vertical]
+      4 : [        up, Up Only]
+      5 : [     right, Right Only]
+      6 : [      down, Down Only]
+      7 : [      left, Left Only]
+   ENPC_ACTIVATION : &ENPC_ACTIVATION
+      0 : [   use, Use]
+      1 : [ touch, Touch]
+      2 : [stepon, Step On]
+   ETEXTBOX_BOXORSCRIPT : &ETEXTBOX_BOXORSCRIPT
+      N>=0 : [textbox$N, Textbox $N]
+      -16384<N<0 : [script$(-N), Run script $(-N)]
+      N<-16384 : [trigger$(N+16384), Trigger $(N+16384)]
+##
+#
+## #
 ##########  Actual lump definitions
 ## #
 #
@@ -54,6 +132,7 @@ attack.bin:
 binsize.bin:
    attrname : binsize
    flags : BASE
+   expected_size : % 2
 d:
    owner : Map
    attrname : doorlinks
@@ -76,3 +155,16 @@ gen:
    attrname : general
    LOADPRIORITY : 2
    REQUIRED : true
+lookup%d.bin:
+   attrname : triggers
+   fields : [id name,
+             id : *SHORT
+             name: [str16_8, 36]]
+menuitem.bin:
+   owner : RPG
+   attrname : menuitem
+   fields : [membership caption sort_order type subtype tagcond1 tagcond2 settag toggletag bitsets extra,
+             extra : [*SHORT, 3]
+             caption : [str16_8, 38]
+             bitsets : [bitsets, [16, *BMENUITEM]]
+             ]
