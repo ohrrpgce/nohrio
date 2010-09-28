@@ -1,0 +1,78 @@
+# predefinition of data structures here
+---
+SHORT: &SHORT int16
+USHORT : &USHORT uint16
+UBYTE : &UBYTE uint8
+B6R : &B6R [0, 63]
+B8R : &B8R [0, 255]
+SHORTR : &SHORTR [-32768, 32767]
+USHORTR : &USHORTR [0, 65535]
+TEXTLINE : &TEXTLINE "%s\n"
+
+RGB6:
+   fields: [r g b, {RANGE : *B6R}]
+   ALLDTYPE: *UBYTE
+
+RGB8:
+   fields : [r g b, {RANGE : *B8R}]
+   ALLDTYPE: *UBYTE
+
+RGB8W:
+   flags : WASTEDHALF # Only one byte of a N-byte dtype is actually used
+   fields : [r g b, {RANGE : *B8R}]
+   ALLDTYPE: *USHORT
+
+XYCOORD:
+   fields : [x y, {RANGE : *SHORTR}]
+   ALLDTYPE: *SHORT
+
+STATS:
+   fields : [hp mp str acc def dog mag wil spd ctr foc xhits, {RANGE: *SHORTR}]
+   ALLDTYPE: *SHORT
+
+STATS0_99:
+   fields : [hp mp str acc def dog mag wil spd ctr foc xhits, {RANGE: *SHORTR}]
+   ALLDTYPE: [*SHORT, 2]
+##
+#
+## #
+##########  Actual lump definitions
+## #
+#
+##
+archinym.lmp:
+   attrname : archinym
+   fields : [prefix version, {}]
+   defaults : [$rpgprefix, nohrio version $nohrioversion]
+   LOADPRIORITY : 1
+   REQUIRED : true
+   FULL_REWRITE_ON_CHANGE : true
+   MUST_UNLUMP_BEFORE_WRITING : true
+   ALLDTYPE: *TEXTLINE
+attack.bin:
+   XXX
+binsize.bin:
+   attrname : binsize
+   flags : BASE
+d:
+   owner : Map
+   attrname : doorlinks
+   fields : [srcdoor destdoor destmap condtag1 condtag2,
+             {RANGE: *SHORTR}]
+   planar : true
+   index: [$owner.n]
+   shape: 200
+   ALLDTYPE: *SHORT #ALLDTYPE required for all planar dtypes
+dox:
+   owner : Map
+   attrname : doors
+   fields : [x y bitsets, {RANGE: *SHORTR}]
+   shape: 100
+   planar : true
+   index: [$owner.n]
+   ALLDTYPE: *SHORT #ALLDTYPE required for all planar dtypes
+gen:
+   owner : RPG
+   attrname : general
+   LOADPRIORITY : 2
+   REQUIRED : true
