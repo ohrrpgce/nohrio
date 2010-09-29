@@ -1,12 +1,46 @@
 # predefinition of data structures here
 ---
 SHORT: &SHORT int16
+MINSHORT: &MINSHORT -32768
+MAXSHORT: &MAXSHORT 32767
 USHORT : &USHORT uint16
+MAXUSHORT: &MAXUSHORT 65535
 UBYTE : &UBYTE uint8
 B6R : &B6R [0, 63]
 B8R : &B8R [0, 255]
-SHORTR : &SHORTR [-32768, 32767]
-USHORTR : &USHORTR [0, 65535]
+SHORTR : &SHORTR [*MINSHORT, *MAXSHORT]
+USHORTR : &USHORTR [0, *MAXUSHORT]
+MAXHERO: &MAXHERO 60
+HEROR : &HEROR [-60, 60]
+MAXSHOP : &MAXSHOP 99
+MAXSHOPITEMS : &MAXSHOPITEMS 50
+MAXITEM : &MAXITEM 32000
+ITEMR : &ITEMR [-32000, 32000]
+MAXONETIMENPC : &MAXONETIMENPC 1000
+MAXGFX : &MAXGFX 32767
+MAXBG : &MAXBG 32767
+MAXTILESET : &MAXTILESET 32767
+MAX16PAL : &MAX16PAL 32767
+MAX256PAL : &MAX256PAL 32767
+MAXMAP : &MAXMAP 32767
+MAXMAPLAYER : &MAXMAPLAYERS 7
+MAXSONG : &MAXSONG 32767
+MAXSFX : &MAXSFX 32767
+MAXNPC : &MAXNPC 100
+MAXNPCINSTANCE : &MAXNPCINSTANCE 300
+MAXDOOR : &MAXDOOR 100
+MAXDOORLINK : &MAXDOORLINK 200
+MAXATTACK : &MAXATTACK 32767
+MAXENEMY : &MAXENEMY 32767
+MAXFORMATION : &MAXFORMATION 32767
+MAXFORMATIONSET : &MAXFORMATIONSET 32767
+MAXSPELLLIST : &MAXSPELLLIST 4
+MAXSPELLS : &MAXSPELLS 24
+MAXVEHICLES : &MAXVEHICLES 32767
+TAGR : &TAGR [-1000, 1000]
+MAXTAG : &MAXTAG 1000
+MAXMONEY : &MAXMONEY 2000000000
+
 TEXTLINE : &TEXTLINE "%s\n"
 
 RGB6:
@@ -67,20 +101,24 @@ BITSETS:
 ENUMERATIONS:
    ETAGCHECK: &ETAGCHECK
       dtype : *SHORT
+      range : TAGR
       N>=0 : [tag$(N)_on, Tag $N == ON]
       N<0 : [tag$(N)_off, Tag $N == OFF]
    ETAGSET: &ETAGSET
       dtype : *SHORT
+      range : TAGR
       N>=0 : [tag$(N)_on, Tag $N = ON]
       N<0 : [tag$(N)_off, Tag $N = OFF]
    EHERO_SPELLLIST : &EHERO_SPELLLIST
       dtype : *SHORT
+      range : auto
       0 : [spells_mp, Spells (MP Based)]
       1 : [spells_levelmp, Spells (FF1 Style)]
       2 : [random, Random Effects]
       3 : [item, Item Consuming]
    ENPC_MOVETYPE : &ENPC_MOVETYPE
       dtype : *SHORT
+      range : auto
       0 : [standstill, Stand Still]
       1 : [    wander, Wander]
       2 : [      pace, Pace]
@@ -92,6 +130,7 @@ ENUMERATIONS:
       8 : [   inplace, Walk In Place]
    ENPC_SPEED : &ENPC_SPEED
       dtype : *SHORT
+      range : auto
       0 : [0, '0']
       1 : [1, '1']
       2 : [2, '2']
@@ -100,11 +139,13 @@ ENUMERATIONS:
       5 : [5, '5']
    ENPC_ACTIVATED : &ENPC_ACTIVATED
       dtype : *SHORT
+      range : auto
       0 : [     changedir, Change Direction]
       1 : [    faceplayer, Face Player]
       2 : [dontfaceplayer, Do Not Face Player]
    ENPC_PUSHABILITY : &ENPC_PUSHABILITY
       dtype : *SHORT
+      range : auto
       0 : [       off, 'Off']
       1 : [      full, Full]
       2 : [horizontal, Horizontal]
@@ -115,36 +156,43 @@ ENUMERATIONS:
       7 : [      left, Left Only]
    ENPC_ACTIVATION : &ENPC_ACTIVATION
       dtype : *SHORT
+      range : auto
       0 : [   use, Use]
       1 : [ touch, Touch]
       2 : [stepon, Step On]
    ETEXTBOX_BOXORSCRIPT : &ETEXTBOX_BOXORSCRIPT
       dtype : *SHORT
+      range : *SHORTR
       N>=0 : [textbox$N, Textbox $N]
       -16384<N<0 : [script$(-N), Run script $(-N)]
       N<-16384 : [trigger$(N+16384), Trigger $(N+16384)]
    ESHOPORINN : &ESHOPORINN
       dtype : *SHORT
+      range : [*MINSHORT, *MAXSHOP]
       0 : [restore, Restore HP/MP]
       N>0 : [shop$N, Enter Shop $N]
       N<0 : [inn$N, Enter Inn Costing $(rpg.strings.money)$N]
    EADDHERO : &EADDHERO
       dtype : *SHORT
+      range : *HEROR
       0: [nothing, Do Not Add/Remove Heros]
       N>0 : [add$N, Add Hero $N To The Party]
       N<0 : [remove$N, Remove Hero $N From The Party]
    EADDITEM : &EADDITEM
       dtype : *SHORT
+      range : *ITEMR
       0: [nothing, Do Not Add/Remove Items]
       N>0 : [add$N, Add Item $N To Inventory]
       N<0 : [remove$N, Remove Item $N From Inventory]
    ESWAPHERO : &ESWAPHERO
       dtype : *SHORT
+      range : *HEROR
       0: [nothing, Do Not Swap In/Out Heros]
       N>0 : [add$N, Swap Hero $N In]
       N<0 : [remove$N, Swap Hero $N Out]
-    ELOCKHERO : &ELOCKHERO
+   ELOCKHERO : &ELOCKHERO
       dtype : *SHORT
+      range : *HEROR
       0: [nothing, Do Not Lock/Unlock Heros]
       N>0 : [add$N, Unlock Hero $N]
       N<0 : [remove$N, Lock Hero $N]
@@ -179,6 +227,10 @@ d:
    index: [$owner.n]
    shape: 200
    ALLDTYPE: *SHORT #ALLDTYPE required for all planar dtypes
+defpal%d.bin:
+   dtype : SHORT
+   range : [0, *MAX16PAL]
+   softrange : rpg.pal16 # limited to len (rpg.pal16)
 dox:
    owner : Map
    attrname : doors
@@ -217,6 +269,7 @@ say:
               choice1 wasted choice2 menuconditional verticalpos
               shrink textcolor bordercolor backdrop music menu
               portraittype portraitpic portraitpal portraitx portraity
+              sound
             - text : [S38, 8]
               reserved1 : uint8
               conditional :
