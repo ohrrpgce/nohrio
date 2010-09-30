@@ -134,19 +134,29 @@ TAGR : &TAGR [-1000, 1000]
 MAXTAG : &MAXTAG 1000
 MAXMONEY : &MAXMONEY 2000S000000
 
+PTMERGE : &PTMERGE
+   dtype : uint8
+   flags : PACKED4BPP IMAGE
+   owner : rpg.gfx
+DEFPALMERGE: &DEFPALMERGE
+   owner: rpg.defpal
+   dtype : *SHORT
+   range : [0, *MAX16PAL]
+   softrange : rpg.pal16 # limited to len (rpg.pal16)
+
 TEXTLINE : &TEXTLINE "%s\n"
 
-RGB6:
+RGB6: &RGB6 # used or not?
    fields: [r g b, {RANGE : *B6R}]
    ALLDTYPE: *UBYTE
 
-RGB8:
+RGB8: &RGB8
    fields : [r g b, {RANGE : *B8R}]
    ALLDTYPE: *UBYTE
 
-RGB8W:
+RGB6W: &RGB6W
    flags : WASTEDHALF # Only one byte of a N-byte dtype is actually used
-   fields : [r g b, {RANGE : *B8R}]
+   fields : [r g b, {RANGE : *B6R}]
    ALLDTYPE: *USHORT
 
 XYCOORD:
@@ -342,6 +352,7 @@ archinym.lmp:
           FULL_REWRITE_ON_CHANGE
           MUST_UNLUMP_BEFORE_WRITING
           SINGLE_RECORD
+          SINGULAR
    alldtype: *TEXTLINE
 attack.bin:
    XXX
@@ -350,7 +361,9 @@ binsize.bin:
    fields :
       - attack stf songdata sfxdata map menu menuitem uicolor say npcdef
       - '*' : *SHORT
-   flags : BASE AUTOSIZE
+   flags : BASE
+           AUTOSIZE
+           SINGULAR
    expected_size : '% 2'
    hdf5_transform :
       - - copy
@@ -368,12 +381,45 @@ d:
             - '*[]': *SHORTR
               '*' : *SHORT
    flags: PLANAR
-   index: [$owner.n]
+          MAPINDEXED
+   maplumpindex: $owner.n
    shape: 200
-defpal%d.bin:
-   dtype : *SHORT
-   range : [0, *MAX16PAL]
-   softrange : rpg.pal16 # limited to len (rpg.pal16)
+defpal0.bin:
+   << : *DEFPALMERGE
+   attrname: hero
+   nameindex : pt0
+defpal1.bin:
+   << : *DEFPALMERGE
+   attrname: enemy_smal
+   nameindex : pt1
+defpal2.bin:
+   << : *DEFPALMERGE
+   attrname: enemy_med
+   nameindex : pt2
+defpal3.bin:
+   << : *DEFPALMERGE
+   attrname: enemy_big
+   nameindex : pt3
+defpal4.bin:
+   << : *DEFPALMERGE
+   attrname: walk
+   nameindex : pt4
+defpal5.bin:
+   << : *DEFPALMERGE
+   attrname: weapon
+   nameindex : pt5
+defpal6.bin:
+   << : *DEFPALMERGE
+   attrname: attack
+   nameindex : pt6
+defpal7.bin:
+   << : *DEFPALMERGE
+   attrname: textbox
+   nameindex : pt7
+defpal8.bin:
+   << : *DEFPALMERGE
+   attrname: portrait
+   nameindex : pt8
 dox:
    owner : Map
    attrname : doors
@@ -388,7 +434,32 @@ gen:
    owner : RPG
    attrname : general
    flags : REQUIRED
+           SINGULAR
    loadpriority : 2
+   hook : checkpassword ($self.,$self.)
+   offset : *BLOADO
+   expected_size : 1007
+   fields: maxmap title titlemusic victorymusic battlemusic
+           passcode_version passcode_rotator newpasscode newpasscode_unused
+           oldpasscode
+           maxheropic maxenemy1pic maxenemy2pic maxenemy3pic maxnpcpic
+           maxweaponpic maxattackpic
+           maxtileset maxattack maxhero maxenemy maxformation
+           maxpal16 textbox','plotscript']),
+                  'newgamescript gameoverscript max_regularscript suspendbits cameramode',
+                  'camera_args scriptbackdrop time maxvehicle maxtagname',
+                  'loadgamescript textbox_backdrop enemydissolve enablejoy',
+                  'poison stun damagecap mute statcap maxsfx masterpal',
+                  'maxmasterpal maxmenu maxmenuitem maxitem max_boxborder',
+                  'maxportrait maxinventory reserved',
+                  'oldpassword2_offset oldpassword2_length version startmoney',
+                  'maxshop oldpassword1_offset oldpassword1_length maxbackdrop',
+                  'bitsets startx starty startmap onetimenpc_indexer',
+                  'onetimenpc_bits',
+                  'def_deathsfx maxsong acceptsfx cancelsfx choosesfx textboxletter',
+                  'morebitsets itemlearnsfx cantlearnsfx buysfx hiresfx sellsfx',
+                  'cantbuysfx cantsellsfx damagedisplayticks damagedisplayrise',
+                  'wastedspace oldsctable_head oldsctable unused',
 
 lookup%d.bin:
    attrname : triggers
@@ -397,6 +468,25 @@ lookup%d.bin:
             - id : *SHORT
               name: [str16_8, 36]
               id[] : *MAXSCRIPT
+mas:
+   offset: *BLOADO
+   flags: OBSOLETE
+   upgrade: |
+        if self.rpg.lump_exists('palettes.bin'):
+            self.rpg.remove_lump ('mas')
+            return
+        # 6->8bpp transform
+        bpp8 = take ([  0,   4,   8,  12,  16,  20,  24,  28,  32,  36,  40,  45,  49,
+                       53,  57,  61,  65,  69,  73,  77,  81,  85,  89,  93,  97, 101,
+                      105, 109, 113, 117, 121, 125, 130, 134, 138, 142, 146, 150, 154,
+                      158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206,
+                      210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255], self)
+        final = bpp8.astype ('B').view (dtypes['palettes.bin'])
+        d = self.rpg.data ('palettes.bin', shape = 1)
+        d[0] = final
+        d.flush()
+        del d
+        self.rpg.remove_lump ('mas')
 menuitem.bin:
    owner : RPG
    attrname : menuitem
@@ -406,9 +496,65 @@ menuitem.bin:
             - extra : [*SHORT, 3]
               caption : [str16_8, 38]
               bitsets : [bitsets, [16, *BMENUITEM]]
+pal:
+   owner: rpg
+   attrname: pal16
+   dtype : [uint8, 16]
+   softdep: mas palettes.bin
+palettes.bin :
+   owner: rpg
+   attrname: pal16
+   dtype : [*RGB8, 256]
+pt0:
+   << : *PTMERGE
+   attrname: hero
+   shape: [8, 32, 20] # 20->40px
+   soft_deps: defpal0.bin
+pt1:
+   << : *PTMERGE
+   attrname: enemy_smal
+   shape: [1, 34, 17] # 17->34px
+   soft_deps: defpal1.bin
+pt2:
+   << : *PTMERGE
+   attrname: enemy_med
+   shape: [1, 50, 25] # 25->50px
+   soft_deps: defpal2.bin
+pt3:
+   << : *PTMERGE
+   attrname: enemy_big
+   shape: [1, 80, 40] # 40->80px
+   soft_deps: defpal3.bin
+pt4:
+   << : *PTMERGE
+   attrname: walk
+   shape: [8, 20, 10] # 10->20px
+   soft_deps: defpal4.bin
+pt5:
+   << : *PTMERGE
+   attrname : weapon
+   shape: [2, 24, 12] # 12->24px
+   soft_deps: defpal5.bin
+pt6:
+   << : *PTMERGE
+   attrname : attack
+   shape: [3, 50, 25] # 25->50px
+   soft_deps: defpal6.bin
+pt7:
+   << : *PTMERGE
+   attrname : textbox
+   shape: [16, 16, 8] # 8->16px
+   soft_deps: defpal7.bin
+pt8:
+   << : *PTMERGE
+   attrname : portrait
+   shape: [1, 50, 25] # 25->50px
+   soft_deps: defpal8.bin
+
 say:
    owner : RPG
    attrname : textbox
+   flags : BINSIZED
    fields :
             - text reserved1 conditional reserved2 bitsets
               choice1 wasted choice2 menuconditional verticalpos
@@ -497,3 +643,7 @@ say:
 
 
               #XXX continue here
+sho:
+   attrname: shopinfo
+   fields:
+           - name nitems bitsets inncost innscript
