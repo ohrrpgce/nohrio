@@ -25,6 +25,6 @@ class Compiler (object):
 
 from pprint import pprint
 
-c = Compiler ('ohr-lumpdefs.yaml')
+c = Compiler ('lumpdefs.yaml')
 pprint (c.helperdata)
 
