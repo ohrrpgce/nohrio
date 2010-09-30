@@ -1,5 +1,97 @@
-# predefinition of data structures here
+# OHRRPGCE data type definitions
+# ===============================
+#
+# Conventions
+# ~~~~~~~~~~~
+#
+# * minimize comments
+# * maximize explicitness
+#
 ---
+# Data Definition
+# ~~~~~~~~~~~~~~~~
+#
+__datadef:
+   ATTRNAME: (str matching '[a-z][a-z0-9_]+')
+   DESCRIPTION: (str)
+   DTYPE: [dtypeid (str), params (list|int)]
+   RANGE: [min (int), max (int)]
+   BITSETDEF: [ATTRNAME, DESCRIPTION]
+   ENUMDEF:
+            'dtype' : DTYPE ||
+            'range' : RANGE ||
+            (EXPRESSION) : FORMATSTRING
+   PREDEF:
+            (name): DTYPE | RANGE ||
+            'ENUMERATIONS': (map(:ENUMDEF+)) ||
+            'BITSETS': (map(:BITSETDEF+))
+   COMPLEX_DTYPE:
+      name_regex : '[a-z][a-z0-9_]+'
+      type : map
+      fields:
+         attrname:
+            required : true
+            desc : Name of attribute
+         alldtype:
+            type: DTYPE | COMPLEX_DTYPE
+            desc: Assign the given dtype to all fields
+                  which have not already had a dtype assigned
+         defaults:
+            type: seq
+            desc: default values for all specified fields, in order.
+                  expressions are permitted.
+         fields:
+            type: seq (str,map)
+            desc: string listing all fields, followed by dtype definition
+            map:
+                'NAME' : specify a dtype (possibly indirect, as in an enumeration)
+                '*' : Specify a default dtype for all fields
+                '*[]' : Specify a default range for all fields
+                'NAME[]' : Specify a range for NAME (where NAME is a field name)
+         index:
+            type: str (EXPRESSION)
+            desc: start index (evaluated each time a lump handle is requested).
+                  Usually used with a multi-item lump like DOX
+         flags:
+            type: str (FLAG+)
+            FLAG:
+               REQUIRED:
+                             - Necessary to make sense of the RPG.
+                               if the lump is missing, it suggests a bad RPG.
+                             - suggests: BASE
+               MANUALFLUSH: 
+                             - Changes won't be written to disk
+                               until the data handle is garbage-collected,
+                               or manual call of flush()
+               PLANAR:
+                             - Use a planar (AAABBBCCC) rather than 
+                               atomic (ABCABCABC) data layout
+                             - requires: alldtype shape
+         part:
+            type: seq (index (int), destdtype (str))
+            desc: dtype describes a partial data, which should
+                  be concatenated with others to produce
+                  a final result. Intended specifically for
+                  ATTACK.BIN.
+            requires: MANUALFLUSH
+         owner:
+            type : str (EXPRESSION)
+            desc : What to attach attribute to
+         shape:
+            type: seq (int+) | int
+            desc: As in numpy.
+                  Used to specify partial slices of larger lumps, mostly.
+   ROOTKEY:  COMPLEX_DTYPE | PREDEF
+#
+########################################################
+##
+#
+## #
+##########  Predefinition of limits, building blocks.
+## #
+#
+##
+BLOADO: &BLOADO 7
 SHORT: &SHORT int16
 MINSHORT: &MINSHORT -32768
 MAXSHORT: &MAXSHORT 32767
@@ -36,10 +128,11 @@ MAXFORMATION : &MAXFORMATION 32767
 MAXFORMATIONSET : &MAXFORMATIONSET 32767
 MAXSPELLLIST : &MAXSPELLLIST 4
 MAXSPELLS : &MAXSPELLS 24
-MAXVEHICLES : &MAXVEHICLES 32767
+MAXVEHICLE : &MAXVEHICLE 32767
+MAXSCRIPT : &MAXSCRIPT 32767
 TAGR : &TAGR [-1000, 1000]
 MAXTAG : &MAXTAG 1000
-MAXMONEY : &MAXMONEY 2000000000
+MAXMONEY : &MAXMONEY 2000S000000
 
 TEXTLINE : &TEXTLINE "%s\n"
 
@@ -98,6 +191,14 @@ BITSETS:
       - [hide_when_disabled, Hide when disabled]
       - [close_menu, Close menu when selected]
       - [no_onclose, Don't run on-close script]
+   BTEXTBOX : &BTEXTBOX
+      - [choicebox, Enable Choicebox]
+      - [nobox, Disable Box]
+      - [notrans, Disable Translucency]
+      - [restoremusic, Enable Restore Music]
+      - [portraitbox, Show A Box Around Portrait]
+      - [stopsfx, Stop Sound FX When Box Advances]
+      # 2 unused
 ENUMERATIONS:
    ETAGCHECK: &ETAGCHECK
       dtype : *SHORT
@@ -207,28 +308,48 @@ archinym.lmp:
    attrname : archinym
    fields : [prefix version, {}]
    defaults : [$rpgprefix, nohrio version $nohrioversion]
-   LOADPRIORITY : 1
-   REQUIRED : true
-   FULL_REWRITE_ON_CHANGE : true
-   MUST_UNLUMP_BEFORE_WRITING : true
-   ALLDTYPE: *TEXTLINE
+   hdf5_transform :
+      - - attribute_transform # prefix, version
+        - path : /            # <-> attributes attached to /
+          prefix : editor_    # named editor_(prefix|version)
+   yaml_transform :
+      - - keymap
+      - - keyunmap
+   loadpriority : 1
+   flags: REQUIRED
+          FULL_REWRITE_ON_CHANGE
+          MUST_UNLUMP_BEFORE_WRITING
+          SINGLE_RECORD
+   alldtype: *TEXTLINE
 attack.bin:
    XXX
 binsize.bin:
    attrname : binsize
-   flags : BASE
+   fields :
+      - attack stf songdata sfxdata map menu menuitem uicolor say npcdef
+      - '*' : *SHORT
+   flags : BASE AUTOSIZE
    expected_size : '% 2'
+   hdf5_transform :
+      - - copy
+        - path : /redundant/binsize
+      - - XXX # reverse transform
+        - XXX
+   yaml_transform :
+      - - keymap
+      - - keyunmap
 d:
    owner : Map
    attrname : doorlinks
-   fields : [srcdoor destdoor destmap condtag1 condtag2,
-             {RANGE: *SHORTR}]
-   planar : true
+   fields :
+            - srcdoor destdoor destmap condtag1 condtag2
+            - '*[]': *SHORTR
+              '*' : *SHORT
+   flags: PLANAR
    index: [$owner.n]
    shape: 200
-   ALLDTYPE: *SHORT #ALLDTYPE required for all planar dtypes
 defpal%d.bin:
-   dtype : SHORT
+   dtype : *SHORT
    range : [0, *MAX16PAL]
    softrange : rpg.pal16 # limited to len (rpg.pal16)
 dox:
@@ -236,28 +357,30 @@ dox:
    attrname : doors
    fields :
             - x y bitsets
-            - RANGE: *SHORTR
-   shape: 100
-   planar : true
+            - '*[]': *SHORTR
+              '*' : *SHORT
+   flags: PLANAR
    index: [$owner.n]
-   ALLDTYPE: *SHORT #ALLDTYPE required for all planar dtypes
+   shape: 100
 gen:
    owner : RPG
    attrname : general
-   LOADPRIORITY : 2
-   REQUIRED : true
+   flags : REQUIRED
+   loadpriority : 2
+
 lookup%d.bin:
    attrname : triggers
    fields :
             - id name
             - id : *SHORT
               name: [str16_8, 36]
+              id[] : *MAXSCRIPT
 menuitem.bin:
    owner : RPG
    attrname : menuitem
    fields :
             - membership caption sort_order type subtype tagcond1
-              tagcond2 settag toggletag bitsets extra,
+              tagcond2 settag toggletag bitsets extra
             - extra : [*SHORT, 3]
               caption : [str16_8, 38]
               bitsets : [bitsets, [16, *BMENUITEM]]
@@ -265,7 +388,7 @@ say:
    owner : RPG
    attrname : textbox
    fields :
-            - text reserved1 conditional reserved2 choicebitsets
+            - text reserved1 conditional reserved2 bitsets
               choice1 wasted choice2 menuconditional verticalpos
               shrink textcolor bordercolor backdrop music menu
               portraittype portraitpic portraitpal portraitx portraity
@@ -281,51 +404,65 @@ say:
                              - tagcheck param
                              - tagcheck : *ETAGCHECK
                                param : *ETEXTBOX_BOXORSCRIPT
-                     - settag:
+                       settag:
                           fields:
                              - tagcheck tagsets
                              - tagcheck : *ETAGCHECK
                                tagsets  : [*ETAGSET, 2]
-                     - formation:
+                       formation:
                           fields:
                              - tagcheck formation
                              - tagcheck  : *ETAGCHECK
                                formation : *SHORT
-                     - inn:
+                       inn:
                           fields:
                              - tagcheck param
                              - tagcheck  : *ETAGCHECK
                                param : *ESHOPORINN
                      # XXX hero swap/un/lock FUBARness
-                     - hero1:
+                       hero1:
                           fields:
                              - tagcheck add
                              - tagcheck  : *ETAGCHECK
                                add : *EADDHERO
-                     - jumpto_after:
+                       jumpto_after:
                           fields:
                              - tagcheck param
                              - tagcheck : *ETAGCHECK
                                param : *ETEXTBOX_BOXORSCRIPT
-                     - money:
+                       money:
                           fields:
                              - tagcheck amount
                              - tagcheck : *ETAGCHECK
                                amount : *SHORT
-                     - usedoor:
+                       usedoor:
                           fields:
                              - tagcheck door
                              - tagcheck : *ETAGCHECK
                                amount : *SHORT
-                     - item:
+                       item:
                           fields:
                              - tagcheck item
                              - tagcheck : *ETAGCHECK
                                amount : *EADDITEM
-                     - hero2:
+                       hero2:
                           fields:
                              - swap lock
                              - swap : *ESWAPHERO
                                lock : *ELOCKHERO
               reserved2 : uint8
+              bitsets : [bitsets, [8, *BTEXTBOX]]
+              choice1 :
+                 fields :
+                    - choice choice_tag
+                    - text : [str8_8, 15]
+                      tag : *ETAGSET
+              wasted : uint8
+              choice2 :
+                 fields :
+                    - choice choice_tag
+                    - text : [str8_8, 15]
+                      tag : *ETAGSET
+
+
               #XXX continue here
