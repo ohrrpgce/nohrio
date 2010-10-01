@@ -131,45 +131,60 @@ MAXSPELLS : &MAXSPELLS 24
 MAXVEHICLE : &MAXVEHICLE 32767
 MAXSCRIPT : &MAXSCRIPT 32767
 TAGR : &TAGR [-1000, 1000]
+SCRIPTR : &SCRIPTR [*MINSHORT, *MAXSHORT]
 MAXTAG : &MAXTAG 1000
-MAXMONEY : &MAXMONEY 2000S000000
+MAXMONEY : &MAXMONEY 2000000000
+
+CLASS_DTYPE : &CLASS_DTYPE
+   __class : dtype
+CLASS_ENUM : &CLASS_ENUM
+   __class : enum
 
 PTMERGE : &PTMERGE
+   << : *CLASS_DTYPE
    dtype : uint8
    flags : PACKED4BPP IMAGE
    owner : rpg.gfx
 DEFPALMERGE: &DEFPALMERGE
+   << : *CLASS_DTYPE
    owner: rpg.defpal
    dtype : *SHORT
    range : [0, *MAX16PAL]
    softrange : rpg.pal16 # limited to len (rpg.pal16)
 
+RPGOWNED: &RPGOWNED
+   owner : RPG
+
 TEXTLINE : &TEXTLINE "%s\n"
 
 RGB6: &RGB6 # used or not?
-   fields: [r g b, {RANGE : *B6R}]
-   ALLDTYPE: *UBYTE
+   << : *CLASS_DTYPE
+   wasted : 2/8 bits perfield
+   fields: [r g b, {'*' : uint8, '*[]' : *B6R}]
 
 RGB8: &RGB8
-   fields : [r g b, {RANGE : *B8R}]
-   ALLDTYPE: *UBYTE
+   << : *CLASS_DTYPE
+   fields : [r g b, {'*' : uint8, '*[]' : *B8R}]
 
 RGB6W: &RGB6W
-   flags : WASTEDHALF # Only one byte of a N-byte dtype is actually used
-   fields : [r g b, {RANGE : *B6R}]
-   ALLDTYPE: *USHORT
+   << : *CLASS_DTYPE
+   wasted : 10/16 bits perfield
+   fields : [r g b, {'*' : *USHORT, '*[]' : *B6R}]
 
 XYCOORD:
-   fields : [x y, {RANGE : *SHORTR}]
-   ALLDTYPE: *SHORT
+   << : *CLASS_DTYPE
+   fields : [x y, {'*': *SHORT, '*[]' : *SHORTR}]
 
 STATS:
-   fields : [hp mp str acc def dog mag wil spd ctr foc xhits, {RANGE: *SHORTR}]
-   ALLDTYPE: *SHORT
+   << : *CLASS_DTYPE
+   fields : [hp mp str acc def dog mag wil spd ctr foc xhits, {'*': *SHORT, '*[]' : *SHORTR}]
 
 STATS0_99:
-   fields : [hp mp str acc def dog mag wil spd ctr foc xhits, {RANGE: *SHORTR}]
-   ALLDTYPE: [*SHORT, 2]
+   << : *CLASS_DTYPE
+   fields :
+            - hp mp str acc def dog mag wil spd ctr foc xhits
+            - '*'   : [*SHORT, 2]
+              '*[]' : *SHORTR
 ##
 #
 ## #
@@ -179,6 +194,34 @@ STATS0_99:
 ##
 
 BITSETS:
+   BGENERAL: &BGENERAL
+      - [         pause_on_submenus, Pause on battle sub-menus]
+      - [               caterpillar, Enable caterpillar party]
+      - [               norestorehp, Don't restore HP on levelup]
+      - [               norestoremp, Don't restore MP on levelup]
+      - [              inn_norevive, Inns don't revive dead heroes]
+      - [       always_heroswapping, Hero swapping always available]
+      - [          battle_hideready, Hide ready-meter in battle]
+      - [         battle_hidehealth, Hide health-meter in battle]
+
+      - [                   nodebug, Disable debugging keys]
+      - [               levelup_bug, Simulate old levelup bug]
+      - [          doubletrigger_ok, Permit double-triggering of scripts]
+      - [                 skiptitle, Skip title screen]
+      - [                  skipload, Skip load screen]
+      - [        pause_on_all_menus, Pause on all battle menus]
+      - [           no_battlecursor, Disable hero's battle cursor]
+      - [                no_defpass, Default passability disabled by default]
+
+      - [               npcpush_bug, Simulate pushable NPC obstruction bug]
+      - [           disable_esc_run, Disable ESC key running from battle]
+      - [ nosave_special_script_ids, Don't save gameover/loadgame script IDs]
+      - [          deadheros_getexp, Dead heroes gain share of experience]
+      - [     lock_stops_reordering, Locked heroes can't be re-ordered]
+      - [     captions_pause_battle, Attack captions pause battle meters]
+      - [no_randomize_battle_meters, Don't randomize battle ready meters]
+      - [    menus_wait_attackanims, Battle menus wait for attack animations]
+      # 8 remain
    BFIXBITS: &BFIXBITS
       # 0
       - [attack_items, Zeroed out item cost (ammunition) data in ATTACK.BIN]
@@ -196,19 +239,56 @@ BITSETS:
       - [textbox_portrait, Initialized text box portrait data]
       - [npclocation_format, Converted NPC locations to new format (FIXME: not implemented yet)]
       - [init_damagedisplay, Initialize default values for damage display time and distance in GEN]
-      # 14
+      # 14 (2 remain)
    BMENUITEM: &BMENUITEM
       - [hide_when_disabled, Hide when disabled]
-      - [close_menu, Close menu when selected]
-      - [no_onclose, Don't run on-close script]
+      - [        close_menu, Close menu when selected]
+      - [        no_onclose, Don't run on-close script]
+      # 5 remain
    BTEXTBOX : &BTEXTBOX
-      - [choicebox, Enable Choicebox]
-      - [nobox, Disable Box]
-      - [notrans, Disable Translucency]
-      - [restoremusic, Enable Restore Music]
-      - [portraitbox, Show A Box Around Portrait]
-      - [stopsfx, Stop Sound FX When Box Advances]
+      - [   choicebox, Enable choicebox]
+      - [       nobox, Disable box]
+      - [     notrans, Disable translucency]
+      - [restoremusic, Enable restore music]
+      - [ portraitbox, Show a box around portrait]
+      - [     stopsfx, Stop sound FX when box advances]
       # 2 unused
+   BSHOP : &BSHOP
+      - [  buy, Buy]
+      - [ sell, Sell]
+      - [ hire, Hire]
+      - [  inn, Inn]
+      - [equip, Equip]
+      - [ save, Save]
+      - [  map, Map]
+      - [ team, Team]
+      # 8 unused
+   BATTACKCHAIN : &BATTACKCHAIN
+      - [    mustknow, Attacker must know chained attack]
+      - [ ignoredelay, Ignore chained attack's delay]
+      - [ nonblocking, Chained attack doesn't block actions]
+      # 5+8 = 13 unused
+   BENEMY : &BENEMY
+      - - += [(v[0][:v[0].find(' ')].lower() + 'elem' + v[-2], ''.join (v))
+              for v in itertools.product(('Weak vs ','Strong vs ','Absorbs '),
+                                         ('$rpg.strings.element[',),
+                                         [str(v) for v in range (8)],(']',))]
+      - - += [('type%d' % v,
+               'Enemy type $rpg.strings.enemytype[%d]' % v)
+              for v in range (8)]
+      - - += [('unused%d' % v, 'Unused %d' % v) for v in range(22)]
+      - [        cureharms, Harmed by cure]
+      - [          mpidiot, MP Idiot]
+      - [             boss, Boss]
+      - [      unescapable, Unescapable]
+      - [        diewoboss, Die without boss]
+      - [       fleenotdie, Flee instead of die]
+      - [  no_enemy_target, Untargetable by enemies]
+      - [   no_hero_target, Untargetable by heros]
+      - [win_even_if_alive, Win battle even if left alive]
+      - [         noflinch, Never flinch when hit]
+      - [     alone_ignore, Ignored by 'Alone' AI]
+      - - += [('unused%d' % (v+22), 'Unused %d' % (v+22)) for v in range(15)]
 ENUMERATIONS:
    ETAGCHECK: &ETAGCHECK
       flags : ENUM
@@ -234,15 +314,15 @@ ENUMERATIONS:
       flags : ENUM
       dtype : *SHORT
       range : auto
-      0 : [standstill, Stand Still]
+      0 : [standstill, Stand still]
       1 : [    wander, Wander]
       2 : [      pace, Pace]
-      3 : [ rightturn, Right Turns]
-      4 : [  leftturn, Left Turns]
-      5 : [randomturn, Random Turns]
-      6 : [     chase, Chase You]
-      7 : [     avoid, Avoid You]
-      8 : [   inplace, Walk In Place]
+      3 : [ rightturn, Right turns]
+      4 : [  leftturn, Left turns]
+      5 : [randomturn, Random turns]
+      6 : [     chase, Chase you]
+      7 : [     avoid, Avoid you]
+      8 : [   inplace, Walk in place]
    ENPC_SPEED : &ENPC_SPEED
       flags : ENUM
       dtype : *SHORT
@@ -337,6 +417,7 @@ ENUMERATIONS:
 #
 ##
 archinym.lmp:
+   << : *CLASS_DTYPE
    attrname : archinym
    fields : [prefix version, {}]
    defaults : [$rpgprefix, nohrio version $nohrioversion]
@@ -355,8 +436,10 @@ archinym.lmp:
           SINGULAR
    alldtype: *TEXTLINE
 attack.bin:
-   XXX
+   << : *CLASS_DTYPE
+   #XXX
 binsize.bin:
+   << : *CLASS_DTYPE
    attrname : binsize
    fields :
       - attack stf songdata sfxdata map menu menuitem uicolor say npcdef
@@ -364,7 +447,6 @@ binsize.bin:
    flags : BASE
            AUTOSIZE
            SINGULAR
-   expected_size : '% 2'
    hdf5_transform :
       - - copy
         - path : /redundant/binsize
@@ -374,6 +456,7 @@ binsize.bin:
       - - keymap
       - - keyunmap
 d:
+   << : *CLASS_DTYPE
    owner : Map
    attrname : doorlinks
    fields :
@@ -421,6 +504,7 @@ defpal8.bin:
    attrname: portrait
    nameindex : pt8
 dox:
+   << : *CLASS_DTYPE
    owner : Map
    attrname : doors
    fields :
@@ -431,6 +515,7 @@ dox:
    index: [$owner.n]
    shape: 100
 gen:
+   << : *CLASS_DTYPE
    owner : RPG
    attrname : general
    flags : REQUIRED
@@ -439,38 +524,54 @@ gen:
    hook : checkpassword ($self.,$self.)
    offset : *BLOADO
    expected_size : 1007
-   fields: maxmap title titlemusic victorymusic battlemusic
-           passcode_version passcode_rotator newpasscode newpasscode_unused
-           oldpasscode
-           maxheropic maxenemy1pic maxenemy2pic maxenemy3pic maxnpcpic
-           maxweaponpic maxattackpic
-           maxtileset maxattack maxhero maxenemy maxformation
-           maxpal16 textbox','plotscript']),
-                  'newgamescript gameoverscript max_regularscript suspendbits cameramode',
-                  'camera_args scriptbackdrop time maxvehicle maxtagname',
-                  'loadgamescript textbox_backdrop enemydissolve enablejoy',
-                  'poison stun damagecap mute statcap maxsfx masterpal',
-                  'maxmasterpal maxmenu maxmenuitem maxitem max_boxborder',
-                  'maxportrait maxinventory reserved',
-                  'oldpassword2_offset oldpassword2_length version startmoney',
-                  'maxshop oldpassword1_offset oldpassword1_length maxbackdrop',
-                  'bitsets startx starty startmap onetimenpc_indexer',
-                  'onetimenpc_bits',
-                  'def_deathsfx maxsong acceptsfx cancelsfx choosesfx textboxletter',
-                  'morebitsets itemlearnsfx cantlearnsfx buysfx hiresfx sellsfx',
-                  'cantbuysfx cantsellsfx damagedisplayticks damagedisplayrise',
-                  'wastedspace oldsctable_head oldsctable unused',
+   fields: # bighuge field list follows.
+           - maxmap title titlemusic victorymusic battlemusic
+             passcode_version passcode_rotator newpasscode newpasscode_unused
+             oldpasscode
+
+             maxheropic maxenemy1pic maxenemy2pic maxenemy3pic maxnpcpic
+             maxweaponpic maxattackpic
+             maxtileset maxattack maxhero maxenemy maxformation
+             maxpal16 maxtextbox maxplotscript
+
+             newgamescript gameoverscript max_regularscript
+             suspendbits cameramode camera_args scriptbackdrop time
+             maxvehicle maxtagname
+             loadgamescript textbox_backdrop enemydissolve enablejoy
+             poison stun damagecap mute statcap maxsfx masterpal
+
+             maxmasterpal maxmenu maxmenuitem maxitem max_boxborder
+             maxportrait maxinventory
+
+             reserved
+
+             oldpassword2_offset oldpassword2_length version startmoney
+             maxshop oldpassword1_offset oldpassword1_length maxbackdrop
+             bitsets
+
+             startx starty startmap
+
+             onetimenpc_indexer onetimenpc_bits
+             def_deathsfx maxsong acceptsfx cancelsfx choosesfx textboxletter
+             morebitsets itemlearnsfx cantlearnsfx buysfx hiresfx sellsfx
+             cantbuysfx cantsellsfx damagedisplayticks damagedisplayrise
+             wastedspace oldsctable_head oldsctable unused
+           - '*' : *SHORT
+             '*[]' : *SHORTR
+             bitsets : [=bitsets, [32, *BGENERAL]]
 
 lookup%d.bin:
+   << : *CLASS_DTYPE
    attrname : triggers
    fields :
             - id name
             - id : *SHORT
-              name: [str16_8, 36]
+              name: [=str16_8, 36]
               id[] : *MAXSCRIPT
 mas:
+   << : *CLASS_DTYPE
    offset: *BLOADO
-   flags: OBSOLETE
+   flags: OBSOLETE AUTOUPGRADE
    upgrade: |
         if self.rpg.lump_exists('palettes.bin'):
             self.rpg.remove_lump ('mas')
@@ -488,21 +589,21 @@ mas:
         del d
         self.rpg.remove_lump ('mas')
 menuitem.bin:
-   owner : RPG
+   << : [*CLASS_DTYPE, *RPGOWNED]
    attrname : menuitem
    fields :
             - membership caption sort_order type subtype tagcond1
               tagcond2 settag toggletag bitsets extra
             - extra : [*SHORT, 3]
               caption : [str16_8, 38]
-              bitsets : [bitsets, [16, *BMENUITEM]]
+              bitsets : [=bitsets, [16, *BMENUITEM]]
 pal:
-   owner: rpg
+   << : [*CLASS_DTYPE, *RPGOWNED]
    attrname: pal16
    dtype : [uint8, 16]
    softdep: mas palettes.bin
 palettes.bin :
-   owner: rpg
+   << : [*CLASS_DTYPE, *RPGOWNED]
    attrname: pal16
    dtype : [*RGB8, 256]
 pt0:
@@ -552,7 +653,7 @@ pt8:
    soft_deps: defpal8.bin
 
 say:
-   owner : RPG
+   << : [*CLASS_DTYPE, *RPGOWNED]
    attrname : textbox
    flags : BINSIZED
    fields :
@@ -620,17 +721,17 @@ say:
                              - swap : *ESWAPHERO
                                lock : *ELOCKHERO
               reserved2 : uint8
-              bitsets : [bitsets, [8, *BTEXTBOX]]
+              bitsets : [=bitsets, [8, *BTEXTBOX]]
               choice1 :
                  fields :
                     - choice choice_tag
-                    - text : [str8_8, 15]
+                    - text : [=str8_8, 15]
                       tag : *ETAGSET
               wasted : uint8
               choice2 :
                  fields :
                     - choice choice_tag
-                    - text : [str8_8, 15]
+                    - text : [=str8_8, 15]
                       tag : *ETAGSET
               menuconditional : *ETAGCHECK
               portraitpal :
@@ -644,6 +745,16 @@ say:
 
               #XXX continue here
 sho:
+   << : [*CLASS_DTYPE, *RPGOWNED]
    attrname: shopinfo
+   flags:
    fields:
            - name nitems bitsets inncost innscript
+           - '*'   : *SHORT
+             '*[]' : *SHORTR
+             name      : [=str16_16, 16]
+             nitems[]  : [-1,49]
+             bitsets   : [=bitsets, [16, *BSHOP]]
+             innscript : *SCRIPTR
+
+
