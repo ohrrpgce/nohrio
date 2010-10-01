@@ -134,6 +134,10 @@ TAGR : &TAGR [-1000, 1000]
 SCRIPTR : &SCRIPTR [*MINSHORT, *MAXSHORT]
 MAXTAG : &MAXTAG 1000
 MAXMONEY : &MAXMONEY 2000000000
+NELEMENTS : &NELEMENTS 8
+NSTATS : &NSTATS 12
+
+PERCENTR: &PERCENTR [0, 100]
 
 CLASS_DTYPE : &CLASS_DTYPE
    __class : dtype
@@ -171,15 +175,15 @@ RGB6W: &RGB6W
    wasted : 10/16 bits perfield
    fields : [r g b, {'*' : *USHORT, '*[]' : *B6R}]
 
-XYCOORD:
+XYCOORD: &XYCOORD
    << : *CLASS_DTYPE
    fields : [x y, {'*': *SHORT, '*[]' : *SHORTR}]
 
-STATS:
+STATS: &STATS
    << : *CLASS_DTYPE
    fields : [hp mp str acc def dog mag wil spd ctr foc xhits, {'*': *SHORT, '*[]' : *SHORTR}]
 
-STATS0_99:
+STATS0_99: &STATS0_99
    << : *CLASS_DTYPE
    fields :
             - hp mp str acc def dog mag wil spd ctr foc xhits
@@ -289,6 +293,7 @@ BITSETS:
       - [         noflinch, Never flinch when hit]
       - [     alone_ignore, Ignored by 'Alone' AI]
       - - += [('unused%d' % (v+22), 'Unused %d' % (v+22)) for v in range(15)]
+
 ENUMERATIONS:
    ETAGCHECK: &ETAGCHECK
       flags : ENUM
@@ -409,6 +414,93 @@ ENUMERATIONS:
       0: [nothing, Do Not Lock/Unlock Heros]
       N>0 : [add$N, Unlock Hero $N]
       N<0 : [remove$N, Lock Hero $N]
+   EENEMYTHIEVABLE : &EENEMYTHIEVABLE
+      flags : ENUM
+      dtype : *SHORT
+      range : auto
+      -1 : Not thievable
+      0 : Once only
+      1 : Infinitely thievable
+   EPICSIZE : &EPICSIZE
+      flags : ENUM
+      dtype : *SHORT
+      range : auto
+      0 : Small
+      1 : Medium
+      2 : Large
+   EENEMYDISSOLVE : &EENEMYDISSOLVE
+      flags : ENUM
+      dtype : *SHORT
+      range : auto
+      0 : (NONE SET)
+      1 : Random scatter
+      2 : Crossfade
+      3 : Diagonal vanish
+      4 : Sink into ground
+      5 : Squash
+      6 : Melt
+      7 : Vapourise
+      8 : Phase out
+   EENEMYDISSOLVELEN : &EENEMYDISSOLVELEN
+      flags : ENUM
+      dtype : *SHORT
+      range : [0, 99]
+      0 : default
+
+__STATUS:
+   # 1 == seems complete, 2 == tested, 3 == well tested, 4 == used in app
+   archinym.lmp: 1
+   browse.txt  : no
+   gen         : .25
+   attack.bin  : no
+   binsize.bin : 1
+   defpal?.bin : 1
+   fixbits.bin : no
+   lookup1.bin : 1
+   menus.bin   : no
+   menuitem.bin: 1
+   palettes.bin: 1
+   plotscr.lst : no
+   sfxdata.bin : no
+   songdata.bin: no
+   uicolors.bin: no
+   slicetree_?_?.reld: no
+   bam         : no
+   t           : no
+   p           : no
+   e           : no
+   d           : no
+   l           : no
+   n           : no
+   z           : no
+   dor         : no
+   dox         : 1
+   dt0         : no
+   dt1         : 1
+   dt6         : no
+   efs         : no
+   for         : no
+   fnt         : no
+   hsp         : no
+   hsz         : no
+   itm         : no
+   map         : no
+   mas         : 1
+   mn          : no
+   mxs         : no
+   pal         : 1
+   pt?         : 1
+   say         : 1
+   sho         : 1
+   stf         : no
+   stt         : no
+   tap         : no
+   til         : no
+   tmn         : no
+   veh         : no
+
+
+
 ##
 #
 ## #
@@ -503,6 +595,56 @@ defpal8.bin:
    << : *DEFPALMERGE
    attrname: portrait
    nameindex : pt8
+dt1:
+   << : [*CLASS_DTYPE, *RPGOWNED]
+   attrname: enemy
+   fields:
+           - name thievability steal_item steal_chance
+             raresteal_item raresteal_chance dissolve dissolvelen
+             deathsound battlecursor unused picture palette picsize rewards stats
+             bitsets spawning attacks counter unused2
+           - '*' : *SHORT
+             '*[]' : *SHORTR
+             name : [=str16_16, 16]
+             thievability : *EENEMYTHIEVABLE
+             steal_item[]: [0, *MAXITEM]
+             steal_chance[]: *PERCENTR
+             raresteal_item[]: [0, *MAXITEM]
+             raresteal_chance[]: *PERCENTR
+             dissolve : *EENEMYDISSOLVE
+             dissolvelen : *EENEMYDISSOLVELEN
+             battlecursor : *XYCOORD
+             unused : [*SHORT, 26]
+             picsize : *EPICSIZE
+             rewards :
+                fields :
+                         - gold exp item item_chance rare_item rare_item_chance
+                         - '*' : *SHORT
+                           '*[]' : *SHORTR
+                           item[]: [0, *MAXITEM]
+                           item_chance[]: *PERCENTR
+                           rare_item[]: [0, *MAXITEM]
+                           rare_item_chance[]: *PERCENTR
+             bitsets : [=bitsets, [80, *BENEMY]]
+             stats : *STATS
+             spawning:
+                fields :
+                         - death nonelem_death alone nonelem_hit elem_hit
+                           nspawn
+                         - '*' : *SHORT
+                           '*[]' : *SHORTR
+                           elem_hit : [SHORT, *NELEMENTS]
+             attacks:
+                fields :
+                         - normal desperate alone
+                         - '*' : [*SHORT, 5]
+                           '*[]' : *SHORTR
+             counter :
+                fields:
+                        - element stat
+                        - element : [*SHORT, *NELEMENTS]
+                          stat : [*SHORT, *NSTATS]
+             unused2 : [*SHORT, 33]
 dox:
    << : *CLASS_DTYPE
    owner : Map
@@ -560,7 +702,7 @@ gen:
              '*[]' : *SHORTR
              bitsets : [=bitsets, [32, *BGENERAL]]
 
-lookup%d.bin:
+lookup1.bin:
    << : *CLASS_DTYPE
    attrname : triggers
    fields :
@@ -605,7 +747,9 @@ pal:
 palettes.bin :
    << : [*CLASS_DTYPE, *RPGOWNED]
    attrname: pal16
+   dynamic_dtype : [*RGB8, '$header[1] / 3']
    dtype : [*RGB8, 256]
+   header : [*SHORT, 2]
 pt0:
    << : *PTMERGE
    attrname: hero
@@ -757,4 +901,6 @@ sho:
              bitsets   : [=bitsets, [16, *BSHOP]]
              innscript : *SCRIPTR
 
-
+stt:
+   << : [*CLASS_DTYPE, *RPGOWNED]
+   # output generated by stt2yaml
