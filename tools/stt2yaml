@@ -1,0 +1,138 @@
+#!/usr/bin/env python
+
+# from http://rpg.hamsterrepublic.com/ohrrpgce/STT
+s ="""0      Health Points   10
+1      Spell Points    10
+2      Attack Power    10
+3      Accuracy        10
+4      Extra Hits      10
+5      Blocking Power  10
+6      Dodge Rate      10
+7      Counter Rate    10
+8      Speed           10
+9      Enemy Type 1    10
+10     Enemy Type 2    10
+11     Enemy Type 3    10
+12     Enemy Type 4    10
+13     Enemy Type 5    10
+14     Enemy Type 6    10
+15     Enemy Type 7    10
+16     Enemy Type 8    10
+17     Elemental 1     10
+18     Elemental 2     10
+19     Elemental 3     10
+20     Elemental 4     10
+21     Elemental 5     10
+22     Elemental 6     10
+23     Elemental 7     10
+24     Elemental 8     10
+25     Armor 1         10
+26     Armor 2         10
+27     Armor 3         10
+28     Armor 4         10
+29     Spell Skill     10
+30     Spell Block     10
+31     Spell cost %    10
+32     Money           10
+33     Experience      10
+34     Item            10
+35     DONE            10
+36     AUTOSORT        10
+37     TRASH           10
+38     Weapon          10
+39     -REMOVE-        10
+40     -EXIT-          10
+41     Discard         10
+42     Cannot          10
+43     Level           10
+44     Yes             10
+45     No              10
+46     EXIT            10
+47     for next        10
+48     REMOVE          10
+49     Pay             10
+50     Cancel          10
+51     CANCEL          10
+52     NEW GAME        10
+53     EXIT            10
+54     PAUSE           10
+55     Quit Playing?   20
+57     Yes             10
+58     No              10
+59     CANCEL          10
+60     Items           10
+61     Spells          10
+62     Status          10
+63     Equip           10
+64     Order           10
+65     Team            10
+66     Save            10
+67     Quit            10
+68     Map             10
+69     Volume          10
+70     Buy             10
+71     Sell            10
+72     Inn             10
+73     Hire            10
+74     Exit            10
+75     CANNOT SELL     20
+77     Worth           20
+79     Trade for       20
+81     and a           10
+82     Worth Nothing   20
+84     Sold            10
+85     Trade for       20
+87     Joins for       20
+89     Cannot Afford   20
+91     Cannot Hire     20
+93     Purchased       20
+95     Joined!         20
+97     in stock        20
+99     Equip:          10
+100    No Room In Party   20
+102    Replace Old Data?  20
+104    Who's Status?      20
+106    Who's Spells?      20
+108    Equip Who?         20
+110    Nothing         10
+111    Has Nothing     30
+114    Cannot Steal    30
+117    Stole           30
+120    miss            20
+122    fail            20
+124    learned         10
+125    Found           10
+126    Gained          10
+127    Weak to         10
+128    Strong to       10
+129    Absorbs         10
+130    No Elemental Effects 30
+133    has no spells   20
+135    Which Hero?     20
+137    Name the Hero   20
+139    Found a         20
+141    Found           20
+143    THE INN COSTS   20
+145    You have        20
+147    CANNOT RUN!     20
+149    Level up for    20
+151    levels for      20
+153    and             10
+154    day             10
+155    days            10
+156    hour            10
+157    hours           10
+158    minute          10
+159    minutes         10
+160    Level MP        20"""
+
+offsets = (0,7, 23)
+for l in s.split('\n'):
+    rec = int (l[0:7])
+    name = l[7:23].rstrip()
+    size = l[23:]
+    if size[0] not in '123456789':
+       name += size[:size.rfind (' ')].rstrip()
+       size = size[size.rfind (' '):]
+    size = int (size)
+    print (rec, name, size)
