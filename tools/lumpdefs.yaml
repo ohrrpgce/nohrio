@@ -14,73 +14,69 @@
 __datadef:
    ATTRNAME: (str matching '[a-z][a-z0-9_]+')
    DESCRIPTION: (str)
-   DTYPE: [dtypeid (str), params (list|int)]
+   DTYPE: ['dtypeid (str)', 'range (list[2] or false)?', 'default ()?','extra (dict)']
+   FIELDLIST: (str, ' '/'\n' separated)
    RANGE: [min (int), max (int)]
-   BITSETDEF: [ATTRNAME, DESCRIPTION]
+   BITSETDEF: '[ATTRNAME, DESCRIPTION] +'
    ENUMDEF:
-            'dtype' : DTYPE ||
-            'range' : RANGE ||
-            (EXPRESSION) : FORMATSTRING
+            'dtype' : DTYPE
+            (EXPRESSION) : FORMATSTRING +
    PREDEF:
             (name): DTYPE | RANGE ||
             'ENUMERATIONS': (map(:ENUMDEF+)) ||
             'BITSETS': (map(:BITSETDEF+))
    COMPLEX_DTYPE:
-      name_regex : '[a-z][a-z0-9_]+'
-      type : map
-      fields:
-         attrname:
-            required : true
-            desc : Name of attribute
-         alldtype:
-            type: DTYPE | COMPLEX_DTYPE
-            desc: Assign the given dtype to all fields
-                  which have not already had a dtype assigned
-         defaults:
-            type: seq
-            desc: default values for all specified fields, in order.
-                  expressions are permitted.
-         fields:
-            type: seq (str,map)
-            desc: string listing all fields, followed by dtype definition
-            map:
-                'NAME' : specify a dtype (possibly indirect, as in an enumeration)
-                '*' : Specify a default dtype for all fields
-                '*[]' : Specify a default range for all fields
-                'NAME[]' : Specify a range for NAME (where NAME is a field name)
-         index:
-            type: str (EXPRESSION)
-            desc: start index (evaluated each time a lump handle is requested).
-                  Usually used with a multi-item lump like DOX
-         flags:
-            type: str (FLAG+)
-            FLAG:
-               REQUIRED:
-                             - Necessary to make sense of the RPG.
-                               if the lump is missing, it suggests a bad RPG.
-                             - suggests: BASE
-               MANUALFLUSH:
-                             - Changes won't be written to disk
-                               until the data handle is garbage-collected,
-                               or manual call of flush()
-               PLANAR:
-                             - Use a planar (AAABBBCCC) rather than
-                               atomic (ABCABCABC) data layout
-                             - requires: alldtype shape
-         part:
-            type: seq (index (int), destdtype (str))
-            desc: dtype describes a partial data, which should
-                  be concatenated with others to produce
-                  a final result. Intended specifically for
-                  ATTACK.BIN.
-            requires: MANUALFLUSH
-         owner:
-            type : str (EXPRESSION)
-            desc : What to attach attribute to
-         shape:
-            type: seq (int+) | int
-            desc: As in numpy.
-                  Used to specify partial slices of larger lumps, mostly.
+      #name_regex : '[a-z][a-z0-9_]+'
+      #type : map
+      dtype: (DTYPE|COMPLEX_DTYPE)
+             exists XOR dtypes/fields existing
+      dtypes : {FIELDNAME : (DTYPE|COMPLEX_DTYPE)+}
+      fields : FIELDLIST
+      default : seq
+                a (possibly nested) sequence sufficient to initialize the
+                whole struct to defaults.
+                Useful for eg, master palette.
+      flags:
+         REQUIRED:
+            Necessary to make sense of the RPG.
+            if the lump is missing, it suggests a bad RPG.
+         MANUALFLUSH:
+            Changes won't be written to disk
+            until the data handle is garbage-collected,
+            or manual call of flush()
+         PLANAR:
+            Use a planar (AAABBBCCC) rather than
+            atomic (ABCABCABC) data layout
+            Requires -- all dtypes of same size,
+            explicit shape.
+
+         #alldtype:
+         #   type: DTYPE | COMPLEX_DTYPE
+         #   desc: Assign the given dtype to all fields
+         #         which have not already had a dtype assigned
+         # use a '*' field instead
+         #defaults:
+         #   type: seq
+         #   desc: default values for all specified fields, in order.
+         #         expressions are permitted.
+      index:
+         type: str (EXPRESSION)
+         desc: start index (evaluated each time a lump handle is requested).
+               Usually used with a multi-item lump like DOX
+      part:
+         type: seq (index (int), destdtype (str))
+         desc: dtype describes a partial data, which should
+               be concatenated with others to produce
+               a final result. Intended specifically for
+               ATTACK.BIN.
+         requires: MANUALFLUSH in flags
+      owner:
+         type : str (EXPRESSION)
+         desc : What to attach attribute to
+      shape:
+         type: seq (int+) | int
+         desc: As in numpy.
+               Used to specify partial slices of larger lumps, mostly.
    ROOTKEY:  COMPLEX_DTYPE | PREDEF
 #
 ########################################################
@@ -91,6 +87,12 @@ __datadef:
 ## #
 #
 ##
+
+######
+# Note : Writing is NOT SUPPORTED for RPGFiles, only RPGDirs.
+#        I decided this because RELOAD lumps and some others
+#        require a complete rewrite, maybe altering file size.
+#
 BLOADO: &BLOADO 7
 SHORT: &SHORT int16
 MINSHORT: &MINSHORT -32768
@@ -98,10 +100,12 @@ MAXSHORT: &MAXSHORT 32767
 USHORT : &USHORT uint16
 MAXUSHORT: &MAXUSHORT 65535
 UBYTE : &UBYTE uint8
+MAXUBYTE : &MAXUBYTE 255
 B6R : &B6R [0, 63]
 B8R : &B8R [0, 255]
 SHORTR : &SHORTR [*MINSHORT, *MAXSHORT]
 USHORTR : &USHORTR [0, *MAXUSHORT]
+ALLSHORT: &ALLSHORT {dtypes : {'*' : [*SHORT, *SHORTR, 0]}}
 MAXHERO: &MAXHERO 60
 HEROR : &HEROR [-60, 60]
 MAXSHOP : &MAXSHOP 99
@@ -123,6 +127,7 @@ MAXNPCINSTANCE : &MAXNPCINSTANCE 300
 MAXDOOR : &MAXDOOR 100
 MAXDOORLINK : &MAXDOORLINK 200
 MAXATTACK : &MAXATTACK 32767
+ATTACKR : &ATTACKR [0, *MAXATTACK]
 MAXENEMY : &MAXENEMY 32767
 MAXFORMATION : &MAXFORMATION 32767
 MAXFORMATIONSET : &MAXFORMATIONSET 32767
@@ -138,7 +143,19 @@ NELEMENTS : &NELEMENTS 8
 NSTATS : &NSTATS 12
 
 PERCENTR: &PERCENTR [0, 100]
-
+SHORTITEM: &SHORTITEM
+   - *SHORT
+   - [0, *MAXITEM]
+   - 0
+   - wasted: 1b
+     unsigned: yes
+SHORTPERCENT: &SHORTPERCENT
+   - *SHORT
+   - *PERCENTR
+   - 0
+   - wasted: 9b
+     unsigned: yes
+SHORTTYPE: &SHORTTYPE [*SHORT, *SHORTR, 0]
 CLASS_DTYPE : &CLASS_DTYPE
    __class : dtype
 CLASS_ENUM : &CLASS_ENUM
@@ -146,14 +163,13 @@ CLASS_ENUM : &CLASS_ENUM
 
 PTMERGE : &PTMERGE
    << : *CLASS_DTYPE
-   dtype : uint8
+   dtype : [uint8, [0, *MAXUBYTE], 0]
    flags : PACKED4BPP IMAGE
    owner : rpg.gfx
 DEFPALMERGE: &DEFPALMERGE
    << : *CLASS_DTYPE
    owner: rpg.defpal
-   dtype : *SHORT
-   range : [0, *MAX16PAL]
+   dtype : [*SHORT, [0, *MAX16PAL], 0]
    softrange : rpg.pal16 # limited to len (rpg.pal16)
 
 RPGOWNED: &RPGOWNED
@@ -163,32 +179,59 @@ TEXTLINE : &TEXTLINE "%s\n"
 
 RGB6: &RGB6 # used or not?
    << : *CLASS_DTYPE
-   wasted : 2/8 bits perfield
-   fields: [r g b, {'*' : uint8, '*[]' : *B6R}]
+   fields: r g b
+   dtypes: {'*' : [uint8, *B6R, 0, {wasted: 2bits}]}
 
 RGB8: &RGB8
    << : *CLASS_DTYPE
-   fields : [r g b, {'*' : uint8, '*[]' : *B8R}]
+   fields : r g b
+   dtypes : {'*' : [uint8, *B8R, 0]}
 
 RGB6W: &RGB6W
    << : *CLASS_DTYPE
-   wasted : 10/16 bits perfield
-   fields : [r g b, {'*' : *USHORT, '*[]' : *B6R}]
+   fields : r g b
+   dtypes : {'*' : [*USHORT, *B6R, 0, {wasted: 10bits}]}
 
 XYCOORD: &XYCOORD
-   << : *CLASS_DTYPE
-   fields : [x y, {'*': *SHORT, '*[]' : *SHORTR}]
+   << : [*CLASS_DTYPE, *ALLSHORT]
+   fields : x y
 
 STATS: &STATS
-   << : *CLASS_DTYPE
-   fields : [hp mp str acc def dog mag wil spd ctr foc xhits, {'*': *SHORT, '*[]' : *SHORTR}]
+   << : [*CLASS_DTYPE, *ALLSHORT]
+   fields : hp mp str acc def dog mag wil spd ctr foc xhits
 
 STATS0_99: &STATS0_99
    << : *CLASS_DTYPE
-   fields :
-            - hp mp str acc def dog mag wil spd ctr foc xhits
-            - '*'   : [*SHORT, 2]
-              '*[]' : *SHORTR
+   fields : hp mp str acc def dog mag wil spd ctr foc xhits
+   dtypes : {'*'   : [[*SHORT, 2], *SHORTR, 0]}
+
+STTENTRY1: &STTENTRY1
+   << : *CLASS_DTYPE
+   dtype :
+     - - fields : length data
+         dtypes :
+            length : [uint8, [0,10], 0]
+            data : [S10, no, '']
+       - 1
+     - no
+STTENTRY2: &STTENTRY2
+   << : *CLASS_DTYPE
+   dtype :
+     - - fields : length data
+         dtypes :
+            length : [uint8, [0,10], 0]
+            data : [S10, no, '']
+       - 2
+     - no
+STTENTRY3: &STTENTRY3
+   << : *CLASS_DTYPE
+   dtype :
+     - - fields : length data
+         dtypes :
+            length : [uint8, [0,10], 0]
+            data : [S10, no, '']
+       - 3
+     - no
 ##
 #
 ## #
@@ -293,32 +336,32 @@ BITSETS:
       - [         noflinch, Never flinch when hit]
       - [     alone_ignore, Ignored by 'Alone' AI]
       - - += [('unused%d' % (v+22), 'Unused %d' % (v+22)) for v in range(15)]
+   BDOORS : &BDOORS
+      - [ used, Used]
 
 ENUMERATIONS:
    ETAGCHECK: &ETAGCHECK
       flags : ENUM
-      dtype : *SHORT
-      range : TAGR
-      N>=0 : [tag$(N)_on, Tag $N == ON]
-      N<0 : [tag$(N)_off, Tag $N == OFF]
+      dtype : [*SHORT, *TAGR, 0]
+      enumdepends : N rpg.tagname
+      N>=0 : ['tag${N}_on', 'Tag ${N} (${rpg.tagname.get(N)}) == ON']
+      N<0 : ['tag${-N}_off', 'Tag ${-N} (${rpg.tagname.get(-N)}) == OFF']
    ETAGSET: &ETAGSET
       flags : ENUM
-      dtype : *SHORT
-      range : TAGR
-      N>=0 : [tag$(N)_on, Tag $N = ON]
-      N<0 : [tag$(N)_off, Tag $N = OFF]
+      dtype : [*SHORT, *TAGR, 0]
+      enumdepends : N rpg.tagname
+      N>=0 : ['tag${N}_on', 'Tag ${N} (${rpg.tagname.get(N)}) = ON']
+      N<0 : ['tag${-N}_off', 'Tag ${-N} (${rpg.tagname.get(-N)}) = OFF']
    EHERO_SPELLLIST : &EHERO_SPELLLIST
       flags : ENUM
-      dtype : *SHORT
-      range : auto
+      dtype : [*SHORT, [0, 3], 0]
       0 : [spells_mp, Spells (MP Based)]
       1 : [spells_levelmp, Spells (FF1 Style)]
       2 : [random, Random Effects]
       3 : [item, Item Consuming]
    ENPC_MOVETYPE : &ENPC_MOVETYPE
       flags : ENUM
-      dtype : *SHORT
-      range : auto
+      dtype : [*SHORT, [0, 8], 0]
       0 : [standstill, Stand still]
       1 : [    wander, Wander]
       2 : [      pace, Pace]
@@ -330,8 +373,7 @@ ENUMERATIONS:
       8 : [   inplace, Walk in place]
    ENPC_SPEED : &ENPC_SPEED
       flags : ENUM
-      dtype : *SHORT
-      range : auto
+      dtype : [*SHORT, [0, 5], 0]
       0 : [0, '0']
       1 : [1, '1']
       2 : [2, '2']
@@ -340,15 +382,13 @@ ENUMERATIONS:
       5 : [5, '5']
    ENPC_ACTIVATED : &ENPC_ACTIVATED
       flags : ENUM
-      dtype : *SHORT
-      range : auto
+      dtype : [*SHORT, [0, 2], 0]
       0 : [     changedir, Change Direction]
       1 : [    faceplayer, Face Player]
       2 : [dontfaceplayer, Do Not Face Player]
    ENPC_PUSHABILITY : &ENPC_PUSHABILITY
       flags : ENUM
-      dtype : *SHORT
-      range : auto
+      dtype : [*SHORT, [0, 7], 0]
       0 : [       off, 'Off']
       1 : [      full, Full]
       2 : [horizontal, Horizontal]
@@ -359,79 +399,76 @@ ENUMERATIONS:
       7 : [      left, Left Only]
    ENPC_ACTIVATION : &ENPC_ACTIVATION
       flags : ENUM
-      dtype : *SHORT
-      range : auto
+      dtype : [*SHORT, [0, 2], 0]
       0 : [   use, Use]
       1 : [ touch, Touch]
       2 : [stepon, Step On]
    EPORTRAITTYPE : &EPORTRAITTYPE
       flags : ENUM
-      dtype : *SHORT
-      range : auto
+      dtype : [*SHORT, [0, 3], 0]
       0 : [none, 'None']
       1 : [fixed, Fixed]
       2 : [hero_caterpiller, Hero By Caterpillar]
       3 : [hero_slot, Hero By Party Slot]
    ETEXTBOX_BOXORSCRIPT : &ETEXTBOX_BOXORSCRIPT
       flags : ENUM
-      dtype : *SHORT
-      range : *SHORTR
-      N>=0 : [textbox$N, Textbox $N]
-      -16384<N<0 : [script$(-N), Run script $(-N)]
-      N<-16384 : [trigger$(N+16384), Trigger $(N+16384)]
+      dtype : [*SHORT, *SCRIPTR, 0]
+      enumdepends : N rpg.triggers rpg.general rpg.scripts
+      N>=0 : [textbox$(N), Textbox $(N)]
+      -(min (16384, rpg.general.maxplotscript))<N<0 :
+            ['script${-N}', 'Run script ${-N} ($(rpg.scripts[-N]))']
+      -(16384 + len (rpg.triggers))<=N<-16384 :
+            ['trigger${-(N+16384)}', 'Trigger ${-(N+16384)} (${getstr (rpg.general.triggers[-(N+16384)].name)))']
    ESHOPORINN : &ESHOPORINN
       flags : ENUM
-      dtype : *SHORT
-      range : [*MINSHORT, *MAXSHOP]
+      enumdepends : N rpg.shops rpg.strings rpg.general
+      dtype : [*SHORT, [*MINSHORT, rpg.general.maxshop], 0]
       0 : [restore, Restore HP/MP]
-      N>0 : [shop$N, Enter Shop $N]
-      N<0 : [inn$N, Enter Inn Costing $(rpg.strings.money)$N]
+      N>0 : ['shop${N}', 'Enter Shop ${N} ${getstr (rpg.shops[N].name)}']
+      N<0 : [ 'inn${-N}', 'Enter Inn Costing ${getstr (rpg.strings.money)+str(-N)}']
    EADDHERO : &EADDHERO
       flags : ENUM
-      dtype : *SHORT
-      range : *HEROR
-      0: [nothing, Do Not Add/Remove Heros]
-      N>0 : [add$N, Add Hero $N To The Party]
-      N<0 : [remove$N, Remove Hero $N From The Party]
+      enumdepends : N rpg.general rpg.hero
+      dtype : [*SHORT, [-rpg.general.maxhero, rpg.general.maxhero], 0]
+      0   : [     nothing, Do Not Add/Remove Heros]
+      N>0 : [   'add${N}', 'Add Hero ${N} (${getstr(rpg.hero[N].name)}) To The Party']
+      N<0 : ['remove${-N}', 'Remove Hero ${-N} (${getstr(rpg.hero[-N].name)}) From The Party']
    EADDITEM : &EADDITEM
       flags : ENUM
-      dtype : *SHORT
-      range : *ITEMR
+      enumdepends : N rpg.general rpg.hero
+      dtype : [*SHORT, [-rpg.general.maxitem, rpg.general.maxitem], 0]
       0: [nothing, Do Not Add/Remove Items]
-      N>0 : [add$N, Add Item $N To Inventory]
-      N<0 : [remove$N, Remove Item $N From Inventory]
+      N>0 : [    'add${N}', 'Add Item ${N} (${getstr(rpg.item[N].name)}) To Inventory']
+      N<0 : ['remove${-N}', 'Remove Item ${-N} (${getstr(rpg.item[-N].name)}) From Inventory']
    ESWAPHERO : &ESWAPHERO
       flags : ENUM
-      dtype : *SHORT
-      range : *HEROR
+      enumdepends : N rpg.general rpg.hero
+      dtype : [*SHORT, [-rpg.general.maxhero, rpg.general.maxhero], 0]
       0: [nothing, Do Not Swap In/Out Heros]
-      N>0 : [add$N, Swap Hero $N In]
-      N<0 : [remove$N, Swap Hero $N Out]
+      N>0 : [   'add${N}', 'Swap Hero ${N} (${getstr(rpg.hero[N].name)}) In']
+      N<0 : ['remove${N}', 'Swap Hero ${N} (${getstr(rpg.hero[-N].name)}) Out']
    ELOCKHERO : &ELOCKHERO
       flags : ENUM
-      dtype : *SHORT
-      range : *HEROR
+      enumdepends : N rpg.general rpg.hero
+      dtype : [*SHORT, [-rpg.general.maxhero, rpg.general.maxhero], 0]
       0: [nothing, Do Not Lock/Unlock Heros]
-      N>0 : [add$N, Unlock Hero $N]
-      N<0 : [remove$N, Lock Hero $N]
+      N>0 : [   'add${N}', 'Unlock Hero ${N} (${getstr(rpg.hero[N].name)})']
+      N<0 : ['remove${N}', 'Lock Hero ${N} (${getstr(rpg.hero[-N].name)})']
    EENEMYTHIEVABLE : &EENEMYTHIEVABLE
       flags : ENUM
-      dtype : *SHORT
-      range : auto
+      dtype : [*SHORT, [-1, 1], 0]
       -1 : Not thievable
       0 : Once only
       1 : Infinitely thievable
    EPICSIZE : &EPICSIZE
       flags : ENUM
-      dtype : *SHORT
-      range : auto
+      dtype : [*SHORT, [0, 2], 0]
       0 : Small
       1 : Medium
       2 : Large
    EENEMYDISSOLVE : &EENEMYDISSOLVE
       flags : ENUM
-      dtype : *SHORT
-      range : auto
+      dtype : [*SHORT, [0, 8], 0]
       0 : (NONE SET)
       1 : Random scatter
       2 : Crossfade
@@ -443,8 +480,7 @@ ENUMERATIONS:
       8 : Phase out
    EENEMYDISSOLVELEN : &EENEMYDISSOLVELEN
       flags : ENUM
-      dtype : *SHORT
-      range : [0, 99]
+      dtype : [*SHORT, [0, 99], 0]
       0 : default
 
 __STATUS:
@@ -523,8 +559,6 @@ archinym.lmp:
    loadpriority : 1
    flags: REQUIRED
           FULL_REWRITE_ON_CHANGE
-          MUST_UNLUMP_BEFORE_WRITING
-          SINGLE_RECORD
           SINGULAR
    alldtype: *TEXTLINE
 attack.bin:
@@ -533,28 +567,48 @@ attack.bin:
 binsize.bin:
    << : *CLASS_DTYPE
    attrname : binsize
-   fields :
-      - attack stf songdata sfxdata map menu menuitem uicolor say npcdef
-      - '*' : *SHORT
+   fields : attack stf songdata sfxdata map menu menuitem uicolor say npcdef
+   dtypes : {'*' : [*SHORT, *SHORTR, 0]}
    flags : BASE
            AUTOSIZE
            SINGULAR
    hdf5_transform :
-      - - copy
-        - path : /redundant/binsize
-      - - XXX # reverse transform
-        - XXX
+
+      # atomic_copy def:
+      #
+      #   dest = h.createEArray(pathpart,
+      #                         namepart,
+      #                         tables.Atom.from_dtype (dtype),
+      #                         shape = (0,),
+      #                         expectedrows = len (arr) * 2)
+      #   dest.append (arr.view(dtype))
+      #   if arr.names:
+      #       dest.fieldnames = self.dtype.names
+      #
+      #   return dest
+      - tmp = atomic_copy (self, uint16, h5, path = '/redundant/binsize')
+        tmp.fieldnames = self.dtype.names
+        return tmp
+      # earray_to_numpy def:
+      #
+      #   dt = node.atom.dtype
+      #   names = node.fieldnames
+      #   dtype = np.dtype ([(n, dt) for n in names])
+      #   return node[:].astype (dtype)
+      #
+      - return earray_to_numpy (h5.root.redundant.binsize)
    yaml_transform :
-      - - keymap
-      - - keyunmap
+      - keymap (self)
+      - keyunmap (self)
 d:
    << : *CLASS_DTYPE
    owner : Map
    attrname : doorlinks
-   fields :
-            - srcdoor destdoor destmap condtag1 condtag2
-            - '*[]': *SHORTR
-              '*' : *SHORT
+   fields : srcdoor destdoor destmap condtag1 condtag2
+   dtypes :
+      '*' : [*SHORT, *SHORTR, 0]
+      condtag1 : [*SHORT, *TAGR, 0]
+      condtag2 : [*SHORT, *TAGR, 0]
    flags: PLANAR
           MAPINDEXED
    maplumpindex: $owner.n
@@ -598,61 +652,56 @@ defpal8.bin:
 dt1:
    << : [*CLASS_DTYPE, *RPGOWNED]
    attrname: enemy
-   fields:
-           - name thievability steal_item steal_chance
-             raresteal_item raresteal_chance dissolve dissolvelen
-             deathsound battlecursor unused picture palette picsize rewards stats
-             bitsets spawning attacks counter unused2
-           - '*' : *SHORT
-             '*[]' : *SHORTR
-             name : [=str16_16, 16]
-             thievability : *EENEMYTHIEVABLE
-             steal_item[]: [0, *MAXITEM]
-             steal_chance[]: *PERCENTR
-             raresteal_item[]: [0, *MAXITEM]
-             raresteal_chance[]: *PERCENTR
-             dissolve : *EENEMYDISSOLVE
-             dissolvelen : *EENEMYDISSOLVELEN
-             battlecursor : *XYCOORD
-             unused : [*SHORT, 26]
-             picsize : *EPICSIZE
-             rewards :
-                fields :
-                         - gold exp item item_chance rare_item rare_item_chance
-                         - '*' : *SHORT
-                           '*[]' : *SHORTR
-                           item[]: [0, *MAXITEM]
-                           item_chance[]: *PERCENTR
-                           rare_item[]: [0, *MAXITEM]
-                           rare_item_chance[]: *PERCENTR
-             bitsets : [=bitsets, [80, *BENEMY]]
-             stats : *STATS
-             spawning:
-                fields :
-                         - death nonelem_death alone nonelem_hit elem_hit
-                           nspawn
-                         - '*' : *SHORT
-                           '*[]' : *SHORTR
-                           elem_hit : [SHORT, *NELEMENTS]
-             attacks:
-                fields :
-                         - normal desperate alone
-                         - '*' : [*SHORT, 5]
-                           '*[]' : *SHORTR
-             counter :
-                fields:
-                        - element stat
-                        - element : [*SHORT, *NELEMENTS]
-                          stat : [*SHORT, *NSTATS]
-             unused2 : [*SHORT, 33]
+   fields: name thievability steal_item steal_chance
+           raresteal_item raresteal_chance dissolve dissolvelen
+           deathsound battlecursor unused picture palette picsize rewards stats
+           bitsets spawning attacks counter unused2
+   dtypes :
+      '*' : [*SHORT, *SHORTR, 0]
+      name : [=str16_16, 16]
+      thievability : *EENEMYTHIEVABLE
+      steal_item: *SHORTITEM
+      steal_chance: *SHORTPERCENT
+      raresteal_item: *SHORTITEM
+      raresteal_chance: *SHORTPERCENT
+      dissolve : *EENEMYDISSOLVE
+      dissolvelen : *EENEMYDISSOLVELEN
+      battlecursor : [*XYCOORD, *SHORTR, [0,0]]
+      unused : [[*SHORT, 26], *SHORTR, 0]
+      picsize : *EPICSIZE
+      rewards :
+         fields : gold exp item item_chance rare_item rare_item_chance
+         dtypes :
+            '*' : [*SHORT, *SHORTR, 0]
+            item: *SHORTITEM
+            item_chance: *SHORTPERCENT
+            rare_item: *SHORTITEM
+            rare_item_chance: *SHORTPERCENT
+            bitsets : [=bitsets, [80, *BENEMY]]
+            stats : *STATS
+            spawning:
+               fields : death nonelem_death alone nonelem_hit elem_hit
+                        nspawn
+               dtypes:
+                  '*' : [*SHORT, *SHORTR, 0]
+                  elem_hit : [[*SHORT, *NELEMENTS], *SHORTR, ]
+      attacks:
+         fields : normal desperate alone
+         dtypes : {'*' : [[*SHORT, 5], *ATTACKR, 0]}
+      counter :
+         fields: element stat
+         dtypes:
+            element : [[*SHORT, *NELEMENTS], *ATTACKR, 0]
+            stat : [[*SHORT, *NSTATS], *ATTACKR, 0]
+      unused2 : [[*SHORT, 33], *SHORTR, 0]
 dox:
    << : *CLASS_DTYPE
    owner : Map
    attrname : doors
-   fields :
-            - x y bitsets
-            - '*[]': *SHORTR
-              '*' : *SHORT
+   fields : x y bitsets
+   dtypes :
+      '*' : [*SHORT, *SHORTR, 0]
+      bitsets : *BDOORS
    flags: PLANAR
    index: [$owner.n]
    shape: 100
@@ -667,49 +716,49 @@ gen:
    offset : *BLOADO
    expected_size : 1007
    fields: # bighuge field list follows.
-           - maxmap title titlemusic victorymusic battlemusic
-             passcode_version passcode_rotator newpasscode newpasscode_unused
-             oldpasscode
+           maxmap title titlemusic victorymusic battlemusic
+           passcode_version passcode_rotator newpasscode newpasscode_unused
+           oldpasscode
 
-             maxheropic maxenemy1pic maxenemy2pic maxenemy3pic maxnpcpic
-             maxweaponpic maxattackpic
-             maxtileset maxattack maxhero maxenemy maxformation
-             maxpal16 maxtextbox maxplotscript
+           maxheropic maxenemy1pic maxenemy2pic maxenemy3pic maxnpcpic
+           maxweaponpic maxattackpic
+           maxtileset maxattack maxhero maxenemy maxformation
+           maxpal16 maxtextbox maxplotscript
 
-             newgamescript gameoverscript max_regularscript
-             suspendbits cameramode camera_args scriptbackdrop time
-             maxvehicle maxtagname
-             loadgamescript textbox_backdrop enemydissolve enablejoy
-             poison stun damagecap mute statcap maxsfx masterpal
+           newgamescript gameoverscript max_regularscript
+           suspendbits cameramode camera_args scriptbackdrop time
+           maxvehicle maxtagname
+           loadgamescript textbox_backdrop enemydissolve enablejoy
+           poison stun damagecap mute statcap maxsfx masterpal
 
-             maxmasterpal maxmenu maxmenuitem maxitem max_boxborder
-             maxportrait maxinventory
+           maxmasterpal maxmenu maxmenuitem maxitem max_boxborder
+           maxportrait maxinventory
 
-             reserved
+           reserved
 
-             oldpassword2_offset oldpassword2_length version startmoney
-             maxshop oldpassword1_offset oldpassword1_length maxbackdrop
-             bitsets
+           oldpassword2_offset oldpassword2_length version startmoney
+           maxshop oldpassword1_offset oldpassword1_length maxbackdrop
+           bitsets
 
-             startx starty startmap
+           startx starty startmap
 
-             onetimenpc_indexer onetimenpc_bits
-             def_deathsfx maxsong acceptsfx cancelsfx choosesfx textboxletter
-             morebitsets itemlearnsfx cantlearnsfx buysfx hiresfx sellsfx
-             cantbuysfx cantsellsfx damagedisplayticks damagedisplayrise
-             wastedspace oldsctable_head oldsctable unused
-           - '*' : *SHORT
-             '*[]' : *SHORTR
-             bitsets : [=bitsets, [32, *BGENERAL]]
+           onetimenpc_indexer onetimenpc_bits
+           def_deathsfx maxsong acceptsfx cancelsfx choosesfx textboxletter
+           morebitsets itemlearnsfx cantlearnsfx buysfx hiresfx sellsfx
+           cantbuysfx cantsellsfx damagedisplayticks damagedisplayrise
+           wastedspace oldsctable_head oldsctable unused
+   dtypes:
+      '*' : [*SHORT, *SHORTR, 0]
+      bitsets : [=bitsets, [32, *BGENERAL]]
 
 lookup1.bin:
    << : *CLASS_DTYPE
    attrname : triggers
-   fields :
-            - id name
-            - id : *SHORT
-              name: [=str16_8, 36]
-              id[] : *MAXSCRIPT
+   fields : id name
+   dtypes:
+      id : [*SHORT, [0, *MAXSCRIPT], 0]
+      name: [[=str16_8, 36], no, [0, '']]
+#XXX continue here
 mas:
    << : *CLASS_DTYPE
    offset: *BLOADO
@@ -730,6 +779,7 @@ mas:
         d.flush()
         del d
         self.rpg.remove_lump ('mas')
+    # XXX
 menuitem.bin:
    << : [*CLASS_DTYPE, *RPGOWNED]
    attrname : menuitem
@@ -742,13 +792,13 @@ menuitem.bin:
 pal:
    << : [*CLASS_DTYPE, *RPGOWNED]
    attrname: pal16
-   dtype : [uint8, 16]
+   dtype : [[uint8, 16], *B8R, 0]
    softdep: mas palettes.bin
 palettes.bin :
    << : [*CLASS_DTYPE, *RPGOWNED]
    attrname: pal16
    dynamic_dtype : [*RGB8, '$header[1] / 3']
-   dtype : [*RGB8, 256]
+   dtype : [[*RGB8, 256], *B8R, [0,0,0]]
    header : [*SHORT, 2]
 pt0:
    << : *PTMERGE
@@ -806,7 +856,7 @@ say:
               shrink textcolor bordercolor backdrop music menu
               portraittype portraitpic portraitpal portraitx portraity
               sound
-            - '*' : *SHORT
+            - << : *ALLSHORT
               text : [S38, 8]
               reserved1 : uint8
               conditional :
@@ -904,3 +954,299 @@ sho:
 stt:
    << : [*CLASS_DTYPE, *RPGOWNED]
    # output generated by stt2yaml
+   fields: health_points spell_points attack_power accuracy extra_hits
+           blocking_power dodge_rate counter_rate speed
+           enemy_type_1 enemy_type_2 enemy_type_3 enemy_type_4
+           enemy_type_5 enemy_type_6 enemy_type_7 enemy_type_8
+           elemental_1 elemental_2 elemental_3 elemental_4
+           elemental_5 elemental_6 elemental_7 elemental_8
+           armor_1 armor_2 armor_3 armor_4
+           spell_skill spell_block spell_cost_pc money experience
+           item done autosort trash weapon _remove_ _exit_
+           discard cannot level yes no exit
+           for_next remove pay cancel cancel2 new_game exit2
+           pause quit_playing_ yes2 no2 cancel3
+           items spells status equip order team save quit map volume buy sell inn hire
+           exit3 cannot_sell worth trade_for and_a worth_nothing sold
+           trade_for2 joins_for cannot_afford cannot_hire purchased
+           joined_ in_stock equip_ no_room_in_party replace_old_data_
+           who_s_status_ who_s_spells_ equip_who_ nothing has_nothing
+           cannot_steal stole miss fail learned found gained weak_to
+           strong_to absorbs no_elemental_effects has_no_spells which_hero_
+           name_the_hero found_a found2 the_inn_costs you_have cannot_run_
+           level_up_for levels_for
+           and day days hour hours minute minutes
+           level_mp
+   dtypes:
+
+           - health_points        : *STTENTRY1
+             health_points?       : [13, 'Health Poi']
+             spell_points         : *STTENTRY1
+             spell_points?        : [12, 'Spell Poin']
+             attack_power         : *STTENTRY1
+             attack_power?        : [12, 'Attack Pow']
+             accuracy             : *STTENTRY1
+             accuracy?            : [8, 'Accuracy']
+             extra_hits           : *STTENTRY1
+             extra_hits?          : [10, 'Extra Hits']
+             blocking_power       : *STTENTRY1
+             blocking_power?      : [14, 'Blocking P']
+             dodge_rate           : *STTENTRY1
+             dodge_rate?          : [10, 'Dodge Rate']
+             counter_rate         : *STTENTRY1
+             counter_rate?        : [12, 'Counter Ra']
+             speed                : *STTENTRY1
+             speed?               : [5, 'Speed']
+             enemy_type_1         : *STTENTRY1
+             enemy_type_1?        : [12, 'Enemy Type']
+             enemy_type_2         : *STTENTRY1
+             enemy_type_2?        : [12, 'Enemy Type']
+             enemy_type_3         : *STTENTRY1
+             enemy_type_3?        : [12, 'Enemy Type']
+             enemy_type_4         : *STTENTRY1
+             enemy_type_4?        : [12, 'Enemy Type']
+             enemy_type_5         : *STTENTRY1
+             enemy_type_5?        : [12, 'Enemy Type']
+             enemy_type_6         : *STTENTRY1
+             enemy_type_6?        : [12, 'Enemy Type']
+             enemy_type_7         : *STTENTRY1
+             enemy_type_7?        : [12, 'Enemy Type']
+             enemy_type_8         : *STTENTRY1
+             enemy_type_8?        : [12, 'Enemy Type']
+             elemental_1          : *STTENTRY1
+             elemental_1?         : [11, 'Elemental ']
+             elemental_2          : *STTENTRY1
+             elemental_2?         : [11, 'Elemental ']
+             elemental_3          : *STTENTRY1
+             elemental_3?         : [11, 'Elemental ']
+             elemental_4          : *STTENTRY1
+             elemental_4?         : [11, 'Elemental ']
+             elemental_5          : *STTENTRY1
+             elemental_5?         : [11, 'Elemental ']
+             elemental_6          : *STTENTRY1
+             elemental_6?         : [11, 'Elemental ']
+             elemental_7          : *STTENTRY1
+             elemental_7?         : [11, 'Elemental ']
+             elemental_8          : *STTENTRY1
+             elemental_8?         : [11, 'Elemental ']
+             armor_1              : *STTENTRY1
+             armor_1?             : [7, 'Armor 1']
+             armor_2              : *STTENTRY1
+             armor_2?             : [7, 'Armor 2']
+             armor_3              : *STTENTRY1
+             armor_3?             : [7, 'Armor 3']
+             armor_4              : *STTENTRY1
+             armor_4?             : [7, 'Armor 4']
+             spell_skill          : *STTENTRY1
+             spell_skill?         : [11, 'Spell Skil']
+             spell_block          : *STTENTRY1
+             spell_block?         : [11, 'Spell Bloc']
+             spell_cost_pc        : *STTENTRY1
+             spell_cost_pc?       : [12, 'Spell cost']
+             money                : *STTENTRY1
+             money?               : [5, 'Money']
+             experience           : *STTENTRY1
+             experience?          : [10, 'Experience']
+             item                 : *STTENTRY1
+             item?                : [4, 'Item']
+             done                 : *STTENTRY1
+             done?                : [4, 'DONE']
+             autosort             : *STTENTRY1
+             autosort?            : [8, 'AUTOSORT']
+             trash                : *STTENTRY1
+             trash?               : [5, 'TRASH']
+             weapon               : *STTENTRY1
+             weapon?              : [6, 'Weapon']
+             -remove-             : *STTENTRY1
+             -remove-?            : [8, '-REMOVE-']
+             -exit-               : *STTENTRY1
+             -exit-?              : [6, '-EXIT-']
+             discard              : *STTENTRY1
+             discard?             : [7, 'Discard']
+             cannot               : *STTENTRY1
+             cannot?              : [6, 'Cannot']
+             level                : *STTENTRY1
+             level?               : [5, 'Level']
+             yes                  : *STTENTRY1
+             yes?                 : [3, 'Yes']
+             no                   : *STTENTRY1
+             no?                  : [2, 'No']
+             exit                 : *STTENTRY1
+             exit?                : [4, 'EXIT']
+             for_next             : *STTENTRY1
+             for_next?            : [8, 'for next']
+             remove               : *STTENTRY1
+             remove?              : [6, 'REMOVE']
+             pay                  : *STTENTRY1
+             pay?                 : [3, 'Pay']
+             cancel               : *STTENTRY1
+             cancel?              : [6, 'Cancel']
+             cancel2              : *STTENTRY1
+             cancel2?             : [6, 'CANCEL']
+             new_game             : *STTENTRY1
+             new_game?            : [8, 'NEW GAME']
+             exit2                : *STTENTRY1
+             exit2?               : [4, 'EXIT']
+             pause                : *STTENTRY1
+             pause?               : [5, 'PAUSE']
+             quit_playing_        : *STTENTRY2
+             quit_playing_?       : [13, 'Quit Playi', 13, 'ng?']
+             yes2                 : *STTENTRY1
+             yes2?                : [3, 'Yes']
+             no2                  : *STTENTRY1
+             no2?                 : [2, 'No']
+             cancel3              : *STTENTRY1
+             cancel3?             : [6, 'CANCEL']
+             items                : *STTENTRY1
+             items?               : [5, 'Items']
+             spells               : *STTENTRY1
+             spells?              : [6, 'Spells']
+             status               : *STTENTRY1
+             status?              : [6, 'Status']
+             equip                : *STTENTRY1
+             equip?               : [5, 'Equip']
+             order                : *STTENTRY1
+             order?               : [5, 'Order']
+             team                 : *STTENTRY1
+             team?                : [4, 'Team']
+             save                 : *STTENTRY1
+             save?                : [4, 'Save']
+             quit                 : *STTENTRY1
+             quit?                : [4, 'Quit']
+             map                  : *STTENTRY1
+             map?                 : [3, 'Map']
+             volume               : *STTENTRY1
+             volume?              : [6, 'Volume']
+             buy                  : *STTENTRY1
+             buy?                 : [3, 'Buy']
+             sell                 : *STTENTRY1
+             sell?                : [4, 'Sell']
+             inn                  : *STTENTRY1
+             inn?                 : [3, 'Inn']
+             hire                 : *STTENTRY1
+             hire?                : [4, 'Hire']
+             exit3                : *STTENTRY1
+             exit3?               : [4, 'Exit']
+             cannot_sell          : *STTENTRY2
+             cannot_sell?         : [11, 'CANNOT SEL', 11, 'L']
+             worth                : *STTENTRY2
+             worth?               : [5, 'Worth', 5, '']
+             trade_for            : *STTENTRY2
+             trade_for?           : [9, 'Trade for', 9, '']
+             and_a                : *STTENTRY1
+             and_a?               : [5, 'and a']
+             worth_nothing        : *STTENTRY2
+             worth_nothing?       : [13, 'Worth Noth', 13, 'ing']
+             sold                 : *STTENTRY1
+             sold?                : [4, 'Sold']
+             trade_for2           : *STTENTRY2
+             trade_for2?          : [9, 'Trade for', 9, '']
+             joins_for            : *STTENTRY2
+             joins_for?           : [9, 'Joins for', 9, '']
+             cannot_afford        : *STTENTRY2
+             cannot_afford?       : [13, 'Cannot Aff', 13, 'ord']
+             cannot_hire          : *STTENTRY2
+             cannot_hire?         : [11, 'Cannot Hir', 11, 'e']
+             purchased            : *STTENTRY2
+             purchased?           : [9, 'Purchased', 9, '']
+             joined_              : *STTENTRY2
+             joined_?             : [7, 'Joined!', 7, '']
+             in_stock             : *STTENTRY2
+             in_stock?            : [8, 'in stock', 8, '']
+             equip_               : *STTENTRY1
+             equip_?              : [6, 'Equip:']
+             no_room_in_party     : *STTENTRY2
+             no_room_in_party?    : [16, 'No Room In', 16, ' Party']
+             replace_old_data_    : *STTENTRY2
+             replace_old_data_?   : [17, 'Replace Ol', 17, 'd Data?']
+             who_s_status_        : *STTENTRY2
+             who_s_status_?       : [13, "Who's Stat", 13, 'us?']
+             who_s_spells_        : *STTENTRY2
+             who_s_spells_?       : [13, "Who's Spel", 13, 'ls?']
+             equip_who_           : *STTENTRY2
+             equip_who_?          : [10, 'Equip Who?', 10, '']
+             nothing              : *STTENTRY1
+             nothing?             : [7, 'Nothing']
+             has_nothing          : *STTENTRY3
+             has_nothing?         : [11, 'Has Nothin', 11, 'g', 11, '']
+             cannot_steal         : *STTENTRY3
+             cannot_steal?        : [12, 'Cannot Ste', 12, 'al', 12, '']
+             stole                : *STTENTRY3
+             stole?               : [5, 'Stole', 5, '', 5, '']
+             miss                 : *STTENTRY2
+             miss?                : [4, 'miss', 4, '']
+             fail                 : *STTENTRY2
+             fail?                : [4, 'fail', 4, '']
+             learned              : *STTENTRY1
+             learned?             : [7, 'learned']
+             found                : *STTENTRY1
+             found?               : [5, 'Found']
+             gained               : *STTENTRY1
+             gained?              : [6, 'Gained']
+             weak_to              : *STTENTRY1
+             weak_to?             : [7, 'Weak to']
+             strong_to            : *STTENTRY1
+             strong_to?           : [9, 'Strong to']
+             absorbs              : *STTENTRY1
+             absorbs?             : [7, 'Absorbs']
+             no_elemental_effects : *STTENTRY3
+             no_elemental_effects? : [20, 'No Element', 20, 'al Effects', 20, '']
+             has_no_spells        : *STTENTRY2
+             has_no_spells?       : [13, 'has no spe', 13, 'lls']
+             which_hero_          : *STTENTRY2
+             which_hero_?         : [11, 'Which Hero', 11, '?']
+             name_the_hero        : *STTENTRY2
+             name_the_hero?       : [13, 'Name the H', 13, 'ero']
+             found_a              : *STTENTRY2
+             found_a?             : [7, 'Found a', 7, '']
+             found2               : *STTENTRY2
+             found2?              : [5, 'Found', 5, '']
+             the_inn_costs        : *STTENTRY2
+             the_inn_costs?       : [13, 'THE INN CO', 13, 'STS']
+             you_have             : *STTENTRY2
+             you_have?            : [8, 'You have', 8, '']
+             cannot_run_          : *STTENTRY2
+             cannot_run_?         : [11, 'CANNOT RUN', 11, '!']
+             level_up_for         : *STTENTRY2
+             level_up_for?        : [12, 'Level up f', 12, 'or']
+             levels_for           : *STTENTRY2
+             levels_for?          : [10, 'levels for', 10, '']
+             and                  : *STTENTRY1
+             and?                 : [3, 'and']
+             day                  : *STTENTRY1
+             day?                 : [3, 'day']
+             days                 : *STTENTRY1
+             days?                : [4, 'days']
+             hour                 : *STTENTRY1
+             hour?                : [4, 'hour']
+             hours                : *STTENTRY1
+             hours?               : [5, 'hours']
+             minute               : *STTENTRY1
+             minute?              : [6, 'minute']
+             minutes              : *STTENTRY1
+             minutes?             : [7, 'minutes']
+             level_mp             : *STTENTRY2
+             level_mp?            : [8, 'Level MP', 8, '']
+
+tmn :
+   << : *CLASS_DTYPE
+   methods:
+      get (self, index): |
+          if index == 0:
+              return '<Always False>'
+          elif index == 1:
+              return '<Always True>'
+          elif index > len(self) + 1:
+              return '<Unnamed>'
+          return getstr (self[index - 2])
+      set (self, index, value): |
+          if index == 0 or index == 1:
+              raise ValueError ("can't set tag %d description!" % index)
+          setstr (self[index - 2], value)
+   fields : length data
+   flags : AUTOEXPAND
+   dtype :
+     - -
+         dtypes :
+            length : [uint8, [0,10], 0]
+            data : [S10, no, '']

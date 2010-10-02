@@ -126,7 +126,25 @@ s ="""0      Health Points   10
 159    minutes         10
 160    Level MP        20"""
 
+# XXX needs actual defaults from OHRRPGCE.NEW:OHRRPGCE.STT
+
+info = {
+   'yes': 'equip',
+   'no' : 'equip',
+   'yes2' : 'quitgame',
+   'no2' : 'quitgame',
+   'cancel' : 'buy?',
+   'cancel2' : '???1',
+   'cancel3' : '???2',
+   'exit' : 'equip???',
+   'exit2' : 'savemenu?',
+   'exit3' : 'mainmenu',
+}
+
+
 offsets = (0,7, 23)
+names = []
+specs = []
 for l in s.split('\n'):
     rec = int (l[0:7])
     name = l[7:23].rstrip()
@@ -135,4 +153,29 @@ for l in s.split('\n'):
        name += size[:size.rfind (' ')].rstrip()
        size = size[size.rfind (' '):]
     size = int (size)
-    print (rec, name, size)
+    attrname = name.lower().replace(' ', '_').replace('?', '_').replace('!', '_').replace('%', 'pc')
+    attrname = attrname.replace (':', '_').replace('.', '_').replace("'", '_').replace("-", '_')
+    if attrname in names:
+        n = 2
+        print ('recur %r' % attrname)
+        while attrname + str (n) in names:
+            n+=1
+        attrname = attrname+ str (n)
+
+    fill = []
+    used = 0
+    while used < size:
+        if len (name) < used:
+            tmp = ''
+        else:
+            tmp = name[used:used+10]
+        fill.extend ([len (name), tmp])
+        used += 10
+    names.append (attrname)
+    specs.append (' %-20s : *STTENTRY%d' % (attrname, size/10))
+    specs.append (' %-20s : %r' % (attrname+'?', fill))
+    #print (rec, name, size)
+#    print (str)
+print ('   fields:')
+print ('           - ' + " ".join (names))
+print ('           -' + '\n            '.join (specs))
