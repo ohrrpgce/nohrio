@@ -1,166 +1,154 @@
 #!/usr/bin/env python
 
 # from http://rpg.hamsterrepublic.com/ohrrpgce/STT
-s ="""0      Health Points   10
-1      Spell Points    10
-2      Attack Power    10
-3      Accuracy        10
-4      Extra Hits      10
-5      Blocking Power  10
-6      Dodge Rate      10
-7      Counter Rate    10
-8      Speed           10
-9      Enemy Type 1    10
-10     Enemy Type 2    10
-11     Enemy Type 3    10
-12     Enemy Type 4    10
-13     Enemy Type 5    10
-14     Enemy Type 6    10
-15     Enemy Type 7    10
-16     Enemy Type 8    10
-17     Elemental 1     10
-18     Elemental 2     10
-19     Elemental 3     10
-20     Elemental 4     10
-21     Elemental 5     10
-22     Elemental 6     10
-23     Elemental 7     10
-24     Elemental 8     10
-25     Armor 1         10
-26     Armor 2         10
-27     Armor 3         10
-28     Armor 4         10
-29     Spell Skill     10
-30     Spell Block     10
-31     Spell cost %    10
-32     Money           10
-33     Experience      10
-34     Item            10
-35     DONE            10
-36     AUTOSORT        10
-37     TRASH           10
-38     Weapon          10
-39     -REMOVE-        10
-40     -EXIT-          10
-41     Discard         10
-42     Cannot          10
-43     Level           10
-44     Yes             10
-45     No              10
-46     EXIT            10
-47     for next        10
-48     REMOVE          10
-49     Pay             10
-50     Cancel          10
-51     CANCEL          10
-52     NEW GAME        10
-53     EXIT            10
-54     PAUSE           10
-55     Quit Playing?   20
-57     Yes             10
-58     No              10
-59     CANCEL          10
-60     Items           10
-61     Spells          10
-62     Status          10
-63     Equip           10
-64     Order           10
-65     Team            10
-66     Save            10
-67     Quit            10
-68     Map             10
-69     Volume          10
-70     Buy             10
-71     Sell            10
-72     Inn             10
-73     Hire            10
-74     Exit            10
-75     CANNOT SELL     20
-77     Worth           20
-79     Trade for       20
-81     and a           10
-82     Worth Nothing   20
-84     Sold            10
-85     Trade for       20
-87     Joins for       20
-89     Cannot Afford   20
-91     Cannot Hire     20
-93     Purchased       20
-95     Joined!         20
-97     in stock        20
-99     Equip:          10
-100    No Room In Party   20
-102    Replace Old Data?  20
-104    Who's Status?      20
-106    Who's Spells?      20
-108    Equip Who?         20
-110    Nothing         10
-111    Has Nothing     30
-114    Cannot Steal    30
-117    Stole           30
-120    miss            20
-122    fail            20
-124    learned         10
-125    Found           10
-126    Gained          10
-127    Weak to         10
-128    Strong to       10
-129    Absorbs         10
-130    No Elemental Effects 30
-133    has no spells   20
-135    Which Hero?     20
-137    Name the Hero   20
-139    Found a         20
-141    Found           20
-143    THE INN COSTS   20
-145    You have        20
-147    CANNOT RUN!     20
-149    Level up for    20
-151    levels for      20
-153    and             10
-154    day             10
-155    days            10
-156    hour            10
-157    hours           10
-158    minute          10
-159    minutes         10
-160    Level MP        20"""
+# s/ {2,99}/\t/g
+# s/\t([1-9])0/\t\10\t\t
+# group ids then added
+s ="""0	Health	10	stat
+1	Mana	10	stat
+2	Atk	10	stat
+3	Acc	10	stat
+4	XHits	10	stat
+5	Def	10	stat
+6	Dog	10	stat
+7	Ctr	10	stat
+8	Spd	10	stat
+9	Enemy1	10	types
+10	Enemy2	10	types
+11	Enemy3	10	types
+12	Enemy4	10	types
+13	Enemy5	10	types
+14	Enemy6	10	types
+15	Enemy7	10	types
+16	Enemy Type 8	10	types
+17	Elem1	10	types
+18	Elem2	10	types
+19	Elem3	10	types
+20	Elem4	10	types
+21	Elem5	10	types
+22	Elem6	10	types
+23	Elem7	10	types
+24	Elem8	10	types
+25	Armor1	10	types
+26	Armor2	10	types
+27	Armor3	10	types
+28	Armor4	10	types
+29	Mag	10	stat2
+30	Wil	10	stat2
+31	Foc	10	stat2
+32	Money	10	stat2
+33	Exp	10	stat2
+34	Item	10	bmenu
+35	DONE	10	bmenu
+36	AUTOSORT	10	bmenu
+37	TRASH	10	bmenu
+38	Weapon	10	emenu
+39	REMOVE	10	emenu
+40	EXIT	10	emenu
+41	Discard	10	imenu
+42	Cannot	10  imenu
+43	Level	10	imenu
+44	Yes	10	save
+45	No	10	save
+46	EXIT	10	spelllist
+47	for next	10	statdisp
+48	REMOVE	10	hero
+49	Pay	10	inn
+50	Cancel	10	inn
+51	CANCEL	10	smenu
+52	NEW GAME	10	game
+53	EXIT	10	game
+54	PAUSE	10	game
+55	Quit Playing?	20	game
+57	Yes	10	game
+58	No	10	game
+59	CANCEL	10	save2
+60	Items	10	menus
+61	Spells	10	menus
+62	Status	10	menus
+63	Equip	10	menus
+64	Order	10	menus
+65	Team	10	menus
+66	Save	10	menus
+67	Quit	10	menus
+68	Map	10	menus
+69	Volume	10	menus
+70	Buy	10	shop
+71	Sell	10	shop
+72	Inn	10	shop
+73	Hire	10	shop
+74	Exit	10	shop
+75	CANNOT SELL	20	shop
+77	Worth	20	shop
+79	Trade for	20	shop
+81	and a	10	shop
+82	Worth Nothing	20	shop
+84	Sold	10	shop
+85	Trade for	20	shop
+87	Joins for	20	shop
+89	Cannot Afford	20	shop
+91	Cannot Hire	20	shop
+93	Purchased	20	shop
+95	Joined!	20	shop
+97	in stock	20	shop
+99	Equip:	10	shop
+100	No Room	20	shop
+102	Replace Old	20	save3
+104	Who's Status?	20	stmenu
+106	Who's Spells?	20	stmenu
+108	Equip Who?	20	emenu2
+110	Nothing	10	emenu2
+111	Has Nothing	30	battle
+114	Cannot Steal	30	battle
+117	Stole	30	battle
+120	miss	20	battle
+122	fail	20	battle
+124	learned	10	battle
+125	Found	10	battle
+126	Gained	10	battle
+127	Weak to	10	emenu3
+128	Strong to	10	emenu3
+129	Absorbs	10	emenu3
+130	No Elem fx emenu3?
+133	has no spells	20	battle2
+135	Which Hero?	20	hero
+137	Name the Hero	20	hero
+139	Found a	20	misc
+141	Found	20	misc
+143	THE INN COSTS	20	misc
+145	You have	20	misc
+147	CANNOT RUN	20	misc
+149	Level up for	20	hero2
+151	levels for	20	hero2
+153	and	10	misc
+154	day	10	time
+155	days	10	time
+156	hour	10	time
+157	hours	10	time
+158	minute	10	time
+159	minutes	10	time
+160	Level MP	20	stmenu2"""
 
 # XXX needs actual defaults from OHRRPGCE.NEW:OHRRPGCE.STT
 
-info = {
-   'yes': 'equip',
-   'no' : 'equip',
-   'yes2' : 'quitgame',
-   'no2' : 'quitgame',
-   'cancel' : 'buy?',
-   'cancel2' : '???1',
-   'cancel3' : '???2',
-   'exit' : 'equip???',
-   'exit2' : 'savemenu?',
-   'exit3' : 'mainmenu',
-}
+
 
 
 offsets = (0,7, 23)
 names = []
 specs = []
 for l in s.split('\n'):
-    rec = int (l[0:7])
-    name = l[7:23].rstrip()
-    size = l[23:]
-    if size[0] not in '123456789':
-       name += size[:size.rfind (' ')].rstrip()
-       size = size[size.rfind (' '):]
+    rec, name, size, context, default = l.split ('\t')
+    rec = int (rec)
     size = int (size)
-    attrname = name.lower().replace(' ', '_').replace('?', '_').replace('!', '_').replace('%', 'pc')
-    attrname = attrname.replace (':', '_').replace('.', '_').replace("'", '_').replace("-", '_')
-    if attrname in names:
-        n = 2
-        print ('recur %r' % attrname)
-        while attrname + str (n) in names:
-            n+=1
-        attrname = attrname+ str (n)
+    attrname = name.lower().replace(' ', '_').replace('?', ' ').replace('!', ' ').replace('%', ' ')
+    attrname = attrname.replace (':', '_').replace('.', '_').replace("'", '_').replace("-", '')
+#    if attrname in names:
+#        n = 2
+#        print ('recur %r' % attrname)
+#        while attrname + str (n) in names:
+#            n+=1
+#        attrname = attrname+ str (n)
 
     fill = []
     used = 0
@@ -172,7 +160,7 @@ for l in s.split('\n'):
         fill.extend ([len (name), tmp])
         used += 10
     names.append (attrname)
-    specs.append (' %-20s : *STTENTRY%d' % (attrname, size/10))
+    specs.append (' %-20s : [*STTENTRY%d, no, %r' % (attrname, size/10))
     specs.append (' %-20s : %r' % (attrname+'?', fill))
     #print (rec, name, size)
 #    print (str)
