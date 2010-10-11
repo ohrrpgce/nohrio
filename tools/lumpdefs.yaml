@@ -112,11 +112,13 @@ __attic:
                      - oneop: # OP = int8. param = int8 or int16
                          - frame F      # change to frame F in cur gfxset
                                         # if F > maxframe: F = 0
+                                        #
                                         # then wait (defaultwait)
                          - relframe Fo  # add Fo to current frame num.
                                         # wraps at ends, ie:
                                         # if curframe > maxframe or curframe < 0:
                                         #     curframe = curframe MOD maxframe
+                                        # then wait (defaultwait)
                          - framerange F Le # Relativizes frame indexing
                                         # to a subrange of the total frames.
                                         # Invalidates current frame index.
@@ -446,33 +448,39 @@ STATS0_99: &STATS0_99
    fields : hp mp str acc def dog mag wil spd ctr foc xhits
    dtypes : {'*'   : [[*SHORT, 2], *SHORTR, 0]}
 
+# dtype :
+#   << : *CLASS_DTYPE
+#   dtype: {[*STTENTRY, 0-3], no, 'default string}
+#
+
 STTENTRY1: &STTENTRY1
-   << : *CLASS_DTYPE
-   dtype :
-     - - fields : length data
-         dtypes :
-            length : [uint8, [0,10], 0]
-            data : [S10, no, '']
-       - 1
-     - no
+   - fields : length data
+     dtypes :
+        length : [uint8, [0,10], 0]
+        data : [S10, no, '']
+     shape: 1
+   - no
+   - {automangle: str}
 STTENTRY2: &STTENTRY2
    << : *CLASS_DTYPE
    dtype :
-     - - fields : length data
-         dtypes :
-            length : [uint8, [0,10], 0]
-            data : [S10, no, '']
-       - 2
+     - fields : length data
+       dtypes :
+          length : [uint8, [0,10], 0]
+          data : [S10, no, '']
+       shape: 2
      - no
+     - {automangle: str}
 STTENTRY3: &STTENTRY3
    << : *CLASS_DTYPE
    dtype :
-     - - fields : length data
-         dtypes :
-            length : [uint8, [0,10], 0]
-            data : [S10, no, '']
-       - 3
+     - fields : length data
+       dtypes :
+          length : [uint8, [0,10], 0]
+          data : [S10, no, '']
+       shape: 3
      - no
+     - {automangle: str}
 ##
 #
 ## #
@@ -585,14 +593,14 @@ ENUMERATIONS:
       flags : ENUM
       dtype : [*SHORT, *TAGR, 0]
       enumdepends : N rpg.tagname
-      N>=0 : ['tag${N}_on', 'Tag ${N} (${rpg.tagname.get(N)}) == ON']
-      N<0 : ['tag${-N}_off', 'Tag ${-N} (${rpg.tagname.get(-N)}) == OFF']
+      0+ : ['tag${N}_on', 'Tag ${N} (${rpg.tagname.get(N)}) == ON']
+      -1[: ['tag${-N}_off', 'Tag ${-N} (${rpg.tagname.get(-N)}) == OFF']
    ETAGSET: &ETAGSET
       flags : ENUM
       dtype : [*SHORT, *TAGR, 0]
       enumdepends : N rpg.tagname
-      N>=0 : ['tag${N}_on', 'Tag ${N} (${rpg.tagname.get(N)}) = ON']
-      N<0 : ['tag${-N}_off', 'Tag ${-N} (${rpg.tagname.get(-N)}) = OFF']
+      0+ : ['tag${N}_on', 'Tag ${N} (${rpg.tagname.get(N)}) = ON']
+      -1[: ['tag${-N}_off', 'Tag ${-N} (${rpg.tagname.get(-N)}) = OFF']
    EHERO_SPELLLIST : &EHERO_SPELLLIST
       flags : ENUM
       dtype : [*SHORT, [0, 3], 0]
@@ -655,46 +663,46 @@ ENUMERATIONS:
       flags : ENUM
       dtype : [*SHORT, *SCRIPTR, 0]
       enumdepends : N rpg.triggers rpg.general rpg.scripts
-      N>=0 : [textbox$(N), Textbox $(N)]
-      -(min (16384, rpg.general.maxplotscript))<N<0 :
+      0[ : [textbox$(N), Textbox $(N)]
+      -(min (16384, rpg.general.maxplotscript)),0 :
             ['script${-N}', 'Run script ${-N} ($(rpg.scripts[-N]))']
-      -(16384 + len (rpg.triggers))<=N<-16384 :
+      -(16384 + len (rpg.triggers)),<-16384 :
             ['trigger${-(N+16384)}', 'Trigger ${-(N+16384)} (${getstr (rpg.general.triggers[-(N+16384)].name)))']
    ESHOPORINN : &ESHOPORINN
       flags : ENUM
       enumdepends : N rpg.shops rpg.strings rpg.general
       dtype : [*SHORT, [*MINSHORT, rpg.general.maxshop], 0]
-      0 : [restore, Restore HP/MP]
-      N>0 : ['shop${N}', 'Enter Shop ${N} ${getstr (rpg.shops[N].name)}']
-      N<0 : [ 'inn${-N}', 'Enter Inn Costing ${getstr (rpg.strings.money)+str(-N)}']
+      0   : [restore, Restore HP/MP]
+      1[  : ['shop${N}', 'Enter Shop ${N} ${getstr (rpg.shops[N].name)}']
+      -1] : [ 'inn${-N}', 'Enter Inn Costing ${getstr (rpg.strings.money)+str(-N)}']
    EADDHERO : &EADDHERO
       flags : ENUM
       enumdepends : N rpg.general rpg.hero
       dtype : [*SHORT, [-rpg.general.maxhero, rpg.general.maxhero], 0]
       0   : [     nothing, Do Not Add/Remove Heros]
-      N>0 : [   'add${N}', 'Add Hero ${N} (${getstr(rpg.hero[N].name)}) To The Party']
-      N<0 : ['remove${-N}', 'Remove Hero ${-N} (${getstr(rpg.hero[-N].name)}) From The Party']
+      1[  : [   'add${N}', 'Add Hero ${N} (${getstr(rpg.hero[N].name)}) To The Party']
+      -1] : ['remove${-N}', 'Remove Hero ${-N} (${getstr(rpg.hero[-N].name)}) From The Party']
    EADDITEM : &EADDITEM
       flags : ENUM
       enumdepends : N rpg.general rpg.hero
       dtype : [*SHORT, [-rpg.general.maxitem, rpg.general.maxitem], 0]
-      0: [nothing, Do Not Add/Remove Items]
-      N>0 : [    'add${N}', 'Add Item ${N} (${getstr(rpg.item[N].name)}) To Inventory']
-      N<0 : ['remove${-N}', 'Remove Item ${-N} (${getstr(rpg.item[-N].name)}) From Inventory']
+      0   : [nothing, Do Not Add/Remove Items]
+      1[  : [    'add${N}', 'Add Item ${N} (${getstr(rpg.item[N].name)}) To Inventory']
+      -1] : ['remove${-N}', 'Remove Item ${-N} (${getstr(rpg.item[-N].name)}) From Inventory']
    ESWAPHERO : &ESWAPHERO
       flags : ENUM
       enumdepends : N rpg.general rpg.hero
       dtype : [*SHORT, [-rpg.general.maxhero, rpg.general.maxhero], 0]
-      0: [nothing, Do Not Swap In/Out Heros]
-      N>0 : [   'add${N}', 'Swap Hero ${N} (${getstr(rpg.hero[N].name)}) In']
-      N<0 : ['remove${N}', 'Swap Hero ${N} (${getstr(rpg.hero[-N].name)}) Out']
+      0   : [nothing, Do Not Swap In/Out Heros]
+      1[  : [   'add${N}', 'Swap Hero ${N} (${getstr(rpg.hero[N].name)}) In']
+      -1] : ['remove${N}', 'Swap Hero ${N} (${getstr(rpg.hero[-N].name)}) Out']
    ELOCKHERO : &ELOCKHERO
       flags : ENUM
       enumdepends : N rpg.general rpg.hero
       dtype : [*SHORT, [-rpg.general.maxhero, rpg.general.maxhero], 0]
-      0: [nothing, Do Not Lock/Unlock Heros]
-      N>0 : [   'add${N}', 'Unlock Hero ${N} (${getstr(rpg.hero[N].name)})']
-      N<0 : ['remove${N}', 'Lock Hero ${N} (${getstr(rpg.hero[-N].name)})']
+      0   : [nothing, Do Not Lock/Unlock Heros]
+      1[  : [   'add${N}', 'Unlock Hero ${N} (${getstr(rpg.hero[N].name)})']
+      -1] : ['remove${N}', 'Lock Hero ${N} (${getstr(rpg.hero[-N].name)})']
    EENEMYTHIEVABLE : &EENEMYTHIEVABLE
       flags : ENUM
       dtype : [*SHORT, [-1, 1], 0]
