@@ -110,10 +110,13 @@ __attic:
                   code:
                      - blob (of opcode, (param, param..) bytecode sequences)
                      - oneop: # OP = int8. param = int8 or int16
-                         - frame F      # change to frame F in cur gfxset
+                         - frame F Wa   # change to frame F in cur gfxset
                                         # if F > maxframe: F = 0
                                         #
-                                        # then wait (defaultwait)
+                                        # if W == 0:
+                                        #     wait (defaultwait)
+                                        # else:
+                                        #     wait (W)
                          - relframe Fo  # add Fo to current frame num.
                                         # wraps at ends, ie:
                                         # if curframe > maxframe or curframe < 0:
@@ -122,6 +125,10 @@ __attic:
                          - framerange F Le # Relativizes frame indexing
                                         # to a subrange of the total frames.
                                         # Invalidates current frame index.
+                                        #
+                                        # often immediately precedes an 'end'
+                                        # op which chains to a simple animation pattern
+                                        # eg.
                          - wait Tk      # wait n ticks
                                         # note : wait 0 is the canonical no-op.
                          - label Lb     # mark position of label n
@@ -143,40 +150,22 @@ __attic:
                                             # *relative to current bbox*
                                             # that is, all parameters are offsets.
                                             #
-                                            # initial
+                                            # initial bbox is dependent on gfx type
                          - offset Ox Oy # adjust display offset
                                         # as a relative offset from current offset
                                         #
                                         # overall offset is measured
                                         #  relative to top left of bounding box.
-                         - gfxset G     # set gfxset = n (n >=0)
-                                        # default gfxset is the one matching the
-                                        # animset number
-                         - palette Pl   # set palette
-                                        # (-1 == default from image file,
-                                        #  n<-1 = 256-color palette #(-(n+1))
-                                        #  n>=0 ==  16-color palette #n )
-                         - paletterel Pl# set palette relative
-                                        # -1 = prev palette
-                                        #  1 = next palette, etc.
-                                        # (navigates within 16color palettes
-                                        #  or 256 color palettes, never switches)
-                         - editpal Le Pl Do # modify part of the palette.
-                                            #  Pl == source palette
-                                            #    (per 'palette' spec)
-                                            #  Le == length
-                                            #   Le = 0: copy entire source
-                                            #           palette
-                                            #           (16 or 256 colors)
-                                            #   Le = N: copy N colors
-                                            #           CONSTRAIN (Le <= len(Pl))
-                                            #   Le < 0: undefined
-                                            #  Do == offset into sprite palette
-                                            #   CONSTRAIN (Do + Le <=255)
-                                            #   Do < 0: undefined
-                                            #
-                                            # Apropos of C memcpy.
-                                            #
+                         # gfxset is not modifyable by an animation.
+                         - editpal Do Le I,I,.. # replace Le indices in the palette
+                                                # @ Do offset.
+                                                # All arguments are unsigned bytes.
+                                                # CONSTRAIN (Le <= 256)
+                                                # CONSTRAIN (0 <= Do < 256)
+                                                # CONSTRAIN (Do + Le <=255)
+                                                # I are a (Le)-some.
+                                                # (indices into the master palette for this gfx
+                                                # type.)
                          - cyclepal Le Do O # cycle part of the palette
                                             #  Le as for editpal,
                                             #     except source palette is
@@ -205,8 +194,7 @@ __attic:
                                         # or subtract -n (when n <0)
                                         #       -- ie add n, which just happens
                                         #          to be negative.
-                         - reset        # set gfxset = animset,
-                                        # palette = -1,
+                         - reset        # set palette = -1,
                                         # offset = [0,0]
                                         # bbox = default for this class of gfx.
                                         # frame is currently undefined.
