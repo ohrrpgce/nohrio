@@ -8,10 +8,251 @@
 # * maximize explicitness
 #
 ---
+# attic
+
+__attic:
+   animproposition1: &animproposition1
+      _templating:
+        '(type)': [hero, npc, enemy, weapon, attack, textbox, portrait, backdrop, tileset]
+      # I'd like to note at this point that eventually migrating the basic lumping system
+      # to ZIP would simplify a number of things.
+      # I use sublumping here to work around lack of directory support in lump system.
+      #
+      # at CUSTOM runtime it seems appropriate to unflatten the sublumps
+      # into a directory structure
+      # myrpgdir/herogfx_bin/24/2.png    <- frame #2 in hero gfxset #24
+      # myrpgdir/heroanim_bin/24.bin  <- hero animation #24
+      #
+      # for GAME runtime, partial unflattening:
+      # myrpgdir/herogfx_bin/24.bin <- lumped file containing all frames in set #24
+      #                                (preferably in strict numerical order,
+      #                                 or alternatively in order of frequency of use)
+      # myrpgdir/heroanim_bin/24.bin  <- hero animation #24
+      #
+      (type)gfx.bin:
+         type: sublumped
+         # in the case of tilesets and textboxes,
+         # one gfxset == one tileset/textboxset,
+         # stored as a *SINGLE IMAGE*.
+         lumpnametemplate: ['%d.bin', gfxset_index]
+         lump :
+            type: sublumped
+            lumpnametemplate: ['%d.bin', frame_index]
+            lump:
+               # named after frameindex. Tilesets and textboxsets only include #0
+               # source fname for im/export
+               # source rect if source fname is set
+               # if no rect, entire picture is implied
+               # W/H don't have to match the below w/h if they're set.
+               src:
+                  filename:
+                     length: int16
+                     content: char (length) if length != 0
+                  x: int16 if filename.length != 0
+                  y: int16 if filename.length != 0
+                  w: int16 if filename.length != 0
+                  h: int16 if filename.length != 0
+
+                  # future property.
+                  # used eg for truecolor backdrops
+                  # bpp == 8 is default (and is probably not necessary to
+                  # ever store.)
+                  #
+                  #
+                  #
+               palette :
+                  # index of master palette that indices reference
+                  masterpalette: int16 # negative values may in the future
+                                       # represent non-paletted formats.
+                  # exponential notation? 0= 1, 1= 2, 2 = 4, .. 8 = 256
+                  length: uint8 if masterpalette > -1
+                  indices: [uint8, length] if length > -1
+               d: int16 # depth, in the sense of z-axis. multi parts eg tiles in a tileset.
+               w: int16
+               h: int16
+               img: [uint8, [n, h, w]] # undefined when palette.masterpalette < 0
+               _repeats_for : NFRAMES
+            _repeats_for : NSETS
+      (type)anim.bin:
+         type : sublumped
+         # note: there should be no textboxanim.bin
+         # animset 5 corresponds to gfxset 5
+         lumpnametemplate: ['%d.reld', animset_index]
+         lump :
+            type : RELOAD
+            reload:
+               _runtime_state:
+                  # when an animation is running:
+                  anim: pointer
+                  animindex: int16
+                  animset: int16 #doesn't have to match gfxset
+                  gfxtype: [enum, hero npc enemy weapon attack portrait backdrop tile]
+                  gfxset : int16
+                  frameindex : int16
+                  frameindexbase : int16 # default = 0
+                  frameindexmax : int16 # default = maxframe
+                  # offsets relative to base bound-box top left corner
+                  offsetx: int16
+                  offsety: int16
+                  wait: int16
+                  paletteindex : int16
+                  ctr : [uint8, 4]
+                  index : uint16
+                  sprite : pointer
+
+                  _dontsave : anim sprite
+                  _totalsize : 36 ?[64bit ptr]+ 8 bytes
+
+               %d:
+                  name: string
+                  tag2ctr: [int16, 4] # set ctr[i] = 1 if (tagexpr is true)
+                  defaultwait: int16
+                  code:
+                     - blob (of opcode, (param, param..) bytecode sequences)
+                     - oneop: # OP = int8. param = int8 or int16
+                         - frame F      # change to frame F in cur gfxset
+                                        # if F > maxframe: F = 0
+                                        # then wait (defaultwait)
+                         - relframe Fo  # add Fo to current frame num.
+                                        # wraps at ends, ie:
+                                        # if curframe > maxframe or curframe < 0:
+                                        #     curframe = curframe MOD maxframe
+                         - framerange F Le # Relativizes frame indexing
+                                        # to a subrange of the total frames.
+                                        # Invalidates current frame index.
+                         - wait Tk      # wait n ticks
+                                        # note : wait 0 is the canonical no-op.
+                         - label Lb     # mark position of label n
+                                        # no-op. this is purely data,
+                                        # used by goto
+                                        #
+                                        # artificial, intentional limitation:
+                                        # n < 256  to avoid vast insanities
+                         - goto Lb      # goto label n
+                                        # search from animation start for label n
+                         - align Rel    # align relative to border (enum U,L,D,R, or Center)
+                                        # offsets the image to match the bounding box.
+                                        #
+                                        # default is D (align bottom edges, center horizontally)
+                                        #
+                                        # 'sticky': following frames are also aligned in this
+                                        # way.
+                         - bbox x1 y1 x2 y2 # adjust the bounding box
+                                            # *relative to current bbox*
+                                            # that is, all parameters are offsets.
+                                            #
+                                            # initial
+                         - offset Ox Oy # adjust display offset
+                                        # as a relative offset from current offset
+                                        #
+                                        # overall offset is measured
+                                        #  relative to top left of bounding box.
+                         - gfxset G     # set gfxset = n (n >=0)
+                                        # default gfxset is the one matching the
+                                        # animset number
+                         - palette Pl   # set palette
+                                        # (-1 == default from image file,
+                                        #  n<-1 = 256-color palette #(-(n+1))
+                                        #  n>=0 ==  16-color palette #n )
+                         - paletterel Pl# set palette relative
+                                        # -1 = prev palette
+                                        #  1 = next palette, etc.
+                                        # (navigates within 16color palettes
+                                        #  or 256 color palettes, never switches)
+                         - editpal Le Pl Do # modify part of the palette.
+                                            #  Pl == source palette
+                                            #    (per 'palette' spec)
+                                            #  Le == length
+                                            #   Le = 0: copy entire source
+                                            #           palette
+                                            #           (16 or 256 colors)
+                                            #   Le = N: copy N colors
+                                            #           CONSTRAIN (Le <= len(Pl))
+                                            #   Le < 0: undefined
+                                            #  Do == offset into sprite palette
+                                            #   CONSTRAIN (Do + Le <=255)
+                                            #   Do < 0: undefined
+                                            #
+                                            # Apropos of C memcpy.
+                                            #
+                         - cyclepal Le Do O # cycle part of the palette
+                                            #  Le as for editpal,
+                                            #     except source palette is
+                                            #     the current sprite palette
+                                            #  Do as for editpal
+                                            #  O is an offset.
+                                            #  O = 0: no-op
+                                            #  O < 0: cycle forwards
+                                            #  O < 1: cycle backwards
+                                            #
+                                            # runtime note: The simplest
+                                            # implementation requires a
+                                            # palette buffer
+                                            # (copy the range of sprpal colors
+                                            #  to buffer,
+                                            #  then copy two parts from
+                                            #  buffer to range in sprpal)
+                         - loop Ct Lb   # setctr(Ct, -1); checkctr (Ct); goto (Lb);
+                         - checkctr Ct  # check a counter != 0
+                                        # n <= 3
+                                        # if ctr[n] != 0:
+                                        #    execute following operation
+                                        # else:
+                                        #    skip following operation
+                         - setctr Ct n  # set counter to =n (when n >=0)
+                                        # or subtract -n (when n <0)
+                                        #       -- ie add n, which just happens
+                                        #          to be negative.
+                         - reset        # set gfxset = animset,
+                                        # palette = -1,
+                                        # offset = [0,0]
+                                        # bbox = default for this class of gfx.
+                                        # frame is currently undefined.
+                         - end Ast Nxt  # unconditional end of anim
+                                        # Ast >= 0, Nxt != '':
+                                        #     chain to anim #(Nxt) in animset Ast
+                                        # Ast = -1, Nxt != '':
+                                        #     chain to anim #(Nxt) in current animset)
+                                        # Ast < -1, or Nxt = '':
+                                        #     End without chaining
+                                        #
+                                        # not needed at natural end of animation.
+                                        # Used in conjunction with conditional execution.
+
+
+
+         # animation patterns and goto+wait, gotorel+wait should be implemented as a layer
+         # over this.
+
 # Data Definition
 # ~~~~~~~~~~~~~~~~
 #
 __datadef:
+   #lojban translations, for fun
+   jbofanva:
+      dtype: rejytai
+      fields: rejme'e
+      dtypes: rorejytai
+      palette: skapoi
+      enemy: fapro
+      picture: pixra
+      graphic : pixra
+      sprite : klixra
+      attack : nungunta
+      spell : makru'e
+      index : rejmoi
+      owner : ponse
+      doors : vorme
+      doorlinks : vrojo'e
+      requires : nitcu
+      planar : plita
+      part : pagbu
+      shape : cimdytai
+      map : cartu
+      maplayer : catsenta
+      song : sanga
+      tag : tcita
+      max : VALSIrai
    ATTRNAME: (str matching '[a-z][a-z0-9_]+')
    DESCRIPTION: (str)
    DTYPE: ['dtypeid (str)', 'range (list[2] or false)?', 'default ()?','extra (dict)']
