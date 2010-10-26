@@ -336,18 +336,18 @@ __datadef:
 #        require a complete rewrite, maybe altering file size.
 #
 BLOADO: &BLOADO 7
-SHORT: &SHORT int16
-MINSHORT: &MINSHORT -32768
-MAXSHORT: &MAXSHORT 32767
-USHORT : &USHORT uint16
-MAXUSHORT: &MAXUSHORT 65535
+H: &H int16
+MINH: &MINH -32768
+MAXH: &MAXH 32767
+UH : &UH uint16
+MAXUH: &MAXUH 65535
 UBYTE : &UBYTE uint8
 MAXUBYTE : &MAXUBYTE 255
 B6R : &B6R [0, 63]
 B8R : &B8R [0, 255]
-SHORTR : &SHORTR [*MINSHORT, *MAXSHORT]
-USHORTR : &USHORTR [0, *MAXUSHORT]
-ALLSHORT: &ALLSHORT {dtypes : {'*' : [*SHORT, *SHORTR, 0]}}
+HR : &HR [*MINH, *MAXH]
+UHR : &UHR [0, *MAXUH]
+ALLH: &ALLH {dtypes : {'*' : [*H, *HR, 0]}}
 MAXHERO: &MAXHERO 60
 HEROR : &HEROR [-60, 60]
 MAXSHOP : &MAXSHOP 99
@@ -378,41 +378,49 @@ MAXSPELLS : &MAXSPELLS 24
 MAXVEHICLE : &MAXVEHICLE 32767
 MAXSCRIPT : &MAXSCRIPT 32767
 TAGR : &TAGR [-1000, 1000]
-SCRIPTR : &SCRIPTR [*MINSHORT, *MAXSHORT]
+SCRIPTR : &SCRIPTR [*MINH, *MAXH]
 MAXTAG : &MAXTAG 1000
 MAXMONEY : &MAXMONEY 2000000000
 NELEMENTS : &NELEMENTS 8
 NSTATS : &NSTATS 12
 
 PERCENTR: &PERCENTR [0, 100]
-SHORTITEM: &SHORTITEM
-   - *SHORT
+HITEM: &HITEM
+   - *H
    - [0, *MAXITEM]
    - 0
    - wasted: 1b
      unsigned: yes
-SHORTPERCENT: &SHORTPERCENT
-   - *SHORT
+HPERCENT: &HPERCENT
+   - *H
    - *PERCENTR
    - 0
    - wasted: 9b
      unsigned: yes
-SHORTTYPE: &SHORTTYPE [*SHORT, *SHORTR, 0]
+HTYPE: &HTYPE [*H, *HR, 0]
 CLASS_DTYPE : &CLASS_DTYPE
    __class : dtype
 CLASS_ENUM : &CLASS_ENUM
    __class : enum
 
+DEFAULTZEROED:
+   default:
+      record: 0 # fill with 0's
 PTMERGE : &PTMERGE
-   << : *CLASS_DTYPE
+   << : [*CLASS_DTYPE]
    dtype : [uint8, [0, *MAXUBYTE], 0]
    flags : PACKED4BPP IMAGE
    owner : rpg.gfx
+
 DEFPALMERGE: &DEFPALMERGE
-   << : *CLASS_DTYPE
+   << : [*CLASS_DTYPE]
    owner: rpg.defpal
-   dtype : [*SHORT, [0, *MAX16PAL], 0]
+   dtype : [*H, [0, *MAX16PAL], 0]
    softrange : rpg.pal16 # limited to len (rpg.pal16)
+   transform:
+      yaml:
+         - int (src)
+         - NULL # no action required?
 
 RPGOWNED: &RPGOWNED
    owner : RPG
@@ -420,32 +428,60 @@ RPGOWNED: &RPGOWNED
 TEXTLINE : &TEXTLINE "%s\n"
 
 RGB6: &RGB6 # used or not?
-   << : *CLASS_DTYPE
+   << : [*CLASS_DTYPE]
    fields: r g b
    dtypes: {'*' : [uint8, *B6R, 0, {wasted: 2bits}]}
 
 RGB8: &RGB8
-   << : *CLASS_DTYPE
+   << : [*CLASS_DTYPE]
    fields : r g b
    dtypes : {'*' : [uint8, *B8R, 0]}
 
 RGB6W: &RGB6W
-   << : *CLASS_DTYPE
+   << : [*CLASS_DTYPE]
    fields : r g b
-   dtypes : {'*' : [*USHORT, *B6R, 0, {wasted: 10bits}]}
+   dtypes : {'*' : [*UH, *B6R, 0, {wasted: 10bits}]}
 
 XYCOORD: &XYCOORD
-   << : [*CLASS_DTYPE, *ALLSHORT]
-   fields : x y
+   << : [*CLASS_DTYPE]
+   dtypes:
+      - '*': *H
+      - x:
+      - y:
 
 STATS: &STATS
-   << : [*CLASS_DTYPE, *ALLSHORT]
-   fields : hp mp str acc def dog mag wil spd ctr foc xhits
+   << : [*CLASS_DTYPE]
+   dtypes: !!pairs
+      - '*' : *H
+      - hp:
+      - mp:
+      - str:
+      - acc:
+      - def:
+      - dog:
+      - mag:
+      - wil:
+      - spd:
+      - ctr:
+      - foc:
+      - xhits:
 
 STATS0_99: &STATS0_99
    << : *CLASS_DTYPE
-   fields : hp mp str acc def dog mag wil spd ctr foc xhits
-   dtypes : {'*'   : [[*SHORT, 2], *SHORTR, 0]}
+   dtypes: !!pairs
+      - '*'   : [*H, 2]
+      - hp:
+      - mp:
+      - str:
+      - acc:
+      - def:
+      - dog:
+      - mag:
+      - wil:
+      - spd:
+      - ctr:
+      - foc:
+      - xhits:
 
 # dtype :
 #   << : *CLASS_DTYPE
@@ -453,33 +489,32 @@ STATS0_99: &STATS0_99
 #
 
 STTENTRY1: &STTENTRY1
-   - fields : length data
-     dtypes :
-        length : [uint8, [0,10], 0]
-        data : [S10, no, '']
-     shape: 1
-   - no
-   - {automangle: str}
+   << : *CLASS_DTYPE
+   dtype:
+      - dtypes : !!pairs
+           - length : [uint8, [0,10], 0]
+           - data   : [S10, no, '']
+        shape: 1
+      - no
+      - {automangle: str}
 STTENTRY2: &STTENTRY2
    << : *CLASS_DTYPE
-   dtype :
-     - fields : length data
-       dtypes :
-          length : [uint8, [0,10], 0]
-          data : [S10, no, '']
-       shape: 2
-     - no
-     - {automangle: str}
+   dtype:
+      - dtypes : !!pairs
+           - length : [uint8, [0,10], 0]
+           - data   : [S10, no, '']
+        shape: 2
+      - no
+      - {automangle: str}
 STTENTRY3: &STTENTRY3
    << : *CLASS_DTYPE
-   dtype :
-     - fields : length data
-       dtypes :
-          length : [uint8, [0,10], 0]
-          data : [S10, no, '']
-       shape: 3
-     - no
-     - {automangle: str}
+   dtype:
+      - dtypes : !!pairs
+           - length : [uint8, [0,10], 0]
+           - data   : [S10, no, '']
+        shape: 3
+      - no
+      - {automangle: str}
 ##
 #
 ## #
@@ -530,22 +565,33 @@ BITSETS:
       - [    menus_wait_attackanims, Battle menus wait for attack animations]
    BFIXBITS: &BFIXBITS
       # 0
-      - [attack_items, Zeroed out item cost (ammunition) data in ATTACK.BIN]
-      - [weapon_points, Fixed hero hand positions in DT0]
-      - [stun_cancel_targ, Turned on "Cancel Target's Attack" bit in ATTACK.BIN for old attacks that damage the Stun register]
-      - [default_dissolve, Initialized genEnemyDissolve to default in GEN]
+      - [          attack_items, Zeroed out item cost (ammunition) data in ATTACK.BIN]
+      - [         weapon_points, Fixed hero hand positions in DT0]
+      - [      stun_cancel_targ, Turned on "Cancel Target's Attack" bit in ATTACK.BIN for old attacks that damage the Stun register]
+      - [      default_dissolve, Initialized genEnemyDissolve to default in GEN]
       - [default_dissolve_enemy, Initialized Enemy dissolves to default in DT1]
-      - [pushnpc_bugcompat, Turned on the Simulate pushable NPC obstruction bug bitset]
-      - [default_maxitem, Stored default max item number from ITM in GEN]
-      - [blank_doorlinks, Marked redundant blank doorlinks as unused]
+      - [     pushnpc_bugcompat, Turned on the Simulate pushable NPC obstruction bug bitset]
+      - [       default_maxitem, Stored default max item number from ITM in GEN]
+      - [       blank_doorlinks, Marked redundant blank doorlinks as unused]
       # 8
-      - [shop_sounds, Initialized all the sound effects from gen.itemlearnsfx to gen.cantsellsfx (to one of gen.acceptsfx or gen.cancelsfx))]
-      - [extended_npcs, Initialized all blank NPC data in the empty space at the end of .N## lumps]
-      - [hero_portrait, Initialized Hero portrait data]
-      - [textbox_portrait, Initialized text box portrait data]
+      - [       shop_sounds, Initialized all the sound effects from gen.itemlearnsfx to gen.cantsellsfx (to one of gen.acceptsfx or gen.cancelsfx))]
+      - [     extended_npcs, Initialized all blank NPC data in the empty space at the end of .N## lumps]
+      - [     hero_portrait, Initialized Hero portrait data]
+      - [  textbox_portrait, Initialized text box portrait data]
       - [npclocation_format, Converted NPC locations to new format (FIXME: not implemented yet)]
       - [init_damagedisplay, Initialize default values for damage display time and distance in GEN]
       # 14 (2 remain)
+   BMENU: &BMENU
+      - [         transbox, Transparent box]
+      - [      noscrollbar, Never show scrollbar]
+      - [  playwhileactive, Allow gameplay while menu is active]
+      - [    suspendplayer, Suspend player even if gameplay allowed]
+      - [            nobox, No box]
+      - [canceldoesntclose, Cancel button doesn't close menu]
+      - [      noplayerctl, No player control of menu]
+      - [     stopmainmenu, Prevent main menu from opening]
+      - [    advancetxtbox, Advance text box when menu closes]
+      # 7 unused
    BMENUITEM: &BMENUITEM
       - [hide_when_disabled, Hide when disabled]
       - [        close_menu, Close menu when selected]
@@ -606,30 +652,32 @@ BITSETS:
       - [ vehb, Vehicle B]
       - [ harm, Harm tile]
       - [ over, Overhead tile]
+   BHSZ : &BHSZ
+      - [moredebug, non-leaf nodes are appended with srcpos debugging information]
 
 ENUMERATIONS:
    ETAGCHECK: &ETAGCHECK
       flags : ENUM
-      dtype : [*SHORT, *TAGR, 0]
+      dtype : [*H, *TAGR, 0]
       enumdepends : N rpg.tagname
       0+ : ['tag${N}_on', 'Tag ${N} (${rpg.tagname.get(N)}) == ON']
       -1[: ['tag${-N}_off', 'Tag ${-N} (${rpg.tagname.get(-N)}) == OFF']
    ETAGSET: &ETAGSET
       flags : ENUM
-      dtype : [*SHORT, *TAGR, 0]
+      dtype : [*H, *TAGR, 0]
       enumdepends : N rpg.tagname
       0+ : ['tag${N}_on', 'Tag ${N} (${rpg.tagname.get(N)}) = ON']
       -1[: ['tag${-N}_off', 'Tag ${-N} (${rpg.tagname.get(-N)}) = OFF']
    EHERO_SPELLLIST : &EHERO_SPELLLIST
       flags : ENUM
-      dtype : [*SHORT, [0, 3], 0]
+      dtype : [*H, [0, 3], 0]
       0 : [spells_mp, Spells (MP Based)]
       1 : [spells_levelmp, Spells (FF1 Style)]
       2 : [random, Random Effects]
       3 : [item, Item Consuming]
    ENPC_MOVETYPE : &ENPC_MOVETYPE
       flags : ENUM
-      dtype : [*SHORT, [0, 8], 0]
+      dtype : [*H, [0, 8], 0]
       0 : [standstill, Stand still]
       1 : [    wander, Wander]
       2 : [      pace, Pace]
@@ -641,7 +689,7 @@ ENUMERATIONS:
       8 : [   inplace, Walk in place]
    ENPC_SPEED : &ENPC_SPEED
       flags : ENUM
-      dtype : [*SHORT, [0, 5], 0]
+      dtype : [*H, [0, 5], 0]
       0 : [0, '0']
       1 : [1, '1']
       2 : [2, '2']
@@ -650,13 +698,13 @@ ENUMERATIONS:
       5 : [5, '5']
    ENPC_ACTIVATED : &ENPC_ACTIVATED
       flags : ENUM
-      dtype : [*SHORT, [0, 2], 0]
+      dtype : [*H, [0, 2], 0]
       0 : [     changedir, Change Direction]
       1 : [    faceplayer, Face Player]
       2 : [dontfaceplayer, Do Not Face Player]
    ENPC_PUSHABILITY : &ENPC_PUSHABILITY
       flags : ENUM
-      dtype : [*SHORT, [0, 7], 0]
+      dtype : [*H, [0, 7], 0]
       0 : [       off, 'Off']
       1 : [      full, Full]
       2 : [horizontal, Horizontal]
@@ -667,20 +715,20 @@ ENUMERATIONS:
       7 : [      left, Left Only]
    ENPC_ACTIVATION : &ENPC_ACTIVATION
       flags : ENUM
-      dtype : [*SHORT, [0, 2], 0]
+      dtype : [*H, [0, 2], 0]
       0 : [   use, Use]
       1 : [ touch, Touch]
       2 : [stepon, Step On]
    EPORTRAITTYPE : &EPORTRAITTYPE
       flags : ENUM
-      dtype : [*SHORT, [0, 3], 0]
+      dtype : [*H, [0, 3], 0]
       0 : [none, 'None']
       1 : [fixed, Fixed]
       2 : [hero_caterpiller, Hero By Caterpillar]
       3 : [hero_slot, Hero By Party Slot]
    ETEXTBOX_BOXORSCRIPT : &ETEXTBOX_BOXORSCRIPT
       flags : ENUM
-      dtype : [*SHORT, *SCRIPTR, 0]
+      dtype : [*H, *SCRIPTR, 0]
       enumdepends : N rpg.triggers rpg.general rpg.scripts
       0[ : [textbox$(N), Textbox $(N)]
       -(min (16384, rpg.general.maxplotscript)),0 :
@@ -690,53 +738,53 @@ ENUMERATIONS:
    ESHOPORINN : &ESHOPORINN
       flags : ENUM
       enumdepends : N rpg.shops rpg.strings rpg.general
-      dtype : [*SHORT, [*MINSHORT, rpg.general.maxshop], 0]
+      dtype : [*H, [*MINH, rpg.general.maxshop], 0]
       0   : [restore, Restore HP/MP]
       1[  : ['shop${N}', 'Enter Shop ${N} ${getstr (rpg.shops[N].name)}']
       -1] : [ 'inn${-N}', 'Enter Inn Costing ${getstr (rpg.strings.money)+str(-N)}']
    EADDHERO : &EADDHERO
       flags : ENUM
       enumdepends : N rpg.general rpg.hero
-      dtype : [*SHORT, [-rpg.general.maxhero, rpg.general.maxhero], 0]
+      dtype : [*H, [-rpg.general.maxhero, rpg.general.maxhero], 0]
       0   : [     nothing, Do Not Add/Remove Heros]
       1[  : [   'add${N}', 'Add Hero ${N} (${getstr(rpg.hero[N].name)}) To The Party']
       -1] : ['remove${-N}', 'Remove Hero ${-N} (${getstr(rpg.hero[-N].name)}) From The Party']
    EADDITEM : &EADDITEM
       flags : ENUM
       enumdepends : N rpg.general rpg.hero
-      dtype : [*SHORT, [-rpg.general.maxitem, rpg.general.maxitem], 0]
+      dtype : [*H, [-rpg.general.maxitem, rpg.general.maxitem], 0]
       0   : [nothing, Do Not Add/Remove Items]
       1[  : [    'add${N}', 'Add Item ${N} (${getstr(rpg.item[N].name)}) To Inventory']
       -1] : ['remove${-N}', 'Remove Item ${-N} (${getstr(rpg.item[-N].name)}) From Inventory']
    ESWAPHERO : &ESWAPHERO
       flags : ENUM
       enumdepends : N rpg.general rpg.hero
-      dtype : [*SHORT, [-rpg.general.maxhero, rpg.general.maxhero], 0]
+      dtype : [*H, [-rpg.general.maxhero, rpg.general.maxhero], 0]
       0   : [nothing, Do Not Swap In/Out Heros]
       1[  : [   'add${N}', 'Swap Hero ${N} (${getstr(rpg.hero[N].name)}) In']
       -1] : ['remove${N}', 'Swap Hero ${N} (${getstr(rpg.hero[-N].name)}) Out']
    ELOCKHERO : &ELOCKHERO
       flags : ENUM
       enumdepends : N rpg.general rpg.hero
-      dtype : [*SHORT, [-rpg.general.maxhero, rpg.general.maxhero], 0]
+      dtype : [*H, [-rpg.general.maxhero, rpg.general.maxhero], 0]
       0   : [nothing, Do Not Lock/Unlock Heros]
       1[  : [   'add${N}', 'Unlock Hero ${N} (${getstr(rpg.hero[N].name)})']
       -1] : ['remove${N}', 'Lock Hero ${N} (${getstr(rpg.hero[-N].name)})']
    EENEMYTHIEVABLE : &EENEMYTHIEVABLE
       flags : ENUM
-      dtype : [*SHORT, [-1, 1], 0]
+      dtype : [*H, [-1, 1], 0]
       -1 : Not thievable
       0 : Once only
       1 : Infinitely thievable
    EPICSIZE : &EPICSIZE
       flags : ENUM
-      dtype : [*SHORT, [0, 2], 0]
+      dtype : [*H, [0, 2], 0]
       0 : Small
       1 : Medium
       2 : Large
    EENEMYDISSOLVE : &EENEMYDISSOLVE
       flags : ENUM
-      dtype : [*SHORT, [0, 8], 0]
+      dtype : [*H, [0, 8], 0]
       0 : (NONE SET)
       1 : Random scatter
       2 : Crossfade
@@ -748,61 +796,66 @@ ENUMERATIONS:
       8 : Phase out
    EENEMYDISSOLVELEN : &EENEMYDISSOLVELEN
       flags : ENUM
-      dtype : [*SHORT, [0, 99], 0]
+      dtype : [*H, [0, 99], 0]
       0 : default
+   ESTREAMING: &ESTREAMING
+      flags : ENUM
+      dtype : [*H, [0, 1], 0]
+      0: Not Streaming
+      1: Streaming
 
 __STATUS:
    # 1 == seems complete, 2 == tested, 3 == well tested, 4 == used in app
    archinym.lmp: 1
    browse.txt  : 1
    gen         : .99
-   attack.bin  : no
+   attack.bin  : false
    binsize.bin : 1
    defpal?.bin : 1
    defpass.bin : 1
-   fixbits.bin : no
+   fixbits.bin : false
    lookup1.bin : 1
-   menus.bin   : no
+   menus.bin   : false
    menuitem.bin: 1
    palettes.bin: 1
-   plotscr.lst : no
-   sfxdata.bin : no
-   songdata.bin: no
-   uicolors.bin: no
-   slicetree_?_?.reld: no
-   bam         : no
-   t           : no
-   p           : no
-   e           : no
-   d           : no
-   l           : no
-   n           : no
-   z           : no
-   dor         : no
+   plotscr.lst : false
+   sfxdata.bin : 1
+   songdata.bin: 1
+   uicolors.bin: 1
+   slicetree_?_?.reld: false
+   bam         : false
+   t           : false
+   p           : false
+   e           : false
+   d           : false
+   l           : false
+   n           : false
+   z           : false
+   dor         : false
    dox         : 1
-   dt0         : no
+   dt0         : false
    dt1         : 1
-   dt6         : no
-   efs         : no
-   for         : no
-   fnt         : no
-   hsp         : no
-   hsz         : no
-   itm         : no
-   map         : no
+   dt6         : false
+   efs         : false
+   for         : false
+   fnt         : false
+   hsp         : false
+   hsz         : false
+   itm         : false
+   map         : false
    mas         : 1
-   mn          : no
+   mn          : false
    mxs         : 1
    pal         : 1
    pt?         : 1
    say         : 1
    sho         : 1
-   stf         : no
-   stt         : no
-   tap         : no
+   stf         : false
+   stt         : false
+   tap         : false
    til         : 1
    tmn         : 1
-   veh         : no
+   veh         : false
 
 
 
@@ -818,14 +871,16 @@ archinym.lmp:
    attrname : archinym
    fields : [prefix version, {}]
    defaults : [$rpgprefix, nohrio version $nohrioversion]
-   hdf5_transform :
-      - attribute_transform (src, path = '/', prefix = editor_)
-                              # prefix, version
-                              # <-> attributes attached to /
-                              # named editor_(prefix|version)
-   yaml_transform :
-      - keymap (src)
-      - keyunmap (src)
+   transform: #
+      hdf5 :
+         - attribute_transform (src, path = '/', prefix = editor_)
+                                # prefix, version
+                                # <-> attributes attached to /
+                                # named editor_(prefix|version)
+         - NULL
+      yaml:
+         - keymap (src)
+         - keyunmap (src)
    loadpriority : 1
    flags:
       - REQUIRED
@@ -839,57 +894,59 @@ binsize.bin:
    << : *CLASS_DTYPE
    attrname : binsize
    fields : attack stf songdata sfxdata map menu menuitem uicolor say npcdef
-   dtypes : {'*' : [*SHORT, *SHORTR, 0]}
+   dtypes : {'*' : [*H, *HR, 0]}
    flags :
       - BASE
       - AUTOSIZE
       - SINGULAR
-   hdf5_transform :
+   transform:
+      hdf5:
 
-      # atomic_copy def:
-      #
-      #   dest = h.createEArray(pathpart,
-      #                         namepart,
-      #                         tables.Atom.from_dtype (dtype),
-      #                         shape = (0,),
-      #                         expectedrows = len (arr) * 2)
-      #   dest.append (arr.view(dtype))
-      #   if arr.names:
-      #       dest.fieldnames = self.dtype.names
-      #
-      #   return dest
-      - tmp = atomic_copy (self, uint16, h5, path = '/redundant/binsize')
-        tmp.fieldnames = self.dtype.names
-        return tmp
-      # earray_to_numpy def:
-      #
-      #   dt = node.atom.dtype
-      #   names = node.fieldnames
-      #   dtype = np.dtype ([(n, dt) for n in names])
-      #   return node[:].astype (dtype)
-      #
-      - return earray_to_numpy (h5.root.redundant.binsize)
-   yaml_transform :
-      - keymap (src)
-      - keyunmap (src, dtype)
+         # atomic_copy def:
+         #
+         #   dest = h.createEArray(pathpart,
+         #                         namepart,
+         #                         tables.Atom.from_dtype (dtype),
+         #                         shape = (0,),
+         #                         expectedrows = len (arr) * 2)
+         #   dest.append (arr.view(dtype))
+         #   if arr.names:
+         #       dest.fieldnames = self.dtype.names
+         #
+         #   return dest
+         - tmp = atomic_copy (self, uint16, h5, path = '/redundant/binsize')
+           tmp.fieldnames = self.dtype.names
+           return tmp
+         # earray_to_numpy def:
+         #
+         #   dt = node.atom.dtype
+         #   names = node.fieldnames
+         #   dtype = np.dtype ([(n, dt) for n in names])
+         #   return node[:].astype (dtype)
+         #
+         - return earray_to_numpy (h5.root.redundant.binsize)
+      yaml:
+         - keymap (src)
+         - keyunmap (src, dtype)
 browse.txt:
    << : [*CLASS_DTYPE, *RPGOWNED]
    attrname: browse
    fields: longname about
    dtypes:
       '*': [=str16_8, 38]
-   yaml_transform:
-      - keymap (src)
-      - keyunmap (src, dtype)
+   transform:
+      yaml:
+         - keymap (src)
+         - keyunmap (src, dtype)
 d:
    << : *CLASS_DTYPE
    owner : Map
    attrname : doorlinks
    fields : srcdoor destdoor destmap condtag1 condtag2
    dtypes :
-      '*' : [*SHORT, *SHORTR, 0]
-      condtag1 : [*SHORT, *TAGR, 0]
-      condtag2 : [*SHORT, *TAGR, 0]
+      '*' : [*H, *HR, 0]
+      condtag1 : [*H, *TAGR, 0]
+      condtag2 : [*H, *TAGR, 0]
    flags: PLANAR
           MAPINDEXED
    maplumpindex: $owner.n
@@ -936,7 +993,7 @@ defpass.bin:
    fields: pass magic
    dtypes:
       pass: [=bitsets, [16, *BPASS], 160]
-      magic: [=magic, [4444, *SHORT]]
+      magic: [=magic, [4444, *H]]
 dt1:
    << : [*CLASS_DTYPE, *RPGOWNED]
    attrname: enemy
@@ -945,54 +1002,93 @@ dt1:
            deathsound battlecursor unused picture palette picsize rewards stats
            bitsets spawning attacks counter unused2
    dtypes :
-      '*' : [*SHORT, *SHORTR, 0]
+      '*' : [*H, *HR, 0]
       name : [=str16_16, 16]
       thievability : *EENEMYTHIEVABLE
-      steal_item: *SHORTITEM
-      steal_chance: *SHORTPERCENT
-      raresteal_item: *SHORTITEM
-      raresteal_chance: *SHORTPERCENT
+      steal_item: *HITEM
+      steal_chance: *HPERCENT
+      raresteal_item: *HITEM
+      raresteal_chance: *HPERCENT
       dissolve : *EENEMYDISSOLVE
       dissolvelen : *EENEMYDISSOLVELEN
-      battlecursor : [*XYCOORD, *SHORTR, [0,0]]
-      unused : [[*SHORT, 26], *SHORTR, 0]
+      battlecursor : [*XYCOORD, *HR, [0,0]]
+      unused : [[*H, 26], *HR, 0]
       picsize : *EPICSIZE
       rewards :
          fields : gold exp item item_chance rare_item rare_item_chance
          dtypes :
-            '*' : [*SHORT, *SHORTR, 0]
-            item: *SHORTITEM
-            item_chance: *SHORTPERCENT
-            rare_item: *SHORTITEM
-            rare_item_chance: *SHORTPERCENT
+            '*' : [*H, *HR, 0]
+            item: *HITEM
+            item_chance: *HPERCENT
+            rare_item: *HITEM
+            rare_item_chance: *HPERCENT
             bitsets : [=bitsets, [80, *BENEMY]]
             stats : *STATS
             spawning:
                fields : death nonelem_death alone nonelem_hit elem_hit
                         nspawn
                dtypes:
-                  '*' : [*SHORT, *SHORTR, 0]
-                  elem_hit : [[*SHORT, *NELEMENTS], *SHORTR, ]
+                  '*' : [*H, *HR, 0]
+                  elem_hit : [[*H, *NELEMENTS], *HR, ]
       attacks:
          fields : normal desperate alone
-         dtypes : {'*' : [[*SHORT, 5], *ATTACKR, 0]}
+         dtypes : {'*' : [[*H, 5], *ATTACKR, 0]}
       counter :
          fields: element stat
          dtypes:
-            element : [[*SHORT, *NELEMENTS], *ATTACKR, 0]
-            stat : [[*SHORT, *NSTATS], *ATTACKR, 0]
-      unused2 : [[*SHORT, 33], *SHORTR, 0]
+            element : [[*H, *NELEMENTS], *ATTACKR, 0]
+            stat : [[*H, *NSTATS], *ATTACKR, 0]
+      unused2 : [[*H, 33], *HR, 0]
 dox:
    << : *CLASS_DTYPE
    owner : Map
    attrname : doors
    fields : x y bitsets
    dtypes :
-      '*' : [*SHORT, *SHORTR, 0]
+      '*' : [*H, *HR, 0]
       bitsets : *BDOORS
    flags: PLANAR
    index: [$owner.n]
    shape: 100
+e:
+   << : *CLASS_DTYPE
+   owner : Map
+   maplumpindex: $owner.n
+   dyndtype: |
+      w,h = read_map_header (f, offset)
+      dt = np.dtype (np.uint8, (h, w))
+      return dt
+   notes: formationset indices (+1; 0 == no formset)
+   offset: 4
+efs:
+   << : [*CLASS_DTYPE, *RPGOWNED]
+   attrname: formset
+   dtypes: !!pairs
+      - frequency : *H
+      - formations: [*H, 20]
+      - wasted : [*H, 4]
+for:
+   << : [*CLASS_DTYPE, *RPGOWNED]
+   attrname: formation
+   dtypes: !!pairs
+     - '*' : *H
+     - enemies:
+        dtypes: !!pairs
+          - '*' : *H
+          - type :
+          - x : *H
+          - x[]: [0, 250]
+          - y :
+          - y[]: [0, 199]
+          - unused :
+     - background :
+     - music :
+     - backgroundframes :
+     - backgroundspeed :
+     - unused : [*H, 4]
+fixbits.bin:
+   << : *CLASS_DTYPE
+   dtype: [=bitsets, [32, *BFIXBITS]]
 gen:
    << : [*CLASS_DTYPE, *RPGOWNED]
    attrname : general
@@ -1003,7 +1099,7 @@ gen:
    offset : *BLOADO
    expected_size : 1007
    # field groups are used in the following:
-   fields: # bighuge field list follows.
+   fields: > # bighuge field list follows.
            maxmap(max) title(meta) titlemusic(snd) victorymusic(snd) battlemusic(snd)
            passcode_version(pwd) passcode_rotator(pwd) newpasscode(pwd) newpasscode_unused(pwd)
            oldpasscode(pwd)
@@ -1038,31 +1134,58 @@ gen:
            cantbuysfx(sfx) cantsellsfx(sfx) damagedisplayticks(gfx) damagedisplayrise(gfx)
            wastedspace(xxx) oldsctable_head(pwd) oldsctable unused(pwd,xxx)
    dtypes:
-      '*' : [*SHORT, *SHORTR, 0]
+      '*' : [*H, *HR, 0]
       bitsets : [=bitsets, [16, *BGENERAL]]
       newpasscode: [UBYTE, 17]
       newpasscode_unused: UBYTE
-      oldpasscode: [*SHORT, 10]
+      oldpasscode: [*H, 10]
       suspendbits: [=bitsets, [16, *BGENSUSPEND]]
-      camera_args: [*SHORT, 4]
+      camera_args: [*H, 4]
       time:
          fields: days hours minutes seconds
-         dtypes: {'*' : [*SHORT, *SHORTR, 0]}
-      statcap: [*SHORT, 12]
-      reserved: [*SHORT, 6]
+         dtypes: {'*' : [*H, *HR, 0]}
+      statcap: [*H, 12]
+      reserved: [*H, 6]
       onetimenpc_bits : [=rawbitsets, [1040]] # 130*8
       morebitsets : [=bitsets, [32, *BGENERAL2]]
-      wastedspace: [*SHORT,11]
+      wastedspace: [*H,11]
       oldsctable_head: uint16
       oldsctable: [uint16, 160]
-      unused: [*SHORT, 140]
+      unused: [*H, 140]
+hsp:
+   << : *CLASS_DTYPE
+   lumped:
+      required_lumps:
+         - hs
+         - scripts.txt
+         - scripts.bin
+         - commands.bin
+      optional_lumps:
+         - '#.hsx'
+         - '#.hsz'
+         - source.txt
+         - source.lumped
+         - srcfiles.txt
+hsz:
+   << : *CLASS_DTYPE
+   dtypes: !!pairs
+      - '*' : *H
+      - scriptoffset :
+      - nvariables :
+      - narguments :
+      - formatversion :
+      - stringtable_offset : int32 # currently only support v2 -- see hsx
+      - stringtable_len : int32
+      - bitsets : [=bitsets, [16, *BHSZ]]
+      - localstrtable_offset : int32
+      - scriptdata: [int32, (lump.length - current_offset) / 4]
 
 lookup1.bin:
    << : *CLASS_DTYPE
    attrname : triggers
    fields : id name
    dtypes:
-      id : [*SHORT, [0, *MAXSCRIPT], 0]
+      id : [*H, [0, *MAXSCRIPT], 0]
       name: [[=str16_8, 36], no, [0, '']]
 #XXX continue here
 mas:
@@ -1092,9 +1215,22 @@ menuitem.bin:
    fields :
             - membership caption sort_order type subtype tagcond1
               tagcond2 settag toggletag bitsets extra
-            - extra : [*SHORT, 3]
-              caption : [str16_8, 38]
+            - extra : [*H, 3]
+              caption : [=str16_8, 38]
               bitsets : [=bitsets, [16, *BMENUITEM]]
+menus.bin:
+  << : [*CLASS_DTYPE, *RPGOWNED]
+  fields: name boxstyle default_textcolor maxrows bitsets offset anchor
+          textalign minwidth maxwidth border_thickness onclose_trigger
+          menu_onesc
+  dtypes:
+     << : *ALLH
+     name : [=str16_8, 20]
+     bitsets : [=bitsets, [16, *BMENU]]
+     offset : *XYCOORD
+     anchor : *XYCOORD
+
+
 mxs: &mxs
    << : [*CLASS_DTYPE, *RPGOWNED]
    attrname: backdrop
@@ -1107,6 +1243,15 @@ mxs: &mxs
           tmp[:,i::step] = src [i,:,:]
       return tmp
 
+p:
+   << : *CLASS_DTYPE
+   owner : Map
+   attrname : pass
+   maplumpindex: $owner.n
+   dyndtype:
+      args: !!pairs [w : f.read('H'), h : f.read('H')]
+      dtype: [=bitsets, [[8,[h, w]], *BPASS], {desc: passability bitsets}]
+   offset: 4
 pal:
    << : [*CLASS_DTYPE, *RPGOWNED]
    attrname: pal16
@@ -1117,7 +1262,7 @@ palettes.bin :
    attrname: pal16
    dynamic_dtype : [*RGB8, '$header[1] / 3']
    dtype : [[*RGB8, 256], *B8R, [0,0,0]]
-   header : [*SHORT, 2]
+   header : [*H, 2]
 pt0:
    << : *PTMERGE
    attrname: hero
@@ -1174,7 +1319,7 @@ say:
               shrink textcolor bordercolor backdrop music menu
               portraittype portraitpic portraitpal portraitx portraity
               sound
-            - << : *ALLSHORT
+            - << : *ALLH
               text : [S38, 8]
               reserved1 : uint8
               conditional :
@@ -1195,7 +1340,7 @@ say:
                           fields:
                              - tagcheck formation
                              - tagcheck  : *ETAGCHECK
-                               formation : *SHORT
+                               formation : *H
                        inn:
                           fields:
                              - tagcheck param
@@ -1216,12 +1361,12 @@ say:
                           fields:
                              - tagcheck amount
                              - tagcheck : *ETAGCHECK
-                               amount : *SHORT
+                               amount : *H
                        usedoor:
                           fields:
                              - tagcheck door
                              - tagcheck : *ETAGCHECK
-                               amount : *SHORT
+                               amount : *H
                        item:
                           fields:
                              - tagcheck item
@@ -1247,7 +1392,7 @@ say:
                       tag : *ETAGSET
               menuconditional : *ETAGCHECK
               portraitpal :
-                 dtype : *SHORT
+                 dtype : *H
                  softrange : rpg.pal16
 
               portraittype : *EPORTRAITTYPE
@@ -1260,14 +1405,23 @@ sho:
    << : [*CLASS_DTYPE, *RPGOWNED]
    attrname: shopinfo
    flags:
-   fields:
-           - name nitems bitsets inncost innscript
-           - '*'   : *SHORT
-             '*[]' : *SHORTR
-             name      : [=str16_16, 16]
-             nitems[]  : [-1,49]
-             bitsets   : [=bitsets, [16, *BSHOP]]
-             innscript : *SCRIPTR
+   dtype: !!pairs
+      - name      : [=str16_16, 16]
+      - nitems    : *H
+      - nitems[]  : [-1,49]
+      - bitsets   : [=bitsets, [16, *BSHOP]]
+      - inncost : *H
+      - innscript : *SCRIPTR
+
+songdata.bin:
+   << : [*CLASS_DTYPE, *RPGOWNED]
+   dtype : [=str16_8, 30]
+
+sfxdata.bin:
+   << : [*CLASS_DTYPE, *RPGOWNED]
+   dtypes : !!pairs
+      - name : [=str16_8, 30]
+      - streaming : *ESTREAMING
 
 stt:
    << : [*CLASS_DTYPE, *RPGOWNED]
@@ -1546,6 +1700,15 @@ stt:
              level_mp             : *STTENTRY2
              level_mp?            : [8, 'Level MP', 8, '']
 
+t:
+   << : *CLASS_DTYPE
+   owner : Map
+   maplumpindex: $owner.n
+   dyndtype:
+      args: !!pairs [w : f.read('H'), h : f.read('H'),]
+      dtype: [uint8, [layers, h, w], {desc: formationset indices (+1; 0 == no formset)}]
+   offset: 4
+
 til :
    << : *mxs
    attrname : tileset
@@ -1575,3 +1738,28 @@ tmn :
          dtypes :
             length : [uint8, [0,10], 0]
             data : [S10, no, '']
+
+uicolors.bin:
+   << : [*CLASS_DTYPE, *RPGOWNED]
+   dtypes: !!pairs
+      - '*'   : *H
+      - background :
+      - menuitem :
+      - disableditem :
+      - selecteditem : [*H, 2]
+      - selecteddisabled : [*H, 2]
+      - highlight : [*H, 2]
+      - timebar :
+      - timebarfull :
+      - healthbar :
+      - healthbarflash :
+      - text :
+      - outline :
+      - description :
+      - gold :
+      - shadow :
+      - textbox : !!pairs
+           - bg: *H
+           - border: *H
+           - _shape: 15
+      - textboxframe: [*H, 15]
