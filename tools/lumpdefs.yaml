@@ -96,7 +96,7 @@ __attic:
                   frameindex : int16
                   frameindexbase : int16 # default = 0
                   frameindexmax : int16 # default = maxframe
-                  loop : boolean # never ending animation
+                  timeout: int16 # Automatically terminate after N ticks.
                   # offsets relative to base bound-box top left corner
                   offsetx: int16
                   offsety: int16
@@ -107,7 +107,7 @@ __attic:
                   parentstate : pointer (or NULL)
                   initialstate : pointer
                   _dontsave : anim sprite
-                  _totalsize : 41 ?[64bit ptr]+ 12 bytes
+                  _totalsize : 42 ?[64bit ptr]+ 12 bytes
 
                '%d':
                   name: string
