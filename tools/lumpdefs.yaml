@@ -29,6 +29,17 @@ __attic:
       #                                 or alternatively in order of frequency of use)
       # myrpgdir/heroanim_bin/24.bin  <- hero animation #24
       #
+      exported.gfxset:
+         image:
+             tilesize : maxwidth(images_in_gfxset)+2,maxheight(images_in_gfxset)+2
+             #top and left edges are used for bbox/frame bounds annotation
+             #(one line for each)
+             imagesize : (closest to a 4:3 aspect ratio arrangement of tiles)
+             palette :
+         extra:
+             # some kind of metadata catalogue?
+             private_palette: 2..256 integers
+             animations: (type)anim.bin#GFXSET_INDEX #translated to XML
       (type)gfx.bin:
          type: sublumped
          # in the case of tilesets and textboxes,
@@ -85,6 +96,7 @@ __attic:
                   frameindex : int16
                   frameindexbase : int16 # default = 0
                   frameindexmax : int16 # default = maxframe
+                  loop : boolean # never ending animation
                   # offsets relative to base bound-box top left corner
                   offsetx: int16
                   offsety: int16
@@ -92,13 +104,14 @@ __attic:
                   paletteindex : int16
                   ctr : [uint8, 4]
                   index : uint16
-                  sprite : pointer
-
+                  parentstate : pointer (or NULL)
+                  initialstate : pointer
                   _dontsave : anim sprite
-                  _totalsize : 36 ?[64bit ptr]+ 8 bytes
+                  _totalsize : 41 ?[64bit ptr]+ 12 bytes
 
                '%d':
                   name: string
+                  # the below is problematic because it can become stale.
                   tag2ctr: [int16, 4] # set ctr[i] = 1 if (tagexpr is true)
                   defaultwait: int16
                   code:
@@ -107,7 +120,7 @@ __attic:
                          - frame F Wa   # change to frame F in cur gfxset
                                         # if F > maxframe: F = 0
                                         #
-                                        # if W == 0:
+                                        # if W == -1:
                                         #     wait (defaultwait)
                                         # else:
                                         #     wait (W)
@@ -123,7 +136,7 @@ __attic:
                                         # often immediately precedes an 'end'
                                         # op which chains to a simple animation pattern
                                         # eg.
-                         - wait Tk      # wait n ticks
+                         - wait Tk      # wait n ticks (~19 = 1 second)
                                         # note : wait 0 is the canonical no-op.
                          - label Lb     # mark position of label n
                                         # no-op. this is purely data,
@@ -192,12 +205,16 @@ __attic:
                                         # offset = [0,0]
                                         # bbox = default for this class of gfx.
                                         # frame is currently undefined.
-                         - end Ast Nxt  # unconditional end of anim
-                                        # Ast >= 0, Nxt != '':
+                         - end Typ Ast Nxt # unconditional end of anim
+                                        # Typ == 0: Overwrite this state with the chained-to-anim
+                                        # Typ == 1: preserve this state and begin
+                                        #           the chained-to anim in a child state.
+                                        #           This animation will end once the child animation does.
+                                        # Ast >= 0, Nxt != -1:
                                         #     chain to anim #(Nxt) in animset Ast
-                                        # Ast = -1, Nxt != '':
+                                        # Ast = -1, Nxt != -1:
                                         #     chain to anim #(Nxt) in current animset)
-                                        # Ast < -1, or Nxt = '':
+                                        # Ast < -1, or Nxt = -1:
                                         #     End without chaining
                                         #
                                         # not needed at natural end of animation.
