@@ -88,6 +88,7 @@ from ohrstring import *
 
 BLOAD_HEADER = ('bload_header', (np.uint8, 7))
 BLOAD_SIZE = 7
+MAXNEWELEM = 64 # see 'better and more numerous elements' ML thread
 
 # INT is the most common datatype in OHRRPGCE.
 # ``numpy.dtype ('h')`` gives you an int16 dtype
@@ -607,10 +608,7 @@ dtypes = {
     'dt0' : make ('name battlepic battlepal walkpic walkpal defaultlevel defaultweapon',
                   'stats spells portraitpic bitsets spelllist_name portraitpal spelllist_type',
                   'have_tag alive_tag leader_tag active_tag',
-                  'maxnamelength handcoord',
-                  " ".join (["%sframe" % name for name in 'stand step attacka attackb cast hurt weak dead \
-                  dead2 targetting victorya victoryb'.split()]),
-                  'unused',
+                  'maxnamelength handcoord elemdmg',
                   name = vstr2 (17),
                   stats = STATS0_99_DTYPE,
                   spells = _spell_list,
@@ -618,7 +616,7 @@ dtypes = {
                   spelllist_name = ([('length', INT), ('data', (np.character, 10*2))], 4),
                   spelllist_type = (INT, 4),
                   handcoord = (xycoord_dtype, 2),
-                  unused = (INT, 5)),
+                  elemdmg = ('f4', MAXNEWELEM)),
     'dt1' : make ('name thievability stealable_item stealchance',
                   'raresteal_item raresteal_chance dissolve dissolvespeed',
                   'deathsound unused picture palette picsize rewards stats',
