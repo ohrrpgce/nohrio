@@ -115,7 +115,7 @@ class Map (object):
         tmp['value'] = v
     def _get_info (self):
         #XXX use binsize
-        return (self.rpg.data ('map')[self.n]).view(OhrData)
+        return (self.rpg.data ('map')[self.n]).view(OhrDataMemmap)
 
     def __str__ (self):
         fname = self.filename % 't'
@@ -315,7 +315,7 @@ class RPGDir (RPGHandler):
         """Create a memmap pointing at a given kind of lump"""
         boffset, flags = self._lumpmetadata.get(lump, (0, 0))
         if type == None:
-            type = OhrData
+            type = OhrDataMemmap
         if dtype == None:
             dtype = dt.get (lump, None)
         if offset == None:

@@ -10,27 +10,30 @@ class md5Array (ndarray):
         from hashlib import md5
         return md5(self.data).hexdigest()
 
-class OhrData (memmap, md5Array):
+class OhrData (md5Array):
     def __getattr__ (self, k):
-        dt = memmap.__getattribute__ (self, 'dtype').names
+        dt = self.dtype.names
         if dt and k in dt:
             return self[k]
         else:
-            return memmap.__getattribute__ (self, k)
+            return super(OhrData, self).__getattribute__ (k)
     def __setattr__ (self, k, v):
-        dt = memmap.__getattribute__ (self, 'dtype').names
+        dt = self.dtype.names
         if dt and k in dt:
             self[k] = v
         else:
-            memmap.__setattr__ (self, k, v)
+            super(OhrData, self).__setattr__ (k, v)
     def __hasattr__ (self, k):
-        dt = memmap.__getattribute__ (self, 'dtype').names
+        dt = self.dtype.names
         return (dt and k in dt)
     def fields (self):
         return self.dtype.names()
 #    def __array_finalize__ (self, obj):
 #        if hasattr (obj, '__dict__'):
 #            self.__dict__.update (obj.__dict__)
+
+class OhrDataMemmap (OhrData, memmap):
+    pass
 
 class AttackData(object):
     # virtualization of the awkward attack data format,
@@ -127,7 +130,7 @@ packed_image_guesses = {
     3750:  (3, 50, 50),
     2048:  (16, 16, 16),}
 
-class PackedImageData (OhrData):
+class PackedImageData (OhrDataMemmap):
     def unpack (self, dest = None, shape = None, transpose = None):
         if not shape:
             if self.shape[-1] in packed_image_guesses:
@@ -195,4 +198,4 @@ def pack (src, dest = None, transpose = None):
     #raise NotImplementedError('pack')
     # reverse the above transform
 
-__all__ = ('md5Array','NpcLocData','DoorLinks','DoorDefs','OhrData','pack','PackedImageData')
+__all__ = ('md5Array','NpcLocData','DoorLinks','DoorDefs','OhrData','OhrDataMemmap','pack','PackedImageData')
