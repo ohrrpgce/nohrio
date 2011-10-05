@@ -8,7 +8,7 @@ import numpy as np
 from nohrio.lump import read_lumpheader, lumpname_ok, Passcode, lump
 import os
 from nohrio.dtypes import GENERAL, dt
-from nohrio.ohrrpgce import archiNym, INT
+from nohrio.ohrrpgce import archiNym, binSize, INT
 from weakref import proxy, WeakValueDictionary
 from struct import unpack
 
@@ -177,16 +177,8 @@ class RPGHandler (object):
     }
     def prepare (self):
         self.general = self.data ('gen')
-        dtype = dt['binsize.bin'].descr
-        size = self.lump_size (self.lump_path('binsize.bin'))
-        if len (dtype) * 2 > size:
-            while len (dtype) * 2 > size:
-                dtype.pop (-1)
-        elif len (dtype) * 2 < size:
-            dtype.append (('unknown',INT, (size - (len (dtype) * 2))/2))
         self.passcode = Passcode (self.general)
-        self.binsize = self.data (self.lump_path('binsize.bin'),
-                                  dtype = np.dtype (dtype))
+        self.binsize = binSize (self.lump_path('binsize.bin'))
         #XXX fixbits
     def rename (self, newname):
         """Rename the rpg file/dir, adjusting the lumps and ARCHINYM.LMP

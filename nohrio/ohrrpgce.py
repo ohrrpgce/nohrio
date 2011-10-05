@@ -343,7 +343,7 @@ def pad (filename, granularity, groupsize = 1, headersize = 0):
 #    speed criteria. So if this is satisfactory, you could exclude the
 #    text format instead.
 
-# The following two classes both accept either a filename or a file handle
+# The following three classes both accept either a filename or a file handle
 # (which must support the ``seek()``, ``write()`` and ``read()`` methods')
 #
 # when accessing RPG files 'inline' (without unlumping them first)
@@ -393,9 +393,9 @@ class fixBits (object):
         self.file.seek (self.origin + (k / 8))
         result = ord (self.file.read(1)) & (1 << k % 8)
         if result > 0:
-           return 1
+            return 1
         else:
-           return 0
+            return 0
     def __setattr__ (self, k, v):
         try:
             k = object.__getattribute__ (self, 'fields').index (k)
@@ -415,7 +415,7 @@ class fixBits (object):
         return "%s (%r, %s)" % (self.__class__.__name__, self.file.name, kwargs)
     def __iter__ (self):
         return [getattr (self, k) for k in self.fields].__iter__()
-    def __gc__ (self):
+    def __del__ (self):
         self.file.close()
 
 #
@@ -471,6 +471,64 @@ class archiNym (object):
         self[1] = v
     prefix = property (_getprefix, _setprefix)
     version = property (_getversion, _setversion)
+
+
+class binSize (object):
+    """This class is effectively a write-thru buffer for binsize.bin which is initialised using defaults.
+
+    It is a wrapper for an ndarray, but one that isn't a memmap. Writing to the array should write to file."""
+
+    fields = 'attack stf songdata sfxdata map menu menuitem uicolor say npcdef hero item'.split()
+    defaults = [0, 64, 0, 0, 40, 0, 0, 0, 400, 30, 636, 320, 200]
+
+    def __init__ (self, file, offset = 0):
+        if type (file) in (str, unicode) and not os.path.isfile(file):
+            # Doesn't exist, only create it if we actually write to it
+            self.file = file
+            sizes = []
+        else:
+            self.file = filename_or_handle (file, 'rb+')
+            self.file.seek (offset)
+            sizes = list (np.fromfile (self.file, dtype = INT))
+        self.origin = offset
+        sizes.extend (self.defaults[len(sizes):])
+
+        #dtype = dt['binsize.bin'].descr
+        #if len (dtype) < len (sizes):
+        #    dtype.append (('unknown', INT, len (sizes) - len (dtype)))
+        #self.sizes = np.ndarray(sizes, dtype = dtype)
+        self.sizes = sizes
+    def __getitem__ (self, k):
+        return self.sizes.__getitem__ (k)
+    def __setitem__ (self, k, v):
+        self.sizes.__setitem__ (k, v)
+        if self.origin:
+            raise IOError("Should not be modifying binsize.bin in a lumped RPG")
+        if type (self.file) in (str, unicode):
+            self.file = open (self.file, 'wb+')
+        self.file.seek(self.origin)
+        self.file.write(struct.pack('H', self.sizes))
+    def __getattr__ (self, k):
+        try:
+            k = self.fields.index (k)
+        except ValueError:
+            return object.__getattribute__ (self, k)
+        return self[k]
+    def __setattr__ (self, k, v):
+        try:
+            k = self.fields.index (k)
+        except ValueError:
+            object.__setattr__ (self, k, v)
+            return
+        self[k] = v
+    def __repr__ (self):
+        return "<%s %r>" % (self.__class__.__name__, self.sizes)
+    def __iter__ (self):
+        return [getattr (self, k) for k in self.fields].__iter__()
+    def __del__ (self):
+        if not type (self.file) in (str, unicode):
+            self.file.close()
+
 
 
 def seq_to_str (src):
@@ -597,7 +655,7 @@ dtypes = {
                           instead_chain = _attack_chain_info),
 
     'binsize.bin' : make ('attack stf songdata sfxdata map',
-                          'menu menuitem uicolor say npcdef hero'),
+                          'menu menuitem uicolor say npcdef hero item'),
     'browse.txt' : np.dtype ([('longname', _browse_base_dtype),
                               ('about', _browse_base_dtype)]),
     'defpass.bin' : np.dtype ([('passability', (INT, 160)), ('magic', INT)]),
