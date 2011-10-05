@@ -434,7 +434,7 @@ class archiNym (object):
             mode = 'rb'
         if type (file) in (str, unicode):
             if not os.path.exists (file):
-                mode = 'wb'
+                mode = 'wb+'
         self.file = filename_or_handle (file, mode)
         self.origin = offset
         if offset:
@@ -454,6 +454,7 @@ class archiNym (object):
         everything [k] = v
         for value in everything:
             self.file.write (value + '\x0d\x0a')
+        self.file.flush()
     def __repr__ (self):
         return '%s (%r, %r, %r)' % (self.__class__.__name__,
                                     self.file.name,

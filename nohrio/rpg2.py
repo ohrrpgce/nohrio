@@ -177,7 +177,7 @@ class RPGHandler (object):
     }
     def prepare (self):
         self.general = self.data ('gen')
-        self.passcode = Passcode (self.general)
+        #self.passcode = Passcode (self.general)
         self.binsize = binSize (self.lump_path('binsize.bin'))
         #XXX fixbits
     def rename (self, newname):
@@ -199,6 +199,7 @@ class RPGHandler (object):
 
     pal16 = property (_pal16)
     pal256 = property (_pal256)
+
 class RPGFile (RPGHandler):
     """RPGFile reader/writer.
     """
@@ -211,7 +212,7 @@ class RPGFile (RPGHandler):
             raise ValueError ('mode must not contain "b" (see numpy.memmap docs)')
         f = open (filename, openmode)
         # mapping, step 1: Detect all lumps.
-        self.filename = filename
+        self.path = filename
         self._lump_map = {}
         if unlumpto:
             self.unlump_dir = unlumpto
@@ -263,12 +264,10 @@ class RPGFile (RPGHandler):
         if not dest:
             dest = self.unlump_dir
         dest = os.path.join (dest, filename)
-        out = open (dest, 'wb')
-        f = open (self.filename, 'rb')
-        f.seek (offset)
-        out.write (f.read (size))
-        f.close()
-        out.close()
+        with open (dest, 'wb') as out:
+            with open (self.path, 'rb') as f:
+                f.seek (offset)
+                out.write (f.read (size))
         return dest
     def __del__ (self):
         if self.rm_unlump_dir:
@@ -289,7 +288,9 @@ class RPGDir (RPGHandler):
         # and new style: XYZ.ABC
         if 'b' in mode:
             raise ValueError ('mode must not contain "b" (see numpy.memmap docs)')
-        self.archinym = archiNym ([v for v in filenames if v.endswith('archinym.lmp')][0])
+        self.archinym = archiNym (os.path.join (path, 'archinym.lmp'))
+        if self.archinym.prefix == '':
+            self.archinym.prefix = os.path.splitext (os.path.basename (path))[0]
         self.manifest = filenames
         from weakref import WeakValueDictionary
         self.mmaps = {}
@@ -337,9 +338,7 @@ class RPGDir (RPGHandler):
         if os.path.exists (lump):
             filename = lump
         else:
-            if lump.startswith('.'):
-                lump = lump [1:]
-            filename = os.path.join(self.path, self.archinym.prefix + "." + lump)
+            filename = self.lump_path (os.path.basename (lump))
             if not os.path.exists (filename):
                 raise IOError ('lump %r not found' % filename)
         if filename in self.mmaps:
@@ -354,13 +353,17 @@ class RPGDir (RPGHandler):
     def lump_path (self, lump, n = None):
         if n:
             raise NotImplementedError()
-        if len(lump) <= 4:
+        if lump.startswith('.'):
+            lump = lump [1:]
+        if not "." in lump:
             filename = os.path.join (self.path, self.archinym.prefix + "." + lump)
         else:
             filename = os.path.join (self.path, lump)
-        if filename in self.manifest:
-            return filename
+        #if filename in self.manifest:
+        return filename
     def lump_size (self, lump):
+        if not os.path.isfile (lump):
+            return 0
         return os.path.getsize (lump)
 
     def __getitem__ (self, k):
@@ -378,7 +381,6 @@ class RPGDir (RPGHandler):
                 offset = l[3]
             k = l[0]
         return self.data (k, n, dtype, offset)
-
 
 
 def RPG (filename, mode = 'r', base = None, dir = False):
