@@ -5,7 +5,7 @@
 
 from numpy import memmap
 import numpy as np
-from nohrio.lump import read_lumpheader, lumpname_ok, Passcode, lump
+from nohrio.lump import read_lumplist, Passcode, lump
 import os
 from nohrio.dtypes import GENERAL, dt
 from nohrio.ohrrpgce import archiNym, binSize, INT
@@ -213,7 +213,6 @@ class RPGFile (RPGHandler):
         f = open (filename, openmode)
         # mapping, step 1: Detect all lumps.
         self.path = filename
-        self._lump_map = {}
         if unlumpto:
             self.unlump_dir = unlumpto
             self.rm_unlump_dir = False
@@ -225,16 +224,7 @@ class RPGFile (RPGHandler):
             else:
                 self.unlump_dir = mkdtemp ()
             self.rm_unlump_dir = True
-        filename = 'nothing'
-        self.manifest = []
-        while filename:
-            filename, offset, size = read_lumpheader (f)
-            if filename:
-                if not lumpname_ok (filename):
-                    raise IOError ('corrupted or non canonical lump name %r' % filename)
-                self._lump_map[filename.lower()] = (offset, size)
-                self.manifest.append (filename.lower())
-                f.seek (offset + size)
+        self.manifest, self._lump_map = read_lumplist (f)
         self.mode = mode
         # mapping, step 2: create corresponding objects for the lumps we know
         # Mapping, final step: catalogue all lumps we don't understand.
@@ -259,7 +249,7 @@ class RPGFile (RPGHandler):
         "Unlump a lump, return its final filename with path."
         filename = filename.lower()
         if filename not in self._lump_map:
-            raise ValueError ('as for %r: not a known lump within this RPGFile' % filename)
+            raise ValueError ('asked for %r: not a known lump within this RPGFile' % filename)
         offset, size = self._lump_map[filename]
         if not dest:
             dest = self.unlump_dir

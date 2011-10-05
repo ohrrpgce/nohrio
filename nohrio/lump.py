@@ -106,6 +106,19 @@ def lumpnames_dont_collide (names):
         return False
     return True
 
+def read_lumplist (f):
+    lumplist = []
+    lumpmap = {}
+    while True:
+        filename, offset, size = read_lumpheader (f)
+        if not filename:
+            return lumplist, lumpmap
+        if not lumpname_ok (filename):
+            raise IOError ('corrupted or non canonical lump name %r' % filename)
+        lumpmap[filename.lower()] = (offset, size)
+        lumplist.append (filename.lower())
+        f.seek (offset + size)
+
 class Passcode (object):
     """OHRRPGCE passcode container.
     Supports direct assignment and equality testing.

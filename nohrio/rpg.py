@@ -172,16 +172,7 @@ class RPGFile (RPG):
     def __init__ (self, filename):
         # build a table of available lumps
         f = open (filename, 'rb')
-        self.lump_map = {}
-        filename = 'nothing'
-        while filename:
-            filename, offset, size = read_lumpheader (f)
-            if filename:
-                if not self.lumpname_ok (filename):
-                    raise IOError ('corrupted or non canonical lump name %r' % filename)
-                self.lump_map[filename] = (offset, size)
-                f.seek (offset + size)
-
+        self.lump_map = read_lumplist(f)[1]
         if not lumpnames_dont_collide (lump_map.keys()):
             raise IOError ('Conflicting lump names (duplicated, or identical except for case)')
 
