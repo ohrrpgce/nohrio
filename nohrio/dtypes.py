@@ -3,10 +3,12 @@
 #
 # Mostly named according to description rather than filename
 
-from ohrrpgce import dtypes as _dt
+from ohrrpgce import deprecated_dtypes, dtypes as _dt
 import numpy as np
 dt = {}
 for name, dtype in _dt.items():
+    dt[name] = np.dtype (dtype)
+for name, dtype in deprecated_dtypes.items():
     dt[name] = np.dtype (dtype)
 
 # World domination

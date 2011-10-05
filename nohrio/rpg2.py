@@ -174,6 +174,8 @@ class RPGHandler (object):
     """
     _lumpmetadata = {
        'gen' : (7,0), # offset, flags
+       'mas' : (7,0),
+       'fnt' : (7,0),
     }
     def prepare (self):
         self.general = self.data ('gen')
@@ -343,7 +345,7 @@ class RPGDir (RPGHandler):
     def lump_path (self, lump, n = None):
         if n:
             raise NotImplementedError()
-        if lump.startswith('.'):
+        if lump.startswith ('.'):
             lump = lump [1:]
         if not "." in lump:
             filename = os.path.join (self.path, self.archinym.prefix + "." + lump)
@@ -352,6 +354,7 @@ class RPGDir (RPGHandler):
         #if filename in self.manifest:
         return filename
     def lump_size (self, lump):
+        lump = self.lump_path (lump)
         if not os.path.isfile (lump):
             return 0
         return os.path.getsize (lump)
