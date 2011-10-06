@@ -27,10 +27,10 @@ def set_str8 (dest, src): # 16 or 8bit header, 8bit chars
     dest['value'] = src + '\x00'
 
 def get_str16 (src):
-    return src['data'][::2]
+    return src['data'][:src['length']*2:2]
 
 def get_str8 (src):
-    return src['value']
+    return src['value'][:src['length']]
 
 # the format used by OHRRPGCE .SAV gold field.
 # reads/writes an integer value <-> a 16bit string 9_6
