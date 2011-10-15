@@ -137,7 +137,7 @@ class Passcode (object):
         if gen.password_version < 256:
             raise ValueError ('refusing to decode old-style password.')
         if gen.password_version > 256:
-            raise NotImplemented
+            raise NotImplementedError
         self.get ()
 
     def get (self):

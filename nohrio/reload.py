@@ -32,7 +32,7 @@ def read_reload_header(f):
     """
     check_or_message (f, 4, 'RELD', ValueError,
                       'Header string %r doesn\'t look like a RELOAD header')
-    check_or_message (f, 1, (ord, 1), NotImplemented,
+    check_or_message (f, 1, (ord, 1), NotImplementedError,
                       'RELOAD version %d not understood.')
     check_or_message (f, 4, (lambda v: struct.unpack('I',v)[0], 13),
                       ValueError,
@@ -366,7 +366,7 @@ def scan_nodes (f, table):
     """
     # for nodes with nchildren > 0, make two entries '%s' and '%s/'.
     # the latter will be of type `dict`, the former of type `int`
-    raise NotImplemented ()
+    raise NotImplementedError ()
 
 def read (f):
     table = read_reload_header(f)

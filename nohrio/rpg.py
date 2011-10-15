@@ -182,7 +182,7 @@ class RPGFile (RPG):
     def load (self, lumpid, write = False, dtype = None):
         lumpdict = unpack_lumpid (lumpid)
         if 'mapid' in lumpdict or 'slice' in lumpdict:
-            raise NotImplemented()
+            raise NotImplementedError()
         try:
             inforecord = info[lumpid]
         except KeyError:
@@ -247,7 +247,7 @@ class RPGDir (RPG):
     def load (self, lumpid, write = False, dtype = None):
         lumpdict = unpack_lumpid (lumpid)
         if 'mapid' in lumpdict or 'slice' in lumpdict:
-            raise NotImplemented()
+            raise NotImplementedError()
         try:
             inforecord = info[lumpdict['lumpid']]
         except KeyError:
