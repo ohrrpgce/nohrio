@@ -134,18 +134,17 @@ class Passcode (object):
         self._current = -1
         self._gen = gen
         # detect version
-        if gen.passcode_version < 256:
+        if gen.password_version < 256:
             raise ValueError ('refusing to decode old-style password.')
+        if gen.password_version > 256:
+            raise NotImplemented
         self.get ()
 
     def get (self):
         if self._current == -1:
-            rotator = self._gen.passcode_rotator
+            rotator = self._gen.password3_rotator
             chars = []
-            f = open ('/tmp/get','wb')
-            f.write(repr(self._gen.newpasscode[0][:]))
-            f.close()
-            for char in self._gen.newpasscode[0][:]:
+            for char in self._gen.password3_data[0][:]:
                 char = char - rotator
                 if char < 0:
                     char += 255
@@ -167,8 +166,8 @@ class Passcode (object):
             blank = random.randint (1,30) + rotator
             blank %= 255
             res.append (blank)
-        self._gen.passcode_rotator = rotator
-        self._gen.newpasscode = res
+        self._gen.password3_rotator = rotator
+        self._gen.password3_data = res
         self._current = new_password
     def __str__ (self):
         return self._current
