@@ -174,7 +174,7 @@ class RPGFile (RPG):
         f = open (filename, 'rb')
         self.lump_map = read_lumplist(f)[1]
         if not lumpnames_dont_collide (lump_map.keys()):
-            raise IOError ('Conflicting lump names (duplicated, or identical except for case)')
+            raise CorruptionError ('Conflicting lump names (duplicated, or identical except for case)')
 
         self.lump_prefix = guess_lump_prefix (self.lump_map.keys())
         f.close()
@@ -235,10 +235,10 @@ class RPGDir (RPG):
         self.lumps = [os.path.basename (v) for v in self.lumps]
         for filename in self.lumps:
             if not self.lumpname_ok (filename):
-                raise IOError ('corrupted or non canonical lump name %r' % filename)
+                raise CorruptionError ('corrupted or non canonical lump name %r' % filename)
 
         if not lumpnames_dont_collide (lumps):
-            raise IOError ('Conflicting lump names (duplicated, or identical except for case)')
+            raise CorruptionError ('Conflicting lump names (duplicated, or identical except for case)')
 
         # read GEN and notice what our lump prefix is.
         # for now, hackhackhack:

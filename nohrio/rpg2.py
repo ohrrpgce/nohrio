@@ -5,7 +5,7 @@
 
 from numpy import memmap
 import numpy as np
-from nohrio.lump import read_lumplist, Passcode, lump
+from nohrio.lump import read_lumplist, Passcode, lump, CorruptionError
 import os
 from nohrio.dtypes import GENERAL, dt
 from nohrio.ohrrpgce import archiNym, binSize, INT
@@ -296,7 +296,7 @@ class RPGDir (RPGHandler):
         genname = os.path.join (self.path, self.archinym.prefix + '.gen')
         archname = os.path.join (self.path, 'archinym.lmp')
         if genname not in tmp:
-            raise IOError ('Missing .GEN lump from %s' % self.path)
+            raise CorruptionError ('Missing .GEN lump from %s' % self.path)
         tmp.remove (genname)
         tmp.remove (archname)
         tmp.insert (0, genname) # GEN second-from-front

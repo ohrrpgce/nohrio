@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import int16 as INT
 from numpy import int32 as LONG
-from nohrio.lump import read_lumplist
+from nohrio.lump import read_lumplist, CorruptionError
 import weakref
 
 
@@ -66,7 +66,7 @@ def read_scripts_txt(f, offset, size):
             for i in range (args):
                 lines.next()
         except StopIteration:
-            raise IOError ('scripts.txt is corrupt')
+            raise CorruptionError ('scripts.txt is corrupt')
         scriptname = scriptname.strip ()
         scriptnames[id] = scriptname
         scriptids[scriptname] = id
@@ -190,7 +190,7 @@ class HSScripts(object):
         try:
             lumpinfo = self._lump_map['scripts.txt']
         except KeyError:
-            raise IOError ('scripts.txt lump missing')
+            raise CorruptionError ('scripts.txt lump missing')
         self.scriptnames, self.scriptids = read_scripts_txt (self.file, *lumpinfo)
         try:
             lumpinfo = self._lump_map['commands.bin']

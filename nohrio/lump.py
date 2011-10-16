@@ -11,6 +11,9 @@ import struct
 lumpid_rex = re.compile ('((?P<mapid>[0-9]+):)?(?P<lumpid>[A-Za-z0-9]+)'
                          '(\\[(?P<slice>[0-9:]+)\\])?')
 
+class CorruptionError(IOError):
+    pass
+
 
 def unpack_lumpid (lumpid):
     m = lumpid_rex.match (lumpid)
@@ -27,7 +30,7 @@ def read_lumpheader (file):
         characters.append (file.read (1))
         if characters[-1] == '':
             if len (characters) != 2:
-                raise IOError ('Broken lump header near end of file')
+                raise CorruptionError ('Broken lump header near end of file')
             return None, None, None
     characters = characters[:-1]
     filename = "".join (characters)
@@ -97,7 +100,7 @@ def lumpname_ok (name):
         return False
     else:
         m = re.match ('[A-Za-z0-9._-]+', name)
-        if m.end() != (len (name)):
+        if m == None or m.end() != (len (name)):
             return False
     return True
 
@@ -114,7 +117,7 @@ def read_lumplist (f):
         if not filename:
             return lumplist, lumpmap
         if not lumpname_ok (filename):
-            raise IOError ('corrupted or non canonical lump name %r' % filename)
+            raise CorruptionError ('corrupted or non canonical lump name %r' % filename)
         lumpmap[filename.lower()] = (offset, size)
         lumplist.append (filename.lower())
         f.seek (offset + size)

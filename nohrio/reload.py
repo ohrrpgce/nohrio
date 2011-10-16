@@ -4,6 +4,7 @@ http://gilgamesh.hamsterrepublic.com/wiki/ohrrpgce/index.php/RELOAD
 """
 
 import struct
+from nohrio.lump import CorruptionError
 
 _byte = struct.Struct('b')
 _short = struct.Struct('h')
@@ -30,12 +31,12 @@ def read_reload_header(f):
 
     table : list of strings
     """
-    check_or_message (f, 4, 'RELD', ValueError,
+    check_or_message (f, 4, 'RELD', CorruptionError,
                       'Header string %r doesn\'t look like a RELOAD header')
     check_or_message (f, 1, (ord, 1), NotImplementedError,
                       'RELOAD version %d not understood.')
     check_or_message (f, 4, (lambda v: struct.unpack('I',v)[0], 13),
-                      ValueError,
+                      CorruptionError,
                       'RELOAD version 01 should always have header size=13, not %r')
     string_table_pos = struct.unpack('I', f.read(4))[0]
     f.seek (string_table_pos)
@@ -313,13 +314,13 @@ def vli_size (v):
 def read_stringtable (f):
     nstrings = read_vli (f)
     if nstrings == 0:
-        raise ValueError ('0-length string table (?)')
+        raise CorruptionError ('0-length string table (?)')
     results = strtable([''])
     while nstrings > 0 :
         length = read_vli(f)
         content = f.read(length)
         if len(content) != length:
-            raise ValueError ('Truncated string table')
+            raise CorruptionError ('Truncated string table')
         results.append (content)
         nstrings-= 1
     return results
@@ -371,7 +372,7 @@ def scan_nodes (f, table):
 def read (f):
     table = read_reload_header(f)
     if len(table) == 0:
-        raise ValueError('0-length string table (?)')
+        raise CorruptionError('0-length string table (?)')
     return read_element (f, table)
 
 def reload_from_dict (d, name, key = None):
