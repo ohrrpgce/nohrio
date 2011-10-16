@@ -17,8 +17,12 @@ def text_lump_lines(f, offset, size):
             line = line[:left_to_read]
         yield line
 
+# Need to subclass dict to be able to create weakrefs to dicts
+class Dict(dict):
+    pass
+
 def read_script_header(f, offset, size):
-    info = {}
+    info = Dict()
     f.seek (offset)
     data = f.read (4)
     header = np.ndarray ((1), dtype = 'i2, i2', buffer = data)
@@ -147,25 +151,25 @@ class ScriptNode(object):
         return self._format(0)
 
     def _get_kind(self):
-        return self.scrdata()[self.offset]
+        return int(self.scrdata()[self.offset])
 
     def _get_id(self):
-        return self.scrdata()[self.offset + 1]
+        return int(self.scrdata()[self.offset + 1])
 
     def _get_argnum(self):
         if self.kind not in kinds_with_args:
             return 0
-        return self.scrdata()[self.offset + 2]
+        return int(self.scrdata()[self.offset + 2])
 
     def arg(self, i):
-        return ScriptNode(self.scripts(), self.scrinfo, self.scrdata()[self.offset + 3 + i])
+        return ScriptNode(self.scripts(), self.scrinfo, int(self.scrdata()[self.offset + 3 + i]))
 
     def args(self):
         if self.kind not in kinds_with_args:
             return
         ret = ScriptNode(self.scripts(), self.scrinfo, 0)
         for i in range(self.argnum):
-            ret.offset = self.scrdata()[self.offset + 3 + i]
+            ret.offset = int(self.scrdata()[self.offset + 3 + i])
             yield ret
 
     id = property (_get_id)
@@ -184,14 +188,15 @@ class HSScripts(object):
             self.source = 'source.txt'
         else:
             self.source = None
-        self.scriptnames = {}
-        self.scriptids = {}
         self._scriptcache = weakref.WeakValueDictionary ()
         try:
             lumpinfo = self._lump_map['scripts.txt']
         except KeyError:
             raise CorruptionError ('scripts.txt lump missing')
         self.scriptnames, self.scriptids = read_scripts_txt (self.file, *lumpinfo)
+        # scripts.txt may reference scripts which were declared (with definescript)
+        # but aren't present. It's still possible for them to be called from in other
+        # scripts, but maybe these should be removed from scriptnames?
         try:
             lumpinfo = self._lump_map['commands.bin']
         except KeyError:
@@ -199,8 +204,15 @@ class HSScripts(object):
         else:
             self.commands_info = read_commands_bin (self.file, *lumpinfo)
  
-    def __del__(self):
+    def close(self):
         self.file.close()
+        # Try to free references to the memmaps
+        for script in self._scriptcache.itervalues():
+            if 'data' in script:
+                del script['data']
+
+    def __del__(self):
+        self.close()
 
     def _load_script(self, lump):
         offset, size = self._lump_map[lump]
@@ -220,16 +232,16 @@ class HSScripts(object):
             except KeyError:
                 return None
         if id in self._scriptcache:
-            return self._scriptcache[id]
-        lumpname = '%d.hsz' % id
-        if lumpname not in self._lump_map:
-            lumpname = '%d.hsx' % id
+            scrinfo = self._scriptcache[id]
+        else:
+            lumpname = '%d.hsz' % id
             if lumpname not in self._lump_map:
-                return None
-        scrinfo = self._load_script (lumpname)
-        ret = ScriptNode (self, scrinfo, 0)
-        self._scriptcache[id] = ret
-        return ret
+                lumpname = '%d.hsx' % id
+                if lumpname not in self._lump_map:
+                    return None
+            scrinfo = self._load_script (lumpname)
+            self._scriptcache[id] = scrinfo
+        return ScriptNode (self, scrinfo, 0)
 
     def commandname(self, id):
         if id in self.commands_info:
