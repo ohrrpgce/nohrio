@@ -46,12 +46,22 @@ class Script(object):
         "Returns the root ScriptNode"
         return ScriptNode (self.scriptset, self, 0)
 
-    def md5(self):
-        md5 = hashlib.md5()
-        md5.update(self.cmds)
+    def _md5(self, cmds):
+        md5 = hashlib.md5 ()
+        md5.update (cmds)
         if self.strtable != None:
-            md5.update(self.strtable)
-        return md5.digest()
+            md5.update (self.strtable)
+        return md5.digest ()
+
+    def md5(self):
+        return self._md5 (self.cmds)
+
+    def invariate_md5(self):
+        "A (slow) alternative to md5() which returns identical hashes for 16- and 32-bit versions of a script"
+        if self.int_bytes == 4:
+            return self.md5 ()
+        expanded_cmds = np.array (self.cmds, dtype = np.int32)
+        return self._md5 (expanded_cmds)
 
     def _read_header(self, f, offset, size):
         f.seek (offset)
