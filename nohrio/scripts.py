@@ -3,6 +3,7 @@ from numpy import int16 as INT
 from numpy import int32 as LONG
 from nohrio.lump import read_lumplist, CorruptionError
 import weakref
+import hashlib
 
 
 def text_lump_lines(f, offset, size):
@@ -17,47 +18,86 @@ def text_lump_lines(f, offset, size):
             line = line[:left_to_read]
         yield line
 
-# Need to subclass dict to be able to create weakrefs to dicts
-class Dict(dict):
-    pass
+class Script(object):
 
-def read_script_header(f, offset, size):
-    info = Dict()
-    f.seek (offset)
-    data = f.read (4)
-    header = np.ndarray ((1), dtype = 'i2, i2', buffer = data)
-    info['data_off'] = header[0][0]
-    info['numvars'] = header[0][1]
-    info['numargs'] = None  # unknown
-    info['version'] = 0
-    info['strtable_off'] = 0
-    info['strtable_size'] = 0
-    info['flags'] = 0
-    info['vartable_off'] = 0
+    def __init__(self, scriptset, f, offset, size):
+        self.scriptset = weakref.ref (scriptset)
+        self.lump_size = size
+        self._read_header (f, offset, size)
+        # It's actually quite hard to determine where the script data ends, so we load the whole lump
+        f.seek (offset + self.data_off)
+        data = f.read (size - self.data_off)
+        #self.data = np.memmap (f, mode = 'r', dtype = self.int, shape = length, offset = offset + self.data_off)
+        cmds_len = self.cmds_size / self.int_bytes
+        self.cmds = np.ndarray (buffer = data, dtype = self.int, shape = cmds_len, offset = 0)
+        if self.strtable_size:
+            self.strtable = np.ndarray (buffer = data, dtype = np.int8, shape = self.strtable_size, offset = self.strtable_off - self.data_off)
+        else:
+            self.strtable = None
 
-    headerlen = min (info['data_off'], 22)
-    if headerlen > 4:
+    def drop_data(self):
+        "Delete script data from this object, preserving just metadata about the script"
+        del self.cmds
+        del self.strtable
+        if self.scriptset():
+            self.scriptset()._remove_from_cache (self)
+
+    def root(self):
+        "Returns the root ScriptNode"
+        return ScriptNode (self.scriptset, self, 0)
+
+    def md5(self):
+        md5 = hashlib.md5()
+        md5.update(self.cmds)
+        if self.strtable != None:
+            md5.update(self.strtable)
+        return md5.digest()
+
+    def _read_header(self, f, offset, size):
         f.seek (offset)
-        data = f.read (headerlen)
-        # nearly everything defaults to 0
-        data += '\0' * 22
-        header = np.ndarray ((1), dtype = 'i2, i2, i2, i2, i4, i4, i2, i4', buffer = data)
-        info['numargs'] = header[0][2]
-        info['version'] = header[0][3]
-        info['strtable_off'] = header[0][4]
-        info['strtable_size'] = header[0][5]
-        info['flags'] = header[0][6]
-        info['vartable_off'] = header[0][7]
+        data = f.read (4)
+        header = np.ndarray ((1), dtype = 'i2, i2', buffer = data)
+        self.data_off = header[0][0]
+        self.numvars = header[0][1]
+        self.numargs = None  # unknown
+        self.format_version = 0
+        self.strtable_off = 0
+        self.strtable_size = 0
+        self.flags = 0
+        self.vartable_off = 0
 
-    if info['strtable_size'] == 0:
-        info['strtable_size'] = size - info['strtable_off']
+        headerlen = min (self.data_off, 22)
+        if headerlen > 4:
+            f.seek (offset)
+            data = f.read (headerlen)
+            # nearly everything defaults to 0
+            data += '\0' * 22
+            header = np.ndarray ((1), dtype = 'i2, i2, i2, i2, i4, i4, i2, i4', buffer = data)
+            self.numargs = header[0][2]
+            self.format_version = header[0][3]
+            self.strtable_off = header[0][4]
+            self.strtable_size = header[0][5]
+            self.flags = header[0][6]
+            self.vartable_off = header[0][7]
 
-    if info['version'] == 0:
-        info['int'] = INT
-    else:
-        info['int'] = LONG
+        if self.format_version == 0:
+            self.int = INT
+            self.int_bytes = 2
+        else:
+            self.int = LONG
+            self.int_bytes = 4
 
-    return info
+        # It's actually quite nontrivial to determine where the script data ends
+        # FIXME: the following is incorrect for scripts compiled with 'hspeak4' HSpeak branch, but
+        # luckily no such scripts exist in the wild
+        if self.strtable_off:
+            self.cmds_size = self.strtable_off - self.data_off
+            if self.strtable_size == 0:
+                self.strtable_size = size - self.strtable_off
+        else:
+            self.cmds_size = size - self.data_off
+            self.strtable_size = 0
+
 
 def read_scripts_txt(f, offset, size):
     lines = text_lump_lines (f, offset, size)
@@ -102,10 +142,12 @@ mathcmds_infix = '', '^', '%', '/', '*', '--', '+', 'xor', 'or', 'and', '==', '<
 
 class ScriptNode(object):
 
-    def __init__(self, scripts, scriptinfo, offset):
-        self.scripts = weakref.ref (scripts)
-        self.scrinfo = scriptinfo
-        self.scrdata = weakref.ref (scriptinfo['data'])
+    def __init__(self, scriptset, script, offset):
+        if not isinstance(scriptset, weakref.ref):
+            scriptset = weakref.ref (scriptset)
+        self.scriptset = scriptset
+        self.script = script
+        self.scrdata = weakref.ref (script.cmds)
         self.offset = offset
 
     def _format(self, indent):
@@ -131,9 +173,9 @@ class ScriptNode(object):
                 return '%s %s %s' % (self.arg (0), mathcmds_infix[self.id], self.arg (1))
             ret = mathcmds[self.id]
         elif kind == kCmd:
-            ret = self.scripts().commandname (self.id)
+            ret = self.scriptset().commandname (self.id)
         elif kind == kScript:
-            ret = self.scripts().scriptnames [self.id]
+            ret = self.scriptset().scriptnames [self.id]
         else:
             return 'BAD_NODE(kind=%d, id=%d)' % (self.kind, self.id)
         ret += '('
@@ -162,12 +204,12 @@ class ScriptNode(object):
         return int(self.scrdata()[self.offset + 2])
 
     def arg(self, i):
-        return ScriptNode(self.scripts(), self.scrinfo, int(self.scrdata()[self.offset + 3 + i]))
+        return ScriptNode(self.scriptset(), self.script, int(self.scrdata()[self.offset + 3 + i]))
 
     def args(self):
         if self.kind not in kinds_with_args:
             return
-        ret = ScriptNode(self.scripts(), self.scrinfo, 0)
+        ret = ScriptNode(self.scriptset(), self.script, 0)
         for i in range(self.argnum):
             ret.offset = int(self.scrdata()[self.offset + 3 + i])
             yield ret
@@ -207,23 +249,32 @@ class HSScripts(object):
     def close(self):
         self.file.close()
         # Try to free references to the memmaps
-        for script in self._scriptcache.itervalues():
-            if 'data' in script:
-                del script['data']
+        #for script in self._scriptcache.itervalues():
+        #    script.drop_data()
 
     def __del__(self):
         self.close()
 
-    def _load_script(self, lump):
-        offset, size = self._lump_map[lump]
-        scrinfo = read_script_header (self.file, offset, size)
-        # It's actually quite hard to determine where the script data ends, so we load the whole lump
-        length = (size - scrinfo['data_off']) / scrinfo['int']().nbytes
-        scrinfo['data'] = np.memmap (self.file, mode = 'r', dtype = scrinfo['int'], shape = length, offset = offset + scrinfo['data_off'])
-        return scrinfo
+    def _load_script(self, id):
+        lumpname = '%d.hsz' % id
+        if lumpname not in self._lump_map:
+            lumpname = '%d.hsx' % id
+            if lumpname not in self._lump_map:
+                return None
+        offset, size = self._lump_map[lumpname]
+        script = Script (self, self.file, offset, size)
+        script.id = id
+        script.name = self.scriptnames[id]
+        return script
+
+    def _remove_from_cache(self, script):
+        for k, v in self._scriptcache.iteritems ():
+            if v is script:
+                del self._scriptcache[k]
+                return
 
     def script(self, id_or_name):
-        "Returns the root node of a script, or None if that script doesn't exist"
+        "Returns a Script object given either id or normalised name, or None if that script doesn't exist"
         if isinstance (id_or_name, int):
             id = id_or_name
         else:
@@ -232,16 +283,11 @@ class HSScripts(object):
             except KeyError:
                 return None
         if id in self._scriptcache:
-            scrinfo = self._scriptcache[id]
+            return self._scriptcache[id]
         else:
-            lumpname = '%d.hsz' % id
-            if lumpname not in self._lump_map:
-                lumpname = '%d.hsx' % id
-                if lumpname not in self._lump_map:
-                    return None
-            scrinfo = self._load_script (lumpname)
-            self._scriptcache[id] = scrinfo
-        return ScriptNode (self, scrinfo, 0)
+            script = self._load_script (id)
+            self._scriptcache[id] = script
+            return script
 
     def commandname(self, id):
         if id in self.commands_info:
