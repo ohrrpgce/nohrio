@@ -296,7 +296,8 @@ class HSScripts(object):
             return self._scriptcache[id]
         else:
             script = self._load_script (id)
-            self._scriptcache[id] = script
+            if script:
+                self._scriptcache[id] = script
             return script
 
     def commandname(self, id):
