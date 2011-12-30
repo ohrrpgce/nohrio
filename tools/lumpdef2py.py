@@ -26,5 +26,5 @@ class Compiler (object):
 from pprint import pprint
 
 c = Compiler ('lumpdefs.yaml')
-pprint (c.helperdata)
+pprint (c.dtypeinfo)#(c.helperdata)
 

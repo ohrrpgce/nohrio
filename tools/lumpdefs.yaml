@@ -104,6 +104,7 @@ __attic:
                   paletteindex : int16
                   ctr : [uint8, 4]
                   index : uint16
+                  childstate : pointer (or NULL) # urgh
                   parentstate : pointer (or NULL)
                   initialstate : pointer
                   _dontsave : anim sprite
@@ -163,6 +164,8 @@ __attic:
                                         #
                                         # overall offset is measured
                                         #  relative to top left of bounding box.
+                         - call Anm     # instead of current animation, display the called animation
+                                        # .. until it finishes, then continue.
                          # gfxset is not modifyable by an animation.
                          - editpal Do Le I,I,.. # replace Le indices in the palette
                                                 # @ Do offset.
@@ -205,20 +208,18 @@ __attic:
                                         # offset = [0,0]
                                         # bbox = default for this class of gfx.
                                         # frame is currently undefined.
-                         - end Typ Ast Nxt # unconditional end of anim
-                                        # Typ == 0: Overwrite this state with the chained-to-anim
-                                        # Typ == 1: preserve this state and begin
-                                        #           the chained-to anim in a child state.
-                                        #           This animation will end once the child animation does.
-                                        # Ast >= 0, Nxt != -1:
-                                        #     chain to anim #(Nxt) in animset Ast
-                                        # Ast = -1, Nxt != -1:
-                                        #     chain to anim #(Nxt) in current animset)
-                                        # Ast < -1, or Nxt = -1:
-                                        #     End without chaining
-                                        #
-                                        # not needed at natural end of animation.
-                                        # Used in conjunction with conditional execution.
+                         - timeout Wa   # stop animating after N ticks
+                                        # (non blocking: animation continues until N ticks have happened)
+                         - end Ast Nxt # unconditional end of anim
+                                       # Ast >= 0, Nxt != -1:
+                                       #     chain to anim #(Nxt) in animset Ast
+                                       # Ast = -1, Nxt != -1:
+                                       #     chain to anim #(Nxt) in current animset)
+                                       # Ast < -1, or Nxt = -1:
+                                       #     End without chaining
+                                       #
+                                       # not needed at natural end of animation.
+                                       # Used in conjunction with conditional execution.
 
 
 
@@ -347,6 +348,8 @@ B6R : &B6R [0, 63]
 B8R : &B8R [0, 255]
 HR : &HR [*MINH, *MAXH]
 UHR : &UHR [0, *MAXUH]
+_DEFAULTDTYPE: &DEFAULTDTYPE *H
+_DEFAULTRANGE: &DEFAULTRANGE *HR
 ALLH: &ALLH {dtypes : {'*' : [*H, *HR, 0]}}
 MAXHERO: &MAXHERO 60
 HEROR : &HEROR [-60, 60]
@@ -445,14 +448,12 @@ RGB6W: &RGB6W
 XYCOORD: &XYCOORD
    << : [*CLASS_DTYPE]
    dtypes:
-      - '*': *H
       - x:
       - y:
 
 STATS: &STATS
    << : [*CLASS_DTYPE]
    dtypes: !!pairs
-      - '*' : *H
       - hp:
       - mp:
       - str:

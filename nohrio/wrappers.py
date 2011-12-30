@@ -11,6 +11,8 @@ class md5Array (ndarray):
         return md5(self.data).hexdigest()
 
 class OhrData (memmap, md5Array):
+    #XXX implement string setting/getting automagic via
+    #'title' extra details of dtype
     def __getattr__ (self, k):
         dt = memmap.__getattribute__ (self, 'dtype').names
         if dt and k in dt:
