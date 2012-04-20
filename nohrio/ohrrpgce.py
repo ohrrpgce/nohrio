@@ -607,6 +607,7 @@ _spell_list = ([('attack', INT), ('level', INT)], (4, 24))
 
 _attack_chain_info = make ('attack cond_type rate cond_value cond_value2 bitsets',
                            bitsets = ('B', 2))
+_attack_fail_cond = [('type', INT), ('value', np.int32)]
 #
 # General
 # ~~~~~~~~
@@ -637,13 +638,14 @@ dtypes = {
 # until dtype.itemsize matches the size specified in BINSIZE.BIN.
 #
     'attack.full' : make ('picture palette animpattern targetclass targetsetting',
-                          'damage_eq aim_math baseatk_stat cost xdamage chainto','chain_percent',
+                          'damage_eq aim_math baseatk_stat cost xdamage chain__attack chain__rate',
                           'attacker_anim attack_anim attack_delay nhits target_stat',
                           'preftarget bitsets1 name captiontime caption basedef_stat',
                           'settag tagcond tagcheck settag2 tagcond2 tagcheck2 bitsets2',
                           'description consumeitem nitems_consumed soundeffect',
-                          'stat_preftarget chaincond_type chaincond_value',
-                          'chaincond_value2 chain_bitsets else_chain instead_chain learn_sound',
+                          'stat_preftarget chain__cond_type chain__cond_value',
+                          'chain__cond_value2 chain__bitsets else_chain instead_chain learn_sound',
+                          'transmog_enemy transmog_hp transmog_stats fail_conds',
                           bitsets1 = ('B', 64 / 8), bitsets2 = ('B', 128 / 8),
                           cost = [('hp', INT), ('mp', INT), ('money', INT)],
                           name = [('length', INT), ('unused', INT), ('data', (np.character, 10*2))],
@@ -651,9 +653,10 @@ dtypes = {
                           consumeitem = (INT, 3),
                           nitems_consumed = (INT, 3),
                           description = fvstr (38),
-                          chain_bitsets = ('B', 2),
+                          chain__bitsets = ('B', 2),
                           else_chain = _attack_chain_info,
-                          instead_chain = _attack_chain_info),
+                          instead_chain = _attack_chain_info,
+                          fail_conds = (_attack_fail_cond, MAXNEWELEM)),
 
     'binsize.bin' : make ('attack stf songdata sfxdata map',
                           'menu menuitem uicolor say npcdef hero item'),
@@ -678,19 +681,22 @@ dtypes = {
                   elemdmg = ('f4', MAXNEWELEM)),
     'dt1' : make ('name thievability stealable_item stealchance',
                   'raresteal_item raresteal_chance dissolve dissolvespeed',
-                  'deathsound unused picture palette picsize rewards stats',
-                  'bitsets spawning attacks unused2',
+                  'deathsound cursorcoord unused picture palette picsize rewards stats',
+                  'bitsets spawning attacks spawning_elemhit elemdmg',
                   name = vstr2 (17),
+                  cursorcoord = xycoord_dtype,
                   rewards = make ('gold exp item itemchance rareitem rareitemchance'),
                   bitsets = ('B', 10),
                   spawning = make ('death non_e_death alone non_e_hit',
                                    'elemhit n_tospawn',
                                    elemhit = (INT, 8)),
+                  spawning_elemhit = (INT, 56),
                   attacks = [('regular', (INT, 5)), ('desperation', (INT, 5)),
-                             ('alone', (INT, 5)), ('counter', (INT, 8))],
+                             ('alone', (INT, 5)), ('counter_elem', (INT, 8)),
+                             ('counter_stat', STATS_DTYPE), ('counter_elem2', (INT, 56))],
                   stats = STATS_DTYPE,
-                  unused = (INT, 28),
-                  unused2 = (INT, 45)),
+                  elemdmg = ('f4', MAXNEWELEM),
+                  unused = (INT, 26)),
     'efs' : np.dtype ([('frequency', INT),('formations',(INT, 20)),
                        ('wasted', (INT, 4))]),
     'for' : make ('enemies background music backgroundframes backgroundspeed unused',
@@ -728,14 +734,14 @@ dtypes = {
                   unused2 = (np.uint16, 140)),
     'itm' : make ('name info value attack weaponattack equippable teach oobuse weaponpic weaponpal',
                   'bonuses equippableby bitsets consumability own_tag in_inventory_tag equipped_tag',
-                  'equippedby_active_tag frame2handle frame1handle unused',
-                  name = vstr2 (9), info = vstr2(36),
+                  'equippedby_active_tag frame2handle frame1handle elemdmg',
+                  name = vstr2 (9), info = vstr2(37),
                   bonuses = STATS_DTYPE,
                   equippableby = ('B', 8),
                   bitsets = ('B', 6),
                   frame2handle = xycoord_dtype,
                   frame1handle = xycoord_dtype,
-                  unused = (INT, 19)),
+                  elemdmg = ('f4', MAXNEWELEM)),
     'l' : planar_dtype ('x y id dir walkframe',300,INT, bload = True),
     'l.linear' : make ('x y id dir walkframe'),
     'map' : make ('tileset music minimap_available save_anywhere display_name_time',
@@ -814,12 +820,12 @@ dtypes = {
 # Text boxes
 # -----------
 
-    'say' : make ('text reserved1 conditional reserved2 choicebitsets choice1 wasted choice2',
+    'say' : make ('text reserved1 conditional reserved2 choicebitsets choice1 unused choice2',
                   'menuconditional verticalpos shrink textcolor bordercolor backdrop music menu',
-                  'portraittype portraitpic portraitpal portraitx portraity',
+                  'portraittype portraitpic portraitpal portraitx portraity soundeffect',
                   text = ('S38', 8), reserved1 = 'B', conditional = _say_conditionals_dtype,
                   reserved2 = 'B', choicebitsets = 'B', choice1 = _saychoice_dtype,
-                  wasted = 'B', choice2 = _saychoice_dtype),
+                  unused = 'B', choice2 = _saychoice_dtype),
     'sfxdata.bin' : np.dtype ([('name', fvstr (30)), ('streaming', INT)]),
     'sho' : np.dtype ([('name', vstr2 (16)), ('nitems', INT), ('bitsets', ('B',2)),
                   ('inncost', INT), ('innscript', INT)]),
@@ -884,16 +890,17 @@ deprecated_dtypes = {
 #     memmapping with this dtype causes a crash!
 #     load the data into a normal array with this dtype,
 #     or use the full spliced dtype 'attack.full'
+#     OUT OF DATE
 
-    'attack.bin' : make ('captionpt2 basedef_stat',
-                         'settag tagcond tagcheck settag2 tagcond2 tagcheck2 bitsets3',
-                         'description consumeitem nitems_consumed soundeffect',
-                         'stat_preftarget',
-                         bitsets3 = ('B', 128 / 8),
-                         captionpt2 = 'S36',
-                         description = fvstr (38),
-                         consumeitem = (INT, 3),
-                         nitems_consumed = (INT, 3)),
+#     'attack.bin' : make ('captionpt2 basedef_stat',
+#                          'settag tagcond tagcheck settag2 tagcond2 tagcheck2 bitsets3',
+#                          'description consumeitem nitems_consumed soundeffect',
+#                          'stat_preftarget',
+#                          bitsets3 = ('B', 128 / 8),
+#                          captionpt2 = 'S36',
+#                          description = fvstr (38),
+#                          consumeitem = (INT, 3),
+#                          nitems_consumed = (INT, 3)),
 
 # First part of attack data
 # ---------------------------
