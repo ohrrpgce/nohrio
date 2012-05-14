@@ -35,12 +35,40 @@ class OhrData (md5Array):
 class OhrDataMemmap (OhrData, memmap):
     pass
 
-class AttackData(object):
+class AttackData (OhrData):
     # virtualization of the awkward attack data format,
     # that needs "stapling together"
-    # Returns a newly allocated BufferArray each time.
     # when that is deleted or flush()ed, the data gets rewritten to disk.
-    pass
+
+    def __new__ (cls, dt6, attack_bin, dtype):
+        """
+        dt6 and attack_bin should be memmaps for those two lumps
+        """
+        # Yes, you are meant to construct ndarray subtypes in __finalize_array__ instead
+        # of in __new__, but we don't want that: only the top level object, not any views
+        # into it, has special logic
+
+        self = super(AttackData, cls).__new__ (cls, len(dt6), dtype = dtype)
+
+        assert len(dt6) == len(attack_bin)
+        attack_binsize = attack_bin.dtype.itemsize
+        self._dt6 = dt6.view((np.uint8, 80))
+        self._attack_bin = attack_bin.view((np.uint8, attack_binsize))
+        self._masking_dtype = np.dtype([('dt6', np.uint8, 80), ('attack.bin', np.uint8, attack_binsize)])
+
+        self.view (self._masking_dtype)['dt6'] = self._dt6
+        self.view (self._masking_dtype)['attack.bin'] = self._attack_bin
+        return self
+
+    def _flush (self):
+        self._dt6[:] = self.view (self._masking_dtype)['dt6']
+        self._attack_bin = self.view (self._masking_dtype)['attack.bin']
+
+    def __del__ (self):
+        # Note that __del__ is called on slices too
+        if hasattr (self, '_dt6'):
+            self._flush()
+
 
 # automagical virtual dtype hacks for planar data follow :)
 class NpcLocData (memmap, md5Array):
@@ -198,4 +226,4 @@ def pack (src, dest = None, transpose = None):
     #raise NotImplementedError('pack')
     # reverse the above transform
 
-__all__ = ('md5Array','NpcLocData','DoorLinks','DoorDefs','OhrData','OhrDataMemmap','pack','PackedImageData')
+__all__ = ('md5Array','AttackData','NpcLocData','DoorLinks','DoorDefs','OhrData','OhrDataMemmap','pack','PackedImageData')

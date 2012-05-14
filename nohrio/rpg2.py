@@ -312,12 +312,26 @@ class RPGDir (RPGHandler):
         if needs_close:
             dest.close()
     def lump (self, which, dest):
+        """Lump the RPGDir to an RPG file"""
         lump (which, dest)
-    def data (self, lump, n = None, dtype = None, offset = None, type = None, **kwargs):
-        """Create a memmap pointing at a given kind of lump"""
-        boffset, flags = self._lumpmetadata.get(lump, (0, 0))
+    def _load_data (self, lump, dtype = None, offset = None, type = None, **kwargs):
+        # Special cases
+        if lump == 'attack.full':
+            return AttackData(self.data('dt6'), self.data('attack.bin', dtype = [('attack.bin', np.uint8, self.binsize.attack)]), dt['attack.full'])
+        # General case
         if type == None:
             type = OhrDataMemmap
+        if os.path.exists (lump):
+            filename = lump
+        else:
+            filename = self.lump_path (os.path.basename (lump))
+            if not os.path.exists (filename):
+                raise IOError ('lump %r not found' % filename)
+        return type (filename, mode = self.mode, dtype = dtype, offset = offset, **kwargs)
+
+    def data (self, lump, n = None, dtype = None, offset = None, type = None, **kwargs):
+        """Create a memmap-like object pointing at a given kind of lump"""
+        boffset, flags = self._lumpmetadata.get(lump, (0, 0))
         if dtype == None:
             dtype = dt.get (lump, None)
         if offset == None:
@@ -327,21 +341,16 @@ class RPGDir (RPGHandler):
             raise NotImplementedError('flags')
         if n != None:
             raise NotImplementedError('subindexed lumps')
-        if os.path.exists (lump):
-            filename = lump
+        if lump in self.mmaps:
+            if self.mmaps[lump].dtype == dtype:
+                return self.mmaps[lump]
+            del self.mmaps[lump]
+            self.mmaps[lump] = self._load_data (lump, dtype = dtype, offset = offset, type = type, **kwargs)
+            return self.mmaps[lump]
         else:
-            filename = self.lump_path (os.path.basename (lump))
-            if not os.path.exists (filename):
-                raise IOError ('lump %r not found' % filename)
-        if filename in self.mmaps:
-            if self.mmaps[filename].dtype == dtype:
-                return self.mmaps[filename]
-            del self.mmaps[filename]
-            self.mmaps[filename] = type (filename, mode = self.mode, dtype = dtype, offset = offset, **kwargs)
-            return self.mmaps[filename]
-        else:
-            self.mmaps[filename] = type (filename, mode = self.mode, dtype = dtype, offset = offset, **kwargs)
-            return self.mmaps[filename]
+            self.mmaps[lump] = self._load_data (lump, dtype = dtype, offset = offset, type = type, **kwargs)
+            return self.mmaps[lump]
+
     def lump_path (self, lump, n = None):
         if n:
             raise NotImplementedError()
