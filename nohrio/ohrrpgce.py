@@ -473,13 +473,12 @@ class archiNym (object):
     prefix = property (_getprefix, _setprefix)
     version = property (_getversion, _setversion)
 
-
 class binSize (object):
     """This class is effectively a write-thru buffer for binsize.bin which is initialised using defaults.
 
     It is a wrapper for an ndarray, but one that isn't a memmap. Writing to the array should write to file."""
 
-    fields = 'attack stf songdata sfxdata map menu menuitem uicolor say npcdef hero item'.split()
+    fields = 'attack stf songdata sfxdata map menu menuitem uicolor say npcdef hero enemy item'.split()
     defaults = [0, 64, 0, 0, 40, 0, 0, 0, 400, 30, 636, 320, 200]
 
     def __init__ (self, file, offset = 0):
@@ -500,8 +499,12 @@ class binSize (object):
         #self.sizes = np.ndarray(sizes, dtype = dtype)
         self.sizes = sizes
     def __getitem__ (self, k):
+        if type (k) in (str, unicode):
+            k = self.fields.index (k)
         return self.sizes.__getitem__ (k)
     def __setitem__ (self, k, v):
+        if type (k) in (str, unicode):
+            k = self.fields.index (k)
         self.sizes.__setitem__ (k, v)
         if self.origin:
             raise IOError("Should not be modifying binsize.bin in a lumped RPG")
