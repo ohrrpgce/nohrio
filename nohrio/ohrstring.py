@@ -16,13 +16,13 @@
 # too long to fit.
 
 
-def set_str16 (dest, src): # 16bit/8bit len, 16bit chars
-    assert len (src) <= (len (dest['value']) / 2)
+def set_str16 (dest, src): # 16bit/8bit len, 16bit chars, optionally unused field
+    assert len (src) <= (dest.dtype['data'].itemsize / 2)
     dest['length'] = len(src)
-    dest['data'] = "".join([char + '.' for char in src] + ['\x00\x00'])
+    dest['data'] = "".join([char + '\x00' for char in src] + ['\x00\x00'])
 
-def set_str8 (dest, src): # 16 or 8bit header, 8bit chars
-    assert len (src) <= len (dest['value'])
+def set_str8 (dest, src): # 16 or 8bit length, 8bit chars
+    assert len (src) <= dest.dtype['value'].itemsize
     dest['length'] = len(src)
     dest['value'] = src + '\x00'
 
