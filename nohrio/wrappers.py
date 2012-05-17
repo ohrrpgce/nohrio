@@ -5,6 +5,24 @@
 from numpy import memmap, ndarray
 import numpy as np
 
+class VoidData (np.void):
+    def __getattr__ (self, k):
+        #print "V getting ", k
+        dt = self.dtype.names
+        if dt and k in dt:
+            return self[k]
+        else:
+            return super(VoidData, self).__getattribute__ (k)
+    def __setattr__ (self, k, v):
+        dt = self.dtype.names
+        if dt and k in dt:
+            self[k] = v
+        else:
+            super(VoidData, self).__setattr__ (k, v)
+    def __hasattr__ (self, k):
+        dt = self.dtype.names
+        return (dt and k in dt)
+    
 class md5Array (ndarray):
     def md5 (self):
         from hashlib import md5
@@ -12,6 +30,7 @@ class md5Array (ndarray):
 
 class OhrData (md5Array):
     def __getattr__ (self, k):
+        #print "getting ", k
         dt = self.dtype.names
         if dt and k in dt:
             return self[k]
@@ -22,10 +41,20 @@ class OhrData (md5Array):
         if dt and k in dt:
             self[k] = v
         else:
+            #print type(v), k, v
             super(OhrData, self).__setattr__ (k, v)
     def __hasattr__ (self, k):
         dt = self.dtype.names
         return (dt and k in dt)
+    def __getitem__ (self, k):
+        ret = super(OhrData, self).__getitem__ (k)
+        #print "getitem", k, "type", type(ret)
+        if type (ret) == np.void:
+            #print "hity"
+            ret = VoidData(ret)#ret.view (np.recarray)#OhrData)
+            #print repr(ret), repr(type(ret))
+            return ret
+        return ret
     def fields (self):
         return self.dtype.names()
 #    def __array_finalize__ (self, obj):
