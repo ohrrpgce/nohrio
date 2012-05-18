@@ -1,4 +1,4 @@
-"""compact dtype strings (PEP3188 format)
+"""compact dtype strings (PEP3118 format)
 
 See the OHRRPGCE wiki at http://rpg.hamsterrepublic.com/ohrrpgce/index.php for up to date versions.
 """

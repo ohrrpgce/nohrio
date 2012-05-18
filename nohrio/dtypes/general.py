@@ -1,5 +1,5 @@
 from bits.dtype import DType, limited, enum
-#from bits import pep3188_dtype
+#from bits import pep3118_dtype
 
 #yeah, it's a dissertation even in this format.
 gen = DType ("""
