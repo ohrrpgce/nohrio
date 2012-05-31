@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import os
+import itertools
 import numpy as np
 from nohrio.ohrstring import *
 from nohrio.dtypes import dt
@@ -71,6 +72,26 @@ def unescape_string(string):
                 ret += temp[i]
             i += 1
     return ret
+
+def uniquify_strings(strings, template):
+    seen = set()
+    ret = []
+    for namei, name in enumerate(strings):
+        if name is None:
+            ret.append(None)
+            continue
+        if len(name) == 0:
+            ret.append(template % namei)
+            continue
+        name_ = name
+        for i in itertools.count(1):
+            if name_ not in seen:
+                break
+            name_ = name + str(i)
+        seen.add(name_)
+        ret.append(name_)
+    return ret
+            
 
 def field_descriptor(dtype, name):
     """
@@ -171,7 +192,62 @@ def field_descriptor(dtype, name):
 
     return header, decoder, encoder
 
-def lump2csv(lump, fields):
+def bitset_array(bitname_list = None):
+    """
+    field_descriptor override for arrays of bits (see field_descriptor)
+
+    If bitnames is None, then the bitsets are exported as a comma delimited
+    string of IDs of set bits, eg. '1,3,13'
+    If bitnames is an array, each set bit is looked up in the array, and the
+    results joined with commas.
+    Bits with , or off the end of 'bitnames' are ignored: neither
+    exported nor changed on import.
+    """
+    def descriptor(dtype, name):
+        assert dtype.base == np.uint8
+        assert len(dtype.shape) == 1
+        numbits = dtype.shape[0] * 8
+        bitnames = bitname_list
+        if bitnames is not None:
+            assert len(bitnames) <= numbits
+            numbits = len(bitnames)
+        else:
+            bitnames = [str(i) for i in range(numbits)]
+        inverse_map = dict((name, i) for i, name in enumerate(bitnames))
+        # keepmask marks the bits which should *not* be cleared if missing from the source string
+        clearmask = np.zeros((), dtype = dtype)
+        for i, bname in enumerate(bitnames):
+            if bname:
+                clearmask[i / 8] |= 1 << (i % 8)
+
+        def decoder(src):
+            bitvec = 0
+            unsigned = src.view(np.uint8)
+            for i, n in enumerate(src):
+                bitvec += int(n) << (i * 8)
+            ret = []
+            for i in range(numbits):
+                if bitnames[i] and bitvec & (1 << i):
+                    ret.append(bitnames[i])
+            return [escape_string(','.join(ret))]
+
+        def encoder(dest, subfield, src):
+            dest &= ~clearmask
+            bits = unescape_string(src).split(',')
+            if bits == ['']:
+                bits = []
+            for bname in bits:
+                try:
+                    bit = inverse_map[bname]
+                except KeyError:
+                    raise ValueError("Bitname %s in bitsets field %s is not recognised" % (bname, name))
+                dest[bit / 8] |= 1 << (bit % 8)
+
+        header = [name]
+        return header, decoder, encoder
+    return descriptor
+
+def lump2csv(lump, fields, overrides):
     """
     Returns a table in csv format containing a subset of the fields/columns and all the records/rows of a lump.
 
@@ -180,7 +256,10 @@ def lump2csv(lump, fields):
     fields = [name for name in fields if not name.startswith("unused")]
     headers2, decoders = [], []
     for name in fields:
-        headers, decoder, encoder = field_descriptor(lump.dtype[name], name)
+        if name in overrides:
+            headers, decoder, encoder = overrides[name](lump.dtype[name], name)
+        else:
+            headers, decoder, encoder = field_descriptor(lump.dtype[name], name)
         headers2.extend(headers)
         decoders.append(decoder)
     ret = [','.join(headers2)]
@@ -192,8 +271,7 @@ def lump2csv(lump, fields):
 
     return '\n'.join(ret)
 
-
-def csv2lump(csv, lump):
+def csv2lump(csv, lump, overrides):
     """
     Parses a spreadsheet in csv format and writes into a ndarray of the right dtype.
 
@@ -209,8 +287,11 @@ def csv2lump(csv, lump):
         raise ValueError("csv table has %d records, but file has %d records" % (len(records), len(lump)))
 
     headers, encoders = [], []
-    for fieldnum, name in enumerate(lump.dtype.names):
-        _headers, _decoder, _encoder = field_descriptor(lump.dtype[name], name)
+    for name in lump.dtype.names:
+        if name in overrides:
+            _headers, _decoder, _encoder = overrides[name](lump.dtype[name], name)
+        else:
+            _headers, _decoder, _encoder = field_descriptor(lump.dtype[name], name)
         headers.extend(_headers)
         encoders.extend( [(_encoder, name, i) for i in range(len(_headers))] )
     print
@@ -307,6 +388,30 @@ if __name__ == '__main__':
     # If you're interested in all fields
     fields = lump.dtype.names
 
+    overrides = {}
+    if lumpid == 'items':
+        dt0 = rpg.data('dt0')
+        hero_names = uniquify_strings([get_str16(n) for n in dt0['name']], 'hero %d')
+        overrides = {'equippableby': bitset_array(hero_names)}
+        fields = [n for n in fields if n != 'bitsets']  # No bitsets are used
+
+    if lumpid == 'heroes':
+        bitnames = [None] * 24 + ['rename on add', 'renameable', 'hide empty lists']
+        overrides = {'bitsets': bitset_array(bitnames)}
+
+    if lumpid == 'enemies':
+        bitnames = uniquify_strings([None] * 54 + [''] * 11, '%d')  # hide some, default names for the rest
+        overrides = {'bitsets': bitset_array(bitnames)}
+
+    if lumpid == 'attacks':
+        bitnames = uniquify_strings([''] * 64, '%d')  # default names
+        bitnames2 = uniquify_strings([''] * 128, '%d')
+        overrides = {'bitsets1': bitset_array(bitnames), 'bitsets2': bitset_array(bitnames2)}
+
+    if lumpid == 'textboxes':
+        bitnames = uniquify_strings([''] * 8, '%d')  # default names
+        overrides = {'choicebitsets': bitset_array(bitnames)}
+
     if 0 and lumpid == 'items':
         # Only interested in some fields...
         fields = (
@@ -334,11 +439,11 @@ if __name__ == '__main__':
         )
 
     if export:
-        iofile.write(lump2csv(lump, fields))
+        iofile.write(lump2csv(lump, fields, overrides))
     else:
         #print lump.md5()
         # Operate on a copy so that nothing is done if an exception occurs
         lump2 = np.copy(lump)
-        csv2lump(iofile.read(), lump2)
+        csv2lump(iofile.read(), lump2, overrides)
         lump[:] = lump2[:]
         #print lump.md5()

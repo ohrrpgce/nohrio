@@ -21,7 +21,7 @@ Enemies: http://rpg.hamsterrepublic.com/ohrrpgce/DT1
 Attacks: http://rpg.hamsterrepublic.com/ohrrpgce/DT6
 Textboxes: http://rpg.hamsterrepublic.com/ohrrpgce/SAY
 
-You'll need these to make sense of the contents of each cell. The data fields will be in the same order in the spreadsheet and on the wiki. For example, for items, "oobuse" is "When used out of battle", and a value of 6 in a cell in this column means attack 5. If you use a string which is longer than supported by the field, then it'll silently be cut short while importing. You'll always see fields for 64 elements, regardless of the number actually enabled in the game. You should ignore/delete bitset fields, since they are exported split into bytes rather than bits.
+You'll need these to make sense of the contents of each cell. The data fields will be in the same order in the spreadsheet and on the wiki. For example, for items, "oobuse" is "When used out of battle", and a value of 6 in a cell in this column means attack 5. If you use a string which is longer than supported by the field, then it'll silently be cut short while importing. You'll always see fields for 64 elements, regardless of the number actually enabled in the game. Bitset fields are exported as a single column. Each bitfield cell contains the numbers of the set bits (ignoring obsolete or unused bits) comma separated, or in some cases names of the set bits instead. Examples of bit names are 'rename on add', 'Bob' (the name of a hero) or 'hero 3' (if the hero name is blank).
 
 * Make changes
 * Export the spreadsheet as a csv file. Make sure it's in the same format as originally exported: comma delimiters, quotes around strings if required.
