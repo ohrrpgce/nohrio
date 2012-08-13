@@ -317,7 +317,11 @@ class RPGDir (RPGHandler):
     def _load_data (self, lump, dtype = None, offset = None, type = None, **kwargs):
         # Special cases
         if lump == 'attack.full':
-            return AttackData(self.data('dt6'), self.data('attack.bin', dtype = [('attack.bin', np.uint8, self.binsize.attack)]), dt['attack.full'])
+            if self.has_lump('attack.bin'):
+                attack_bin = self.data('attack.bin', dtype = [('attack.bin', np.uint8, self.binsize.attack)])
+            else:
+                attack_bin = None
+            return AttackData(self.data('dt6'), attack_bin, dt['attack.full'])
         # General case
         if type == None:
             type = OhrDataMemmap
@@ -362,6 +366,10 @@ class RPGDir (RPGHandler):
             filename = os.path.join (self.path, lump)
         #if filename in self.manifest:
         return filename
+
+    def has_lump (self, lump):
+        return os.path.isfile (self.lump_path (lump))
+
     def lump_size (self, lump):
         lump = self.lump_path (lump)
         if not os.path.isfile (lump):

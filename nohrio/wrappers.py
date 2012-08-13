@@ -42,7 +42,7 @@ class AttackData (OhrData):
 
     def __new__ (cls, dt6, attack_bin, dtype):
         """
-        dt6 and attack_bin should be memmaps for those two lumps
+        dt6 and attack_bin should be memmaps for those two lumps (or None if attack.bin not present)
         """
         # Yes, you are meant to construct ndarray subtypes in __finalize_array__ instead
         # of in __new__, but we don't want that: only the top level object, not any views
@@ -50,19 +50,28 @@ class AttackData (OhrData):
 
         self = super(AttackData, cls).__new__ (cls, len(dt6), dtype = dtype)
 
-        assert len(dt6) == len(attack_bin)
-        attack_binsize = attack_bin.dtype.itemsize
-        self._dt6 = dt6.view((np.uint8, 80))
-        self._attack_bin = attack_bin.view((np.uint8, attack_binsize))
-        self._masking_dtype = np.dtype([('dt6', np.uint8, 80), ('attack.bin', np.uint8, attack_binsize)])
+        if attack_bin is not None:
+            assert len(dt6) == len(attack_bin)
+            attack_binsize = attack_bin.dtype.itemsize
+            self._attack_bin = attack_bin.view((np.uint8, attack_binsize))
+        else:
+            attack_binsize = 0
 
-        self.view (self._masking_dtype)['dt6'] = self._dt6
-        self.view (self._masking_dtype)['attack.bin'] = self._attack_bin
+        self._dt6 = dt6.view((np.uint8, 80))
+        extraspace = dtype.itemsize - dt6.itemsize - attack_binsize
+        self._masking_dtype = np.dtype([('dt6', np.uint8, 80), ('attack.bin', np.uint8, attack_binsize), ('extra', np.uint8, extraspace)])
+
+        byteview = self.view (self._masking_dtype)
+        byteview['dt6'] = self._dt6
+        if attack_bin is not None:
+            byteview['attack.bin'] = self._attack_bin
+        byteview['extra'] = 0
         return self
 
     def _flush (self):
         self._dt6[:] = self.view (self._masking_dtype)['dt6']
-        self._attack_bin = self.view (self._masking_dtype)['attack.bin']
+        if hasattr (self, '_attack_bin'):
+            self._attack_bin[:] = self.view (self._masking_dtype)['attack.bin']
 
     def __del__ (self):
         # Note that __del__ is called on slices too
