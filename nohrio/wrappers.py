@@ -76,7 +76,9 @@ class AttackData (OhrData):
     def __del__ (self):
         # Note that __del__ is called on slices too
         if hasattr (self, '_dt6'):
-            self._flush()
+            # Lots of ignored exception spam if this is false
+            if self._dt6.flags.writeable:
+                self._flush()
 
 
 # automagical virtual dtype hacks for planar data follow :)
