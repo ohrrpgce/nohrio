@@ -501,7 +501,8 @@ class binSize (object):
     def __getitem__ (self, k):
         if type (k) in (str, unicode):
             k = self.fields.index (k)
-        return self.sizes.__getitem__ (k)
+        # Don't return a numpy scalar
+        return int (self.sizes.__getitem__ (k))
     def __setitem__ (self, k, v):
         if type (k) in (str, unicode):
             k = self.fields.index (k)
