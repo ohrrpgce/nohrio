@@ -1,10 +1,10 @@
-from bits.dtype import DType, limited, enum
+from bits.dtype import DType, limited, enum, bitsets, OFFSET
 #from bits import pep3118_dtype
 
 #yeah, it's a dissertation even in this format.
-gen = DType ("""
-<h:maxmap^me:h:title:h:titlemusic:h:victorymusic:h:battlemusic:
-h:passcodeversion^e:h:pw3rotator^o:17B:pw3passcode^o:10h:pw1password^o:
+DTYPE = DType ("""
+<h:maxmap^me:h:titlebg:h:titlemusic:h:victorymusic:h:battlemusic:
+h:passcodeversion^e:h:pw3rotator^o:17B:pw3passcode^o:x:wasted:10h:pw1password^o:
 h:maxherogfx^mex:h:maxenemy1gfx^mex:h:maxenemy2gfx^mx:h:maxenemy3gfx^mx:h:maxnpcgfx^mex:
 h:maxweapongfx^mex:h:maxattackgfx^mex:h:maxtilesetgfx^mex:
 h:maxattack^me:h:maxhero^me:h:maxenemy^me:h:maxformation^me:h:maxpalette^mex:h:maxtextbox^m:
@@ -16,8 +16,8 @@ h:loadgamescript^s:h:curtextboxbackdrop^gx:
 h:defaultenemydissolve^x:h:usejoystick^g:
 h:poisonchar^x:h:stunchar^x:
 h:damagecap^M:h:mutechar^x:
-T{h:hp:h:mp:h:atk:h:aim:h:def:h:dog:h:mag:h:wil:h:spd:h:ctr:h:focus:h:xhits}:statcaps:
-h:maxsfx^mef:h:masterpalette^x:maxmasterpalette^mex:
+T{h:hp:h:mp:h:atk:h:aim:h:def:h:dog:h:mag:h:wil:h:spd:h:ctr:h:focus:h:xhits:}:statcaps:
+h:maxsfx^mef:h:masterpalette^x:h:maxmasterpalette^mex:
 h:maxmenu^m:h:maxmenuitem^m:h:maxitem^m:h:maxboxbordergfx^mx:h:maxportraitgfx^mx:
 h:maxinventory^M:
 h:errorlevel:h:levelcap^M:h:equipmergeformula:
@@ -34,11 +34,12 @@ h:hiresfx^f:h:sellsfx^f:h:cantsellsfx^f:h:cantbuysfx^f:
 h:damagedisplayticks:h:damagedisplayrise:
 h:heroweakhp:h:enemyweakhp:h:autosortscheme:
 h:maxlevel^M:7h:unused2:h:pw2scattertablehead^eo:160h:pw2scattertable^eo:
+141h:unused3:
 """.replace('\n','').replace(' ',''),
     suspendbits = bitsets ('npcs player obstruction herowalls npcwalls caterpillar'
                            ' randomenemies boxadvance overlay ambientmusic'),
     maxlevel = limited (99), # start, stop, [individualitems]
-    playtime = DType ('h:days:h:hours:h:minutes:h:seconds',
+    playtime = DType ('h:days:h:hours:h:minutes:h:seconds:',
                       hours = limited (23),
                       minutes = limited (59),
                       seconds = limited (59)),
@@ -49,6 +50,8 @@ h:maxlevel^M:7h:unused2:h:pw2scattertablehead^eo:160h:pw2scattertable^eo:
     M = 'softmax',
     o = 'obsolete',
     x = 'gfx')
+
+#print (DTYPE['autosortscheme'][OFFSET])
 # XXX enum-ize defaultenemydissolve, errorlevel, equipmergeformula, autosortscheme
 # XXX bitset-ize bitsets and bitsets2
 # XXX limits on various things
