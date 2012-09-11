@@ -24,7 +24,7 @@ def unpack_lumpid (lumpid):
 def read_lumpheader (file):
     characters = ['']
     while len(characters) < 50 and characters[-1] != '\x00':
-        characters.append (file.read (1))
+        characters.append (file.read (1).decode('utf8'))
         if characters[-1] == '':
             if len (characters) != 2:
                 raise IOError ('Broken lump header near end of file')
@@ -32,8 +32,8 @@ def read_lumpheader (file):
     characters = characters[:-1]
     filename = "".join (characters)
     size = file.read(4)
-    size = struct.unpack('<I', '%s%s%s%s' % (size[2], size[3],
-                                             size[0], size[1]))[0]
+    # python 3 bytes objects return individual integer values
+    size = size[2] | (size[3] << 8) | (size[0] << 16) | (size[1] << 24)
     return filename, file.tell(), size
 
 
