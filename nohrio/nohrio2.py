@@ -1,26 +1,15 @@
+#coding=utf8
 import functools 
 import os
 from bits.dtype import OFFSET
+from nohrio.dtypes.archinym import Archinym
+from nohrio.iohelpers import FilenameOrHandleOpen
 
 CREATOR_NAME = 'nohrio v3'
+STANDARD_SIZES = {
+                  '*.gen' : 1007,
+                  }
 
-class FilenameOrHandleOpen (object):
-    """Wrapper context-manager which acts like open() when input is a filename, and leaves the handle unchanged otherwise"""
-    def __init__(self, infile, *args, **kwargs):
-        self.have_own_handle = (type(infile) == str)
-        self.infile = infile
-        self.args = args
-        self.kwargs = kwargs
-    def __enter__ (self):
-        if self.have_own_handle:
-            self.infile = open(self.infile, *self.args, **self.kwargs)
-            return self.infile.__enter__()
-        return self.infile
-    def __exit__ (self, type, value, traceback):
-        if self.have_own_handle:
-            return self.infile.__exit__(type, value, traceback)
-        return True
-        
 
 def cp (srcrpg, destrpg, lumpnames):
     """Copy lumps from srcrpg to destrpg.
@@ -111,3 +100,40 @@ def create(name, template = 'ohrrpgce.new', creator=None, **gen_updates):
     # XXX update archinym.
 
 rpg_creator = lambda **kwargs: functools.partial(create, **kwargs)
+
+def sanity_check(name, prefix):
+    """Return True if the specified rpgdir looks sane,
+    otherwise a list of missing files or characteristics."""
+    errors = []
+    def check (lumpname, expected_size = None):
+        path = os.path.join(name, lumpname)
+        ok = os.path.exists(path)
+        if not ok:
+            errors.append(lumpname)
+        if expected_size:
+            actual_size = os.path.getsize (path) 
+            ok = actual_size == expected_size
+            if not ok:
+                errors.append((lumpname,'size', actual_size))
+    # TODO: also check fixbits and add any 'missing' fixes to the missing list
+    for lumpname, size in STANDARD_SIZES.items():
+        lumpname = lumpname.replace('*', prefix)
+        check (lumpname, size)
+    # TODO: report when gen.rpgversion is higher than we know of.
+    if not errors:
+        return True
+    return missing
+    
+def open_rpg(name, mode):
+    if mode not in ('r','r+'):
+        raise ValueError('Mode flag %r not understood (should be one of (r w r+))' % mode)
+    # for now we only handle 'r'
+    if mode != 'r':
+        raise NotImplemented
+    if not os.path.exists (name):
+        raise OSError ('File/rpgdir %r doesn\'t exist!' % name)
+    is_rpgdir = os.path.isdir(name)
+    if not is_rpgdir:
+        raise NotImplemented
+    arch = Archinym (name)
+    sanity_check (name, arch.prefix)

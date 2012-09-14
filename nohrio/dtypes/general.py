@@ -1,4 +1,8 @@
+#coding=utf8
 from bits.dtype import DType, limited, enum, bitsets, OFFSET
+from nohrio.dtypes.bload import bsave
+from nohrio.iohelpers import FilenameOrHandleOpen, LumpOrHandleOpen, IOHandler
+import numpy as np
 #from bits import pep3118_dtype
 
 # NOTE: DTYPE moved to bottom of module, cause it's huge.
@@ -61,6 +65,34 @@ def set_password (general, password, version=4):
     map[version] (general, password)
 
 #yeah, it's a dissertation even in this format.
+
+# at the top here, I've given a sample of an interleaved format:
+#
+
+INTERLEAVED_SAMPLE = """<h
+maxmap^me
+
+hhhh
+titlebg^f titlemusic^f victorymusic^f battlemusic^f
+
+
+hh17B
+passcodeversion^e pw3rotator^o pw3passcode^o
+
+x
+wasted
+
+10h
+pw1password^o
+
+"""
+
+# YAY DECORATORS
+#_save = typechecked(DTYPE, bload_saver (expectedsize = 1000))
+#@array_saver
+#def _save (arr, f):
+    #if arr.dtype != DTYPE.freeze():
+        #raise ValueError ('Dtype mismatch: can\'t save array of non-%r dtype' % __name__)
 
 DTYPE = DType ("""
 <h:maxmap^me:
@@ -177,8 +209,17 @@ h:pw2scattertablehead^eo:160h:pw2scattertable^eo:
     m = 'max',
     M = 'softmax',
     o = 'obsolete',
-    x = 'gfx')
+    x = 'gfx',)
 
+# TODO: make a general ndarray subclass for nohrio array types to derive from
+
+class GeneralData (IOHandler,np.ndarray):
+    def _save (self, fh):
+        bsave (self, fh)
+    def _load (self, fh):
+        tmp = np.frombuffer(bload (fh), DTYPE)
+        self[:] = tmp[:]
+        return self
 
 #print (DTYPE['autosortscheme'][OFFSET])
 # XXX enum-ize defaultenemydissolve, errorlevel, equipmergeformula, autosortscheme

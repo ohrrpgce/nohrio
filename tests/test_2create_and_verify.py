@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+#coding=utf8
+
 from unittest import TestCase
 import nose
 import functools
