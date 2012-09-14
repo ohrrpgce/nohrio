@@ -46,11 +46,14 @@ class Archinym(IOHandler):
     """
     def __init__ (self, prefix = None, creator = None, source = None):
         if source:
-            with RpgdirOrHandleOpen (source, 'archinym.lmp') as f:
-                self.load (f)
-        else:
-            self.creator = creator
-            self.prefix = prefix
+            try:
+                with RpgdirOrHandleOpen (source, 'archinym.lmp') as f:
+                    self.load (f)
+                    return
+            except IOError:
+                pass # empty or nonexistent file is okay.
+        self.creator = creator
+        self.prefix = prefix
                         
     def _save (self, fh):
         for item in (self.prefix, self,creator):
