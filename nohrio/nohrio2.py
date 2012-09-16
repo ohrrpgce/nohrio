@@ -1,15 +1,18 @@
 #coding=utf8
 import functools 
 import os
-from bits.dtype import OFFSET
 from nohrio.dtypes.archinym import Archinym
 from nohrio.iohelpers import FilenameOrHandleOpen
+import numpy as np
+
 
 CREATOR_NAME = 'nohrio v3'
 STANDARD_SIZES = {
                   '*.gen' : 1007,
                   }
 
+# ubiquitous dtype used throughout OHRRPGCE
+INT = np.dtype ('<h')
 
 def cp (srcrpg, destrpg, lumpnames):
     """Copy lumps from srcrpg to destrpg.
@@ -137,3 +140,9 @@ def open_rpg(name, mode):
         raise NotImplemented
     arch = Archinym (name)
     sanity_check (name, arch.prefix)
+    
+# do this instead of subclassing unnecessarily:
+#FormatNotSupported = lambda v: NotImplementedError('Format not supported: %r' % v)
+
+    
+#raise FormatNotSupported('foo') 
