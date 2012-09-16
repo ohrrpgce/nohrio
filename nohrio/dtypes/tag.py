@@ -6,9 +6,20 @@ from nohrio.lru_cache import lru_cache
 from nohrio.nohrio2 import INT
 from nohrio.iohelpers import IOHandler
 
+_FIXEDVALUES = (-1,0,1)
+
 @lru_cache(maxsize = 16)
 def _TagCheck (_rpg):
-    "Return an int subclass corresponding to 'tag equipped to <rpg>'"
+    """Return an int subclass corresponding to 'tag equipped to <rpg>'
+
+    Parameters
+    -----------
+    value : int, optional
+    off : int, optional
+    on : int, optional
+        Exactly one of these must be specified.
+
+    """
     # I was using functools.total_ordering here, but note it doesn't work
     # when a superclass implements the other comparison operators.
     class TagCheck(int, IOHandler):
@@ -42,10 +53,13 @@ def _TagCheck (_rpg):
         __ge__ = __lt__
         __le__ = __lt__
 
+        def __bool__(self):
+            return int(self) > -1
+
         # XXX include tag name
         def __str__ (self):
             format = 'off = %d' if int.__lt__ (self, 0) else 'on = %d'
-            if int.__eq__ (self, 0):
+            if int.__eq__ (self, 0) or int.__eq__(self, -1):
                 format += ' (Never)'
             elif int.__eq__(self, 1):
                 format += ' (Always)'
@@ -55,7 +69,7 @@ def _TagCheck (_rpg):
             #     except KeyError:
             #         format += '()'
             params = format % self.tagindex()
-            return '%s.%s(%s)' % ( self.rpg, self.__class__.__name__, params)
+            return '%s->%s(%s)' % ( self.rpg, self.__class__.__name__, params)
 
         def __repr__ (self):
             format = 'off = %d' if int.__lt__ (self, 0) else 'on = %d'
@@ -79,6 +93,7 @@ def _TagCheck (_rpg):
 
 # XXX make it more obvious how to get a bound TagCheck class directly for a given rpg.
 def TagCheck(rpg, value = None, off = None, on = None):
+    "Class factory - returns a TagCheck class bound to `rpg`"
     cls = _TagCheck (rpg)
     return cls(value, off, on)
 
