@@ -1,7 +1,8 @@
 #coding=utf8
 from bits.dtype import DType, limited, enum, bitsets, OFFSET
-from nohrio.dtypes.bload import bsave
+from nohrio.dtypes.bload import bsave, bload
 from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
+from nohrio.objutil import AttrStore
 import numpy as np
 #from bits import pep3118_dtype
 
@@ -212,14 +213,102 @@ h:pw2scattertablehead^eo:160h:pw2scattertable^eo:
     x = 'gfx',)
 
 # TODO: make a general ndarray subclass for nohrio array types to derive from
+# XXX: how do I modify which classes I'm subclassing?
+#      Needed for array2attr.
+#      .. I don't. instead, use type() to construct a new class.
+#      cf http://stackoverflow.com/questions/2783974/adding-inheritance-to-a-class-programmatically-in-python
+#      except really, I should only need to construct it once.
+#
+#
+#      What about this:
+#      I don't really need to use classes for this. A simple named-tuple
+#      (save = foo, load = bar, output_formats = ('array',),data = {some:stuff}) describes most everything.
+#      Classes can then be generated from that IF NEED BE.
 
-class GeneralData (IOHandler,np.ndarray):
+
+def splitfilter (seq, predicate):
+    yes = [v for v in seq if predicate(v)]
+    no = [v for v in seq if v not in yes]
+    return yes, no
+
+
+class GeneralData (IOHandler):
+    _dtype = DTYPE
+    # XXX for now, we only init from file.
+    def __init__ (self, source):
+        with Filelike(source, 'rb') as fh:
+            #def join(fields):
+
+            src = np.frombuffer(bload (fh, newformat_ok = True), self._dtype.freeze())
+            others = self._dtype.names()
+            for v in ('max', 'sfx', 'script', 'music', 'start',
+                      'cap', 'passcode','pw1','pw2','pw3', 'unused','wasted'):
+                store = AttrStore()
+                selected, others = splitfilter (others, lambda name: v in name)
+                for field in selected:
+                    destfield = field
+                    if field.startswith(v) or field.endswith(v):
+                        destfield = field.replace(v,'')
+                        if (not destfield) or destfield[0] in '0123456789':
+                            destfield = '_' + destfield
+                    try:
+                        tmp = src[field].item()
+                    except ValueError:
+                        tmp = src[field].squeeze().tolist()
+                    try:
+                        # convert np.void -> list
+                        if len(tmp):
+                            tmp = list(tmp)
+                    except:
+                        pass
+                    setattr(store, destfield, tmp )
+
+                print(store)
+                setattr(self, v, store)
+            # TODO: read the *(pw|pass)* into a subobject -- only need to store data for
+            #       whichever password version is being used.
+            #       add password set/get methods.
+            #
+            # TODO: 'runtime' subobject for: cameraarg cameramode curbackdrop curtextboxbackdrop
+            #
+            # autosortscheme damagedisplayrise damagedisplayticks defaultenemydissolve enemyweakhp equipmergeformula errorlevel formatversion heroweakhp lockedreservexp masterpalette mutechar numelements onetimenpcindexer onetimenpcplaceholder passwordhash playtime poisonchar stunchar suspendbits titlebg unlockedreservexp usejoystick
+
+            # TODO: mark some fields as NA according to version?
+
+            # TODO: use bits.bitsets or the ilk. We want a view on a long, not a view on a bytearray, though.
+            print ([v for v in others if 'bitsets' in v])
+            print ([v for v in others if 'pw' in v or 'pass' in v])
+            print ([v for v in others if 'unused' in v or 'wasted' in v])
+            if others:
+                raise NotImplementedError('Fields[%d]: %s' % (len(others), " ".join (sorted(others))))
+
+
     def _save (self, fh):
-        bsave (self, fh)
-    def _load (self, fh):
-        tmp = np.frombuffer(bload (fh), DTYPE)
-        self[:] = tmp[:]
-        return self
+        buf = np.zeros((),self._dtype)
+        # fill in
+        bsave (buf, fh)
+
+    def _load (fh):
+        __class__(fh)
+
+
+    def _reloadfrom (self, fh):
+        raise NotImplementedError()
+
+#print (len(DTYPE.names()))
+#_max, others = splitfilter (DTYPE.names(), lambda v: 'max' in v)
+#print ([len(v) for v in (_max, others)])
+
+
+g = GeneralData('../../tests/ohrrpgce.rpgdir/ohrrpgce.gen')
+
+
+
+#def subclassish (name, *superclasses):
+    #type(name,
+#class GeneralData_subclasstest (IOHandler)
+
+
 
 #print (DTYPE['autosortscheme'][OFFSET])
 # XXX enum-ize defaultenemydissolve, errorlevel, equipmergeformula, autosortscheme

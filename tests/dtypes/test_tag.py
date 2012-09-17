@@ -121,7 +121,7 @@ class TestTagCheck(TestCase):
             ok(self.Check(-i).index) == i
 
     def testUseIndex(self):
-        """sequence[TagCheck().index] == TagCheck().match"""
+        """sequence[TagCheck().index] == TagCheck().match works"""
         #        0F    1F    2     3      4     5     6
         seq = (False, True, True, False, True, True, False)
         for v in (1, 5, -3, 2, 4, -6):
