@@ -125,7 +125,7 @@ h:newgamescript^s:
 h:gameoverscript^s:
 h:maxregularscript^mes:
 
- H:suspendbits^g:
+ 2B:suspendbits^g:
 h:cameramode^g:
 4h:cameraarg^g:
 h:curbackdrop^gx:
@@ -226,11 +226,202 @@ h:pw2scattertablehead^eo:160h:pw2scattertable^eo:
 #      Classes can then be generated from that IF NEED BE.
 
 
-def splitfilter (seq, predicate):
-    yes = [v for v in seq if predicate(v)]
-    no = [v for v in seq if v not in yes]
-    return yes, no
+def consume (seq):
+    """Yield seq, receive a set of 'consumed items', remove them from seq,
+       yield the revised seq,... until no items of seq are left, or none
+       are removed.
+    """
+    seq = list(seq)
+    nremoved = 0xfffffff
+    while seq and nremoved:
+        consumed = (yield seq)
+        nremoved = 0
+        for v in consumed:
+            seq.remove(v)
+            nremoved += 1
 
+def numpy2attr (src, dest, attrmap):
+    """Copy numpy array fields to instance/class attributes semi-intelligently.
+    """
+    used = set ()
+    for field, destfield in attrmap.items():
+        if destfield in used:
+            raise ValueError('>1 instance of attribute name %s' % destfield)
+        used.add(destfield)
+        try:
+            tmp = src[field].item()
+        except ValueError:
+            tmp = src[field].squeeze().tolist()
+        try:
+            # convert np.void -> list
+            if len(tmp):
+                tmp = list(tmp)
+        except:
+            pass
+        setattr(dest, destfield, tmp )
+
+#[[[cog
+#import cog
+#]]]
+#[[[end]]]
+
+def shorten(shared, v):
+    return (v if not (v.startswith(shared) or v.endswith(shared)) else v.replace(shared,''))
+
+_ATTRMAP = {'cap': {'damagecap': 'damage',
+             'levelcap':        'level',
+             'numelements':     'numelements',
+             'statcaps':        'stats'},
+     #'formatversion': 'formatversion',
+     'max': {'maxattack':    'attack',
+             'maxattackgfx': 'attackgfx',
+             'maxbackdrop':  'backdrop',
+             'maxboxbordergfx': 'boxbordergfx',
+             'maxenemy':        'enemy',
+             'maxenemy1gfx':    'enemy1gfx',
+             'maxenemy2gfx':    'enemy2gfx',
+             'maxenemy3gfx':    'enemy3gfx',
+             'maxformation':    'formation',
+             'maxhero':         'hero',
+             'maxherogfx':      'herogfx',
+             'maxinventory':    'inventory',
+             'maxitem':         'item',
+             'maxlevel':        'level',
+             'maxmap':          'map',
+             'maxmasterpalette': 'masterpalette',
+             'maxmenu':         'menu',
+             'maxmenuitem':     'menuitem',
+             'maxnpcgfx':       'npcgfx',
+             'maxpalette':      'palette',
+             'maxportraitgfx':  'portraitgfx',
+             'maxregularscript': 'regularscript',
+             'maxsfx':         'sfx',
+             'maxshop':        'shop',
+             'maxsong':        'song',
+             'maxtagname':     'tagname',
+             'maxtextbox':     'textbox',
+             'maxtilesetgfx':  'tilesetgfx',
+             'maxveh':         'veh',
+             'maxweapongfx':   'weapongfx'},
+     'misc': {'autosortscheme': 'autosortscheme',
+# manually merged into one object
+#              'bitsets': 'bitsets',
+#              'bitsets2': 'bitsets2',
+              'damagedisplayrise':    'damagedisplayrise',
+              'damagedisplayticks':   'damagedisplayticks',
+              'defaultenemydissolve': 'defaultenemydissolve',
+              'enemyweakhp':       'enemyweakhp',
+              'equipmergeformula': 'equipmergeformula',
+              'errorlevel':      'errorlevel',
+              'heroweakhp':      'heroweakhp',
+              'lockedreservexp': 'lockedreservexp',
+              'masterpalette':   'masterpalette',
+              'mutechar':   'mutechar',
+              'poisonchar': 'poisonchar',
+              'stunchar':   'stunchar',
+              'titlebg':    'titlebg',
+              'unlockedreservexp': 'unlockedreservexp'},
+     'password': {'passcodeversion': 'version',
+# only some of these are copied, manually, according to determination of the password format version.
+#              'passwordhash': 'passwordhash',
+#              'pw1length': 'pw1length',
+#              'pw1offset': 'pw1offset',
+#              'pw1password': 'pw1password',
+#              'pw2length': 'pw2length',
+#              'pw2offset': 'pw2offset',
+#              'pw2scattertable': 'pw2scattertable',
+#              'pw2scattertablehead': 'pw2scattertablehead',
+#              'pw3passcode': 'pw3passcode',
+#              'pw3rotator': 'pw3rotator'
+              },
+     'runtime': {'cameraarg':    'cameraarg',
+                 'cameramode':  'cameramode',
+                 'curbackdrop': 'curbackdrop',
+                 'curtextboxbackdrop': 'curtextboxbackdrop',
+                 'onetimenpcindexer':  'onetimenpcindexer',
+                 'onetimenpcplaceholder': 'onetimenpcplaceholder',
+                 'playtime':      'playtime',
+                 'suspendbits':   'suspendbits',
+                 'usejoystick':   'usejoystick'},
+     'script': {'gameoverscript': 'gameover',
+                'loadgamescript': 'loadgame',
+                'newgamescript':  'newgame',
+                'nplotscripts':   'nplotscripts'},
+     'sound': {'acceptsfx':   'accept',
+               'battlemusic': 'battlemusic',
+               'buysfx':      'buy',
+               'cancelsfx':   'cancel',
+               'cantbuysfx':  'cantbuy',
+               'cantlearnsfx': 'cantlearn',
+               'cantsellsfx': 'cantsell',
+               'choosesfx':   'choose',
+               'defaultdeathsfx': 'defaultdeath',
+               'hiresfx':     'hire',
+               'itemlearnsfx': 'itemlearn',
+               'sellsfx':     'sell',
+               'textboxlettersfx': 'textboxletter',
+               'titlemusic':  'titlemusic',
+               'victorymusic': 'victorymusic'},
+     'start': {'startmap':   'map',
+               'startmoney': 'money',
+               'startx':     'x',
+               'starty':     'y'},
+     'unused': {'unused2': 'two', 'unused3': 'three', 'wasted': 'one'}}
+
+#_CATEGORYMAP = {
+#                'misc': {v:v for v in 'stunchar poisonchar mutechar defaultenemydissolve bitsets bitsets2 errorlevel unlockedreservexp #heroweakhp lockedreservexp damagedisplayrise enemyweakhp masterpalette damagedisplayticks equipmergeformula titlebg autosortscheme'.split(' ')},
+#                'max' : {v:shorten('max', v) for v in DTYPE.names() if 'max' in v},
+#                'sound' : {v:shorten('sfx', v) for v in DTYPE.names() if 'max' not in v and 'sfx' in v or 'music' in v},
+#                'script' : {v:shorten('script', v) for v in DTYPE.names() if 'max' not in v and 'script' in v},
+#                'unused' : {v:'_%d' % (i+1) for i,v in enumerate(DTYPE.names()) if 'unused' in v or 'wasted' in v},
+#                'runtime' : {v:v for v in DTYPE.names() if 'camera' in v or 'onetime' in v or 'cur' in v},
+#                'pass' : {v:v for v in DTYPE.names() if 'pass' in v or 'pw' in v},
+#                'cap' : {v:shorten('cap',v) for v in DTYPE.names() if 'cap' in v or 'numelem' in v},
+#                'start' : {v:shorten('start',v) for v in DTYPE.names() if 'start' in v or 'pw' in v},
+#                'formatversion': 'formatversion',
+#                }
+#_CATEGORYMAP['runtime'].update({v:v for v in 'playtime usejoystick suspendbits'.split(' ')})
+#_CATEGORYMAP['init'].update({v:v for v in })
+#seen = set()
+#for k,v in _CATEGORYMAP.items():
+#    if type(v) != dict:
+#        seen.add(k)
+#        continue
+#    this = set(v.keys())
+#    shared = seen.intersection(this)
+#    if shared:
+#        print ('SHARED! %r' % shared)
+#    seen.update(this)
+
+#import pprint
+#pprint.pprint(_CATEGORYMAP)
+
+
+#def prefilter (dtype):
+#    names = dtype.names()
+#    #remove preassigned from consideration
+#    for k,v in _CATEGORYMAP.items():
+#        for k2 in v:
+#            if k2 in names:
+#                names.remove(k2)
+#    consumer = consume(names)
+#    remaining = consumer.send(None)
+#    print (remaining)
+#    for v in ('start',):
+#        chosen = [name for name in remaining if v in name]
+#        print ('%s chose : %s' % (v, chosen))
+#        target = _CATEGORYMAP.setdefault(v, {})
+#        target.update({k:k for k in chosen})
+#        remaining = consumer.send(chosen)
+#    del consumer
+#    print ('Remaining(%d): %s' % (len(remaining), ' '.join(remaining)))
+
+#prefilter (DTYPE)
+#print ({k:len(v) for k,v in _CATEGORYMAP.items()})
+#print ('n'.join
+
+# XXX prefilter -- build category lists just the one time, so the GeneralData constructor can be much
+# faster and simpler.
 
 class GeneralData (IOHandler):
     _dtype = DTYPE
@@ -238,49 +429,46 @@ class GeneralData (IOHandler):
     def __init__ (self, source):
         with Filelike(source, 'rb') as fh:
             #def join(fields):
-
             src = np.frombuffer(bload (fh, newformat_ok = True), self._dtype.freeze())
-            others = self._dtype.names()
-            for v in ('max', 'sfx', 'script', 'music', 'start',
-                      'cap', 'passcode','pw1','pw2','pw3', 'unused','wasted'):
+            for submap, members in _ATTRMAP.items():
                 store = AttrStore()
-                selected, others = splitfilter (others, lambda name: v in name)
-                for field in selected:
-                    destfield = field
-                    if field.startswith(v) or field.endswith(v):
-                        destfield = field.replace(v,'')
-                        if (not destfield) or destfield[0] in '0123456789':
-                            destfield = '_' + destfield
-                    try:
-                        tmp = src[field].item()
-                    except ValueError:
-                        tmp = src[field].squeeze().tolist()
-                    try:
-                        # convert np.void -> list
-                        if len(tmp):
-                            tmp = list(tmp)
-                    except:
-                        pass
-                    setattr(store, destfield, tmp )
+                numpy2attr(src, store, members)
+                setattr(self, submap, store)
+                print ('%s: %r' % (submap, store))
+            self.formatversion = src['formatversion'].item()
+            print (self.formatversion)
+            v = self.password.version
+            self.password.present = False
+            if v in (256,257):
+                v = (256,257).index(v) + 3
+                if v == 4:
+                    self.password.hash = src['passwordhash'].item()
+                    print ('current pwd hash == %s' % self.password.hash)
+                    # XXX hack, this should be a separate function in the outside scope.
+                    def _change(self2, newpassword):
+                        self2.hash = None if not newpassword else _passwordhash(newpassword)
+                        self2.present = bool(newpassword)
+                    self.password.change = _change
+                    self.password.check = lambda self2,inputpwd: _passwordhash(inputpwd) == self2.hash
+                    self.password.present = self.password.hash != 0
+                    print ('password is present: %r' % self.password.present)
+                else:
+                    raise NotImplementedError
+            elif v >= 3:
+                v = 2
+                raise NotImplementedError
+            else:
+                v = 1
+                raise NotImplementedError
+            print ('I think the password version is %r' % v)
 
-                print(store)
-                setattr(self, v, store)
-            # TODO: read the *(pw|pass)* into a subobject -- only need to store data for
-            #       whichever password version is being used.
-            #       add password set/get methods.
-            #
-            # TODO: 'runtime' subobject for: cameraarg cameramode curbackdrop curtextboxbackdrop
-            #
-            # autosortscheme damagedisplayrise damagedisplayticks defaultenemydissolve enemyweakhp equipmergeformula errorlevel formatversion heroweakhp lockedreservexp masterpalette mutechar numelements onetimenpcindexer onetimenpcplaceholder passwordhash playtime poisonchar stunchar suspendbits titlebg unlockedreservexp usejoystick
+            # TODO: use bits.bitsets or the ilk.
+            #       * add self.misc.bitsets = bits.bitsets(bytearray merge of bitsets and bitsets2)
+            #       * change self.runtime.suspendbits to be a bits.bitsets(bytearray conversion of suspendbits)
 
-            # TODO: mark some fields as NA according to version?
 
-            # TODO: use bits.bitsets or the ilk. We want a view on a long, not a view on a bytearray, though.
-            print ([v for v in others if 'bitsets' in v])
-            print ([v for v in others if 'pw' in v or 'pass' in v])
-            print ([v for v in others if 'unused' in v or 'wasted' in v])
-            if others:
-                raise NotImplementedError('Fields[%d]: %s' % (len(others), " ".join (sorted(others))))
+            #if others:
+            #    raise NotImplementedError('Fields[%d]: %s' % (len(others), " ".join (sorted(others))))
 
 
     def _save (self, fh):
