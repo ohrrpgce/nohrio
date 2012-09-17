@@ -1,31 +1,41 @@
 #coding=utf8
+"""
+
+"""
+
 import numpy as np
 import struct
-from bits.dtype import DType, limited, enum, bitsets, OFFSET
 from nohrio.lru_cache import lru_cache
 from nohrio.nohrio2 import INT
+from nohrio.objutil import metadata
 from nohrio.iohelpers import IOHandler
 
 _FIXEDVALUES = (-1,0,1)
 
 @lru_cache(maxsize = 16)
-def _TagCheck (_rpg):
+def bound_TagCheck (_rpg):
     """Return an int subclass corresponding to 'tag equipped to <rpg>'
 
-    Parameters
-    -----------
-    value : int, optional
-    off : int, optional
-    on : int, optional
+    :Parameters:
+        _rpg : rpg object to bind to the class
+               (
+
+    :Bound class parameters:
+        value : int, optional
+        off : int, optional
+        on : int, optional
+
         Exactly one of these must be specified.
 
+    :Returns:
+        cls : a class bound to the rpg (has 'rpg' attribute)
     """
     # I was using functools.total_ordering here, but note it doesn't work
     # when a superclass implements the other comparison operators.
     class TagCheck(int, IOHandler):
         rpg = _rpg
-        dtype = np.dtype(INT)
-        _struct = struct.Struct(dtype.byteorder + dtype.char)
+        dtype = np.dtype(INT, metadata = {'class' : '$rpg.TagCheck'})
+        struct = struct.Struct(dtype.byteorder + dtype.char)
         def __new__ (cls, value = None, off = None, on = None):
             if sum(v != None for v in (value, off, on)) != True:
                 raise ValueError("Exactly one of (value,isoff,ison) must be specified.")
@@ -53,9 +63,6 @@ def _TagCheck (_rpg):
         __ge__ = __lt__
         __le__ = __lt__
 
-        def __bool__(self):
-            return int(self) > -1
-
         # XXX include tag name
         def __str__ (self):
             format = 'off = %d' if int.__lt__ (self, 0) else 'on = %d'
@@ -68,7 +75,7 @@ def _TagCheck (_rpg):
             #         format += '(%s)' % rpg.names.tag[self.tagindex()-2]
             #     except KeyError:
             #         format += '()'
-            params = format % self.tagindex()
+            params = format % self.index
             return '%s->%s(%s)' % ( self.rpg, self.__class__.__name__, params)
 
         def __repr__ (self):
@@ -79,22 +86,32 @@ def _TagCheck (_rpg):
         def _save (self, fh):
             IOHandler._save_struct(self, fh, self)
 
-        def _load (self, fh):
-            return TagCheck(IOHandler._load_struct(self, fh)[0])
-        # XXX copypasta
-        load = lambda self, *args, **kwargs: IOHandler.load(self or __class__,
-                                                           *args,
-                                                           **kwargs)
+        def load (fh):
+            return __class__(IOHandler._load_struct(__class__, fh)[0])
 
-        def tagindex (self):
-            """Return the tag index this TagCheck examines"""
+        def _index (self):
             return abs(int(self))
+        index = property(_index, doc ='Return the tag # this TagCheck examines.')
+
+        def _match(self):
+            """Return what state the tag needs to be in to satisfy the check"""
+            return int(self) > -1
+        match = property(_match)
+
+        #def _isfixed(self):
+        #    if self.tagindex > 1:
+        #        return None
+        #    if int(self) == 1:
+        #        return True
+        #    return False
+        #isfixed = property(_isfixed)
+
     return TagCheck
 
 # XXX make it more obvious how to get a bound TagCheck class directly for a given rpg.
 def TagCheck(rpg, value = None, off = None, on = None):
     "Class factory - returns a TagCheck class bound to `rpg`"
-    cls = _TagCheck (rpg)
+    cls = bound_TagCheck (rpg)
     return cls(value, off, on)
 
 __ALL__ = ('TagCheck',)

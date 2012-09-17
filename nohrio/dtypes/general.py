@@ -1,7 +1,7 @@
 #coding=utf8
 from bits.dtype import DType, limited, enum, bitsets, OFFSET
 from nohrio.dtypes.bload import bsave
-from nohrio.iohelpers import FilenameOrHandleOpen, LumpOrHandleOpen, IOHandler
+from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
 import numpy as np
 #from bits import pep3118_dtype
 

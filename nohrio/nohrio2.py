@@ -1,10 +1,9 @@
 #coding=utf8
-import functools 
+import functools
 import os
 from nohrio.dtypes.archinym import Archinym
-from nohrio.iohelpers import FilenameOrHandleOpen
+from nohrio.iohelpers import Filelike
 import numpy as np
-
 
 CREATOR_NAME = 'nohrio v3'
 STANDARD_SIZES = {
@@ -18,16 +17,14 @@ def cp (srcrpg, destrpg, lumpnames):
     """Copy lumps from srcrpg to destrpg.
     srcrpg may be lumped (either a filehandle or a filename) or an rpgdir
     destrpg must be an rpgdir.
-    
-    Notes
-    -------
-    
-    Enforces case uniformity (lowercase filenames)
+
+    :Notes:
+        Enforces case uniformity by lowercasing all filenames.
     """
     srcishandle = type(srcrpg) != str
     srcrpgname = srcrpg if not srcishandle else srcrpg.name
     srcprefix = os.path.splitext (os.path.basename(srcrpgname))[0] + '.'
-    
+
     destprefix = os.path.splitext (os.path.basename(destrpg))[0] + '.'
     if not srcishandle and os.path.isdir (srcrpg):
         if type(lumpnames) == str and '*' in lumpnames:
@@ -46,23 +43,23 @@ def cp (srcrpg, destrpg, lumpnames):
     else:
         from nohrio.lump import read_lumpheader
         lumpname, offset, length = ('dummy', 1, 1)
-        with FilenameOrHandleOpen(srcrpg, 'rb') as f:
+        with Filelike(srcrpg, 'rb') as f:
             while lumpname != None:
                 lumpname, offset, length = read_lumpheader(f)
                 if lumpname != None:
                     print ('reading %s (%d bytes)' % (lumpname, length))
                     lumpname = lumpname.lower()
-                    destlumpname = (lumpname if not lumpname.startswith(srcprefix) 
+                    destlumpname = (lumpname if not lumpname.startswith(srcprefix)
                                     else lumpname.replace(srcprefix, destprefix))
-                    destlumpname = os.path.join(destrpg, destlumpname) 
+                    destlumpname = os.path.join(destrpg, destlumpname)
                     outf = open(destlumpname, 'wb')
                     while length > 0:
                         thisamount = min (length, 1024*1024)
                         outf.write(f.read(thisamount))
                         length -= thisamount
                     outf.close()
-                        
-                
+
+
         #raise TypeError('lumped rpg not yet supported as source')
 
 def _memmap_bload (filename, dtype, mode = 'r', paddingok = False):
@@ -72,7 +69,7 @@ def _memmap_bload (filename, dtype, mode = 'r', paddingok = False):
     actualsize = os.path.getsize(filename)
     size_matches = actualsize == expectedsize
     if not size_matches and not (paddingok and actualsize > expectedsize):
-        raise OSError('%s : expected size %d, actual %d' % (filename, 
+        raise OSError('%s : expected size %d, actual %d' % (filename,
                                                             expectedsize,
                                                             actualsize))
     print ("DTYPE ITEMSIZE: %d" % expectedsize)
@@ -99,7 +96,7 @@ def create(name, template = 'ohrrpgce.new', creator=None, **gen_updates):
         for k,v in gen_updates.items():
             array[k] = v
         array.flush()
-        
+
     # XXX update archinym.
 
 rpg_creator = lambda **kwargs: functools.partial(create, **kwargs)
@@ -114,7 +111,7 @@ def sanity_check(name, prefix):
         if not ok:
             errors.append(lumpname)
         if expected_size:
-            actual_size = os.path.getsize (path) 
+            actual_size = os.path.getsize (path)
             ok = actual_size == expected_size
             if not ok:
                 errors.append((lumpname,'size', actual_size))
@@ -126,13 +123,13 @@ def sanity_check(name, prefix):
     if not errors:
         return True
     return missing
-    
+
 def open_rpg(name, mode):
     if mode not in ('r','r+'):
         raise ValueError('Mode flag %r not understood (should be one of (r w r+))' % mode)
     # for now we only handle 'r'
     if mode != 'r':
-        raise NotImplemented
+        raise NotImplementedError()
     if not os.path.exists (name):
         raise OSError ('File/rpgdir %r doesn\'t exist!' % name)
     is_rpgdir = os.path.isdir(name)
@@ -140,9 +137,10 @@ def open_rpg(name, mode):
         raise NotImplemented
     arch = Archinym (name)
     sanity_check (name, arch.prefix)
-    
+
+
 # do this instead of subclassing unnecessarily:
 #FormatNotSupported = lambda v: NotImplementedError('Format not supported: %r' % v)
 
-    
-#raise FormatNotSupported('foo') 
+
+#raise FormatNotSupported('foo')

@@ -35,8 +35,16 @@ Key features:
 Current state of API
 *********************
 
+=========================
+RPG Creation and opening
+=========================
+
 .. automodule:: nohrio.nohrio2
     :members:
+
+===========
+Essentials
+===========
 
 .. automodule:: nohrio.dtypes.archinym
     :members:
@@ -44,6 +52,25 @@ Current state of API
 .. automodule:: nohrio.dtypes.general
     :members:
 
+.. automodule:: nohrio.dtypes.bload
+    :members:
+
+.. automodule:: nohrio.iohelpers
+    :members:
+
+
+    
+.. todo:: 
+
+    * nohrio.dtypes.binsize
+    * nohrio.iohelpers.splicefh
+    * nohrio.iohelpers.IOHandler.template
+
+================
+
+================
+
+
 .. automodule:: nohrio.dtypes.tag
     :members:
-    TagCheck
+    
