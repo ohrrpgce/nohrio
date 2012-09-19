@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+#coding=utf8
+"""Actual use cases for nohrio.
+
+For these tests, usually completion means success.
+
+Note that none of these tests actually complete yet.
+That's dependent on the API I'm designing here being actually implemented :)
+"""
+
+
+from unittest import TestCase
+import nose
+from oktest import ok
+import nohrio.nohrio2 as nohrio
+import os
+import numpy as np
+
+rpg = None
+
+def testCheckMaxes(self):
+    """Check gen.max fields conform with rpg managers' size"""
+    maxes = gen.max
+    tocheck = (v for v in dir(maxes) if isinstance(getattr(maxes, v), int) and (not v.startswith('_')))
+    for name in tocheck:
+        expected = getattr(maxes, v) + 1
+        mgr = rpg.manager_by_name(name)
+        nrecords = mgr.size
+        if not (nrecords == expected):
+            print ('Gen vs lump mismatch! Gen says %d records, lump has %d' % (expected, nrecords))
+
+def testAddRecords(self):
+    """Add some empty records to vehicle and attack lumps"""
+    vehmax = rpg.max.vehicle
+    attackmax = rpg.max.attack
+    rpg.vehicles.append(None)
+    rpg.vehicles.append(None)
+    rpg.attacks.append(None)
+    rpg.attacks.append(None)
+    rpg.attacks.append(None)
+    rpg.update_max('vehicle')
+    rpg.update_max('attack')
+    ok(rpg.max.vehicle) == (vehmax + 2)
+    ok(rpg.max.attack) == (attackmax + 2)
+
+def testDelRecord(self):
+    """Delete a record from vehicle lump"""
+    vehmax = rpg.max.vehicle
+    attackmax = rpg.max.attack
+    rpg.vehicles.remove_last()
+    rpg.update_max('vehicle')
+    ok(rpg.max.vehicle) == (vehmax - 1)
+
+def testGetSprites(self):
+    """Get a few hero sprites from rpg with default palettes."""
+    # get a sequence of all 8 frames.
+    heroa_gfx = rpg.gfx.hero.unpacked[0]
+    herob_gfx = rpg.gfx.hero.unpacked[1]
+
+def testRichData(self):
+    """Access hero sprites and palette from hero data"""
+    heroa = rpg.heros[0]
+    herob = rpg.heros[1]
+    # XXX needs some thought. appearance in a sub-structure eg. heroa.vis.palette?
+    apal_id = heroa.palette
+    bframes_id = herob.frames
+    # current version of the 'richdata' idea.
+    apal_data = heroa.palette()
+    bframes_data = herob.frames()
+
+#slow
+def testPaletteUsage(self):
+    """For each 16-color palette, collect usage statistics."""
+    #
+    #
+    npalettes = len(rpg.palettes)
+    usage = np.zeros(npalettes, 'u4')
+
+    # rpg.resolvepal looks at palette._defpalindex
+    # (to be more precise, palette.__class__._defpalindex)
+    # to get the index of the defpalX.bin file to lookup the default in.
+    #
+    # We have a subclass of PaletteId for each n in PT[0-8];
+    # all they do is set cls._defpalindex appropriately.
+    #
+    # Incidentally, what does PT mean anyway? Is it a reference to QBasic PUT?
+
+
+
+    # Bound methods are interesting:
+    resolvepal = rpg.resolvepal
+
+    for user in rpg.heros:
+        palette = resolvepal(user.palette)
+        usage[palette] += 1
+
+    for users in (rpg.enemies, rpg.attacks, rpg.items):
+        for user in users:
+            palette = resolvepal(user.palette)
+            usage[palette] += 1
+
+    for user in rpg.textboxes:
+        if user.portrait.type != 'fixed':
+            continue
+        palette = resolvepal(user.portrait.palette)
+        usage[palette] += 1
+
+    for map in rpg.maps:
+        for user in map.npcdefs:
+            palette = resolvepal(user.palette)
+            usage[palette] += 1
+    # now run through all the npcs of all the maps-- phew.
+    for use
+
+if __name__ == "__main__":
+    # setup stuff here:
+    #   * copy the vikings.rpgdir into a sandbox.rpgdir
+    #
+    # rpg = nohrio.rpg(sandbox)
+    #
+    nose.main(defaultTest='test_usecases.py')
