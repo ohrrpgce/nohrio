@@ -6,6 +6,43 @@ from nohrio.objutil import AttrStore
 import numpy as np
 #from bits import pep3118_dtype
 
+
+#[[[cog
+#import cog
+#cog.outl('')
+#with open('../../ohrrpgce/const.bi','r') as f:
+#    canexit = False
+#    for line in f:
+#        if line.startswith("'") and ('version history' in line.lower()):
+#            cog.outl('# --- Version History ---')
+#            canexit = True
+#            continue
+#        if canexit:
+#            line = line.strip()
+#            if not line:
+#               break
+#            cog.outl('#' + line[1:])
+#cog.outl('')
+#cog.outl('')
+#]]]
+
+# --- Version History ---
+# 7 - ypsiliform wip added > 36 NPC defs (and many other features)
+# 8 - ypsiliform wip added extended chaining data (and many other features)
+# 9 - ypsiliform wip added text box sound effects
+# 10 - ypsiliform wip added attack-based enemy transmogrification
+# 11 - zenzizenzic wip added variable record size and record number .N## lumps
+# 12 - zenzizenzic wip increased .N## record size
+# 13 - zenzizenzic wip changed password format to PW4, older versions have broken genPassVersion handling
+# 14 - zenzizenzic wip made .DT0 binsize-sized
+# 15 - zenzizenzic wip made .DT1 binsize-sized, and added binsize.bin, fixbits.bit safeguards
+# 16 - zenzizenzic wip made .ITM binsize-sized
+# 17 - alectormancy wip increase global limit from 4095 to 16383
+
+
+#[[[end]]] (checksum: f65a3269ba056b7c4b6279d6d90b71cf)
+
+
 # NOTE: DTYPE moved to bottom of module, cause it's huge.
 
 # PW4 hashing
@@ -368,6 +405,24 @@ _ATTRMAP = {'cap': {'damagecap': 'damage',
                'starty':     'y'},
      'unused': {'unused2': 'two', 'unused3': 'three', 'wasted': 'one'}}
 
+_DOCSTRINGS = {
+    'max': "Maximum (ie. == nrecords - 1) indices into multirecord lumps",
+    'runtime':  "Runtime data. If you're not parsing a SAV file, ignore this.",
+    'script' :  "Which scripts are run for which fixed events; and total number of scripts.",
+    'unused' :  "Unused data fields. May contain useful data if the formatversion "
+                "is newer than GeneralData understands.\n"
+                "Written as-is when saving a GEN lump. "
+                " In general it's safe to ignore this attribute.",
+    'start'  :  "Where and with what the player begins the RPG",
+    'sound'  :  "Sound effects and music that play at specific types of event",
+    'password': "Password data. Do not access directly.\n"
+                "Instead use password.check|set().\n"
+                "Only stores password information for the fields "
+                "relevant to the password version in use.",
+    'cap'    :  "Maximums of various gameplay related values.",
+    'misc'   :  "Everything else.",
+               }
+
 #_CATEGORYMAP = {
 #                'misc': {v:v for v in 'stunchar poisonchar mutechar defaultenemydissolve bitsets bitsets2 errorlevel unlockedreservexp #heroweakhp lockedreservexp damagedisplayrise enemyweakhp masterpalette damagedisplayticks equipmergeformula titlebg autosortscheme'.split(' ')},
 #                'max' : {v:shorten('max', v) for v in DTYPE.names() if 'max' in v},
@@ -428,21 +483,26 @@ class GeneralData (IOHandler):
     # XXX for now, we only init from file.
     def __init__ (self, source):
         with Filelike(source, 'rb') as fh:
-            #def join(fields):
-            src = np.frombuffer(bload (fh, newformat_ok = True), self._dtype.freeze())
+            # frombuffer always returns a shaped array, so we have to reshape it
+            # to a scalar.
+            bloaded = bload (fh, newformat_ok = True)
+            src = np.frombuffer(bloaded, self._dtype.freeze()).reshape(())
             for submap, members in _ATTRMAP.items():
                 store = AttrStore()
                 numpy2attr(src, store, members)
+                # XXX this doesn't show up on help()'s radar.
+                #     Probably I should put it in the GeneralData docstring instead.
+                store.__doc__ = _DOCSTRINGS[submap]
                 setattr(self, submap, store)
                 print ('%s: %r' % (submap, store))
-            self.formatversion = src['formatversion'].item()
+            self.formatversion = src['formatversion']
             print (self.formatversion)
             v = self.password.version
             self.password.present = False
             if v in (256,257):
                 v = (256,257).index(v) + 3
                 if v == 4:
-                    self.password.hash = src['passwordhash'].item()
+                    self.password.hash = src['passwordhash']
                     print ('current pwd hash == %s' % self.password.hash)
                     # XXX hack, this should be a separate function in the outside scope.
                     def _change(self2, newpassword):
@@ -459,9 +519,8 @@ class GeneralData (IOHandler):
                 raise NotImplementedError
             else:
                 v = 1
-                raise NotImplementedError
+                raise NotImplementedError()
             print ('I think the password version is %r' % v)
-
             # TODO: use bits.bitsets or the ilk.
             #       * add self.misc.bitsets = bits.bitsets(bytearray merge of bitsets and bitsets2)
             #       * change self.runtime.suspendbits to be a bits.bitsets(bytearray conversion of suspendbits)
@@ -488,7 +547,8 @@ class GeneralData (IOHandler):
 #print ([len(v) for v in (_max, others)])
 
 
-g = GeneralData('../../tests/ohrrpgce.rpgdir/ohrrpgce.gen')
+if __name__ == "__main__":
+    g = GeneralData('../../tests/ohrrpgce.rpgdir/ohrrpgce.gen')
 
 
 
