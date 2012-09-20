@@ -7,7 +7,7 @@ import numpy as np
 import struct
 from nohrio.lru_cache import lru_cache
 from nohrio.nohrio2 import INT
-from nohrio.objutil import metadata
+from bits import metadata
 from nohrio.iohelpers import IOHandler
 
 _FIXEDVALUES = (-1,0,1)

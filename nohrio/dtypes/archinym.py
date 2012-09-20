@@ -1,7 +1,7 @@
 #coding=utf8
 #
 
-from nohrio.objutil import copyattr
+from bits import copyattr
 from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
 
 class Archinym(IOHandler):

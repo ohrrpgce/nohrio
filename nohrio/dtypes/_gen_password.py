@@ -1,6 +1,5 @@
 import numpy as np
-from bits import Bitsets
-from nohrio.objutil import AttrStore
+from bits import Bitsets, AttrStore
 
 def pw4hash (p):
     if not p:

@@ -1,8 +1,8 @@
 #coding=utf8
 from bits.dtype import DType, limited, enum, bitsets, OFFSET
+from bits import numpy2attr, attr2numpy, UnwrappingArray, AttrStore
 from nohrio.dtypes.bload import bsave, bload
 from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
-from nohrio.objutil import AttrStore
 from nohrio.dtypes._gen_password import PasswordStore, LATEST_PASSWORD_VERSION
 import numpy as np
 
