@@ -353,8 +353,11 @@ class GeneralData (IOHandler):
 
 
     def _save (self, fh):
-        raise NotImplementedError('save()')
         buf = np.zeros((),self._dtype)
+        for submap, members in _ATTRMAP.items():
+            attr2numpy (getattr(self, submap), buf, members, reversed = True)
+        buf['formatversion'] = self.formatversion
+        self.passinfo.copyto(buf)
         bsave (buf, fh)
 
     def _load (fh):
