@@ -3,7 +3,7 @@ import numpy as np
 import struct
 
 _FORMAT = '>BHHH'
-_MAGIC = 0x7d
+_MAGIC = 0xfd
 _SEGMENT = 0x9999
 _OFFSET = 0
 
@@ -56,7 +56,7 @@ def bload (infile, newformat_ok = False):
         magic, segment, offset, size = struct.unpack(_FORMAT, buffer)
         if newformat_ok:
             size = -1
-        if (not newformat_ok) and magic != _MAGIC:
+        if magic != _MAGIC and (not newformat_ok):
             raise ValueError ("Magic value mismatched (got %d, expecting %d)" % (magic, _MAGIC))
         data = f.read(size)
         actual_size = len(data)

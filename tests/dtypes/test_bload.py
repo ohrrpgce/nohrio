@@ -15,7 +15,7 @@ class TestBload(TestCase):
     content = b'Sixteen bytes..!'
     def setUp (self):
         self.savebuffer = BytesIO()
-        self.loadbuffer = BytesIO(b'\x7d\x99\x99\x00\x00\x00\x10' + self.content)
+        self.loadbuffer = BytesIO(b'\xfd\x99\x99\x00\x00\x00\x10' + self.content)
         self.new_loadbuffer = BytesIO(b'\x00\x00\x00\x00\x00\x00\x00' + self.content)
 
     def tearDown (self):
@@ -25,7 +25,7 @@ class TestBload(TestCase):
     def testBSave(self):
         "bsave() creates correct data"
         bsave(self.content, self.savebuffer)
-        ok(self.savebuffer.getvalue()) == (b'\x7d\x99\x99\x00\x00\x00\x10' + self.content)
+        ok(self.savebuffer.getvalue()) == (b'\xfd\x99\x99\x00\x00\x00\x10' + self.content)
 
     def testBSaveArray(self):
         "bsave(array) produces correct output"
@@ -33,7 +33,7 @@ class TestBload(TestCase):
         # it must fit evenly into the length of self.content
         import numpy as np
         bsave(np.fromstring(self.content, dtype='B'), self.savebuffer)
-        ok(self.savebuffer.getvalue()) == (b'\x7d\x99\x99\x00\x00\x00\x10' + self.content)
+        ok(self.savebuffer.getvalue()) == (b'\xfd\x99\x99\x00\x00\x00\x10' + self.content)
 
     def testBSaveNew(self):
         "bsave(newformat = True) creates correct data"
@@ -59,22 +59,22 @@ class TestBload(TestCase):
 
     def testBLoadBadMagic(self):
         "bload() raises ValueError when magic is wrong, IFF not newformat_ok"
-        tmp = BytesIO(b'\x72\x99\x99\x00\x00\x00\x10' + self.content)
+        tmp = BytesIO(b'\xf2\x99\x99\x00\x00\x00\x10' + self.content)
         ok(lambda: bload(tmp)).raises(ValueError)
         ok(lambda: bload(tmp, newformat_ok=True)).not_raise(ValueError)
 
     def testBLoadAutosizing(self):
         "bload(...,newformat_ok=True) determines content size from file"
-        tmp = BytesIO(b'\x7d\x99\x99\x00\x00\x00\x02' + self.content)
+        tmp = BytesIO(b'\xfd\x99\x99\x00\x00\x00\x02' + self.content)
         ok(bload(tmp, newformat_ok=True)) == self.content
 
     def testBLoadLengthMismatch(self):
         "bload() raises ValueError when the amount of data is insufficient, but not if there is surplus"
-        tmp = BytesIO(b'\x7d\x99\x99\x00\x00\x00\x20' + self.content)
+        tmp = BytesIO(b'\xfd\x99\x99\x00\x00\x00\x20' + self.content)
         ok(lambda: bload(tmp)).raises(ValueError)
         # NOTE: having extra bytes on the end is actually valid, so
         # we test that it -succeeds-!
-        tmp = BytesIO(b'\x7d\x99\x99\x00\x00\x00\x08' + self.content)
+        tmp = BytesIO(b'\xfd\x99\x99\x00\x00\x00\x08' + self.content)
         ok(lambda: bload(tmp)).not_raise(ValueError)
 
 
