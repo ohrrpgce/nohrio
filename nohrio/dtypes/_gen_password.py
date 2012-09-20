@@ -1,8 +1,6 @@
-# Hit list:
-#
-#  PW4 X
-#  PW3 X
-#  PW2
+import numpy as np
+from bits import Bitsets
+from nohrio.objutil import AttrStore
 
 def pw4hash (p):
     if not p:
@@ -21,7 +19,7 @@ def get_pw4(self):
 
 # code adapted from old nohrio.lump module.
 
-def get_pw3(self)
+def get_pw3(self):
     rotator = self.rotator
     chars = []
     for char in self.passcode[:]:
@@ -51,64 +49,123 @@ def set_pw3(self, new_password):
     self.passcode = bytes(res)
 
 def get_pw2(self):
-    raise NotImplementedError()
+    """Decode a PW2 format password.
 
-def set_pw2(self, new_password):
-    raise NotImplementedError()
+    See `http://rpg.hamsterrepublic.com/ohrrpgce/GEN#PW2 The wiki`
+    for a diagram.
 
+    """
+    offset = self.offset
+    nbytes, remaining = divmod(self.length + 1, 8)
+    if remaining:
+        raise ValueError ('Number of bits %d in PW2 password not divisible by 8!' % (self.length+1))
+    table = self.sctable
+    bittable = Bitsets(table.view('B'))
+    chars = []
+    tableoffset = 1
+    for byte in range(nbytes):
+        thisval = 0
+        for bit in range(8):
+            thisval |= (1 if bittable[table[tableoffset]] else 0) << bit
+            tableoffset += 1
+        # equivalent to 'subtract offset, if result < 0 then add 256'
+        rotated = (thisval - offset) % 256
+        chars.append(chr(thisval))
+    return ''.join(chars)
+
+def set_pw2(self, newpassword):
+    import random
+    def choosebit(b, maxbit, state):
+        chosen = random.randint(0, maxbit)
+        state = 1 if state else 0
+        while b[chosen] != state:
+            chosen = random.randint(0, maxbit)
+        return chosen
+    offset = random.randint (1,254)
+    chars = []
+    for char in newpassword:
+        rotated = (ord(char) + offset) % 256
+        chars.append(chr(rotated))
+    table = np.empty(161, dtype = 'h')
+    table[0] = random.randint (1,254)
+    bittable = Bitsets(table.view('B'))
+    tableoffset = 1
+    maxbitref = (16 * tableoffset) - 1
+    for char in chars:
+        byte = int(char)
+        for bitindex in range(8):
+            thisbit = 1 if (byte & (1 << bitindex)) else 0
+            thispointer = choosebit (bittable, maxbitref, thisbit)
+            table[tableoffset] = thispointer
+            tableoffset += 1
+            maxbitref += 16
+    self.offset = offset
+    self.length = len(newpassword) - 1
+    self.sctable = table
 
 _GETSET_FUNCS = {4: (get_pw4, set_pw4),
                  3: (get_pw3, set_pw3),
                  2: (get_pw2, set_pw2),
                  }
 
-def init_passdata (gen, passobj):
-    """Transfer data from GEN array into an attribute store.
-    Add get(), check() and set() methods to it.
-    """
-    passobj.rawversion = gen['passcodeversion']
-    if passobj.rawversion < 256:
-        if passobj.rawversion < 3:
-            raise ValueError ('Ancient PW1-style password not supported!')
-        passobj.version = 2
-    else:
-        if passobj.rawversion > 257:
-            raise ValueError ('password rawversion %d unknown' % passobj.rawversion)
-        passobj.version = 3 + (passobj.rawversion - 256)
-    V = passobj.version
-    if V == 4:
-        passobj.hash = gen['passwordhash']
-    elif V == 3:
-        passobj.rotator = gen['pw3rotator']
-        passobj.passcode = bytes(gen['pw3passcode'].view('B'))
-    else:
-        passobj.offset = gen['pw2offset']
-        passobj.length = gen['pw2length']
-        passobj.sctable = bytes(gen['pw2scattertable'].view('B'))
+#XXX should be a class inheriting from AttrStore
 
-    def check(inputpwd):
+class PasswordStore (object):
+    """Store OHRRPGCE RPG password info"""
+    fields = ()
+    def __init__ (self, gen):
+        """Transfer data from GEN array into an attribute store.
+        Add get(), check() and set() methods to it.
+        """
+        self.rawversion = gen['passcodeversion']
+        if self.rawversion < 256:
+            if self.rawversion < 3:
+                raise ValueError ('Ancient PW1-style password not supported!')
+            self.version = 2
+        else:
+            if self.rawversion > 257:
+                raise ValueError ('password rawversion %d unknown' % self.rawversion)
+            self.version = 3 + (self.rawversion - 256)
+        V = self.version
+        if V == 4:
+            self.hash = gen['passwordhash']
+            self.fields = ('hash',)
+        elif V == 3:
+            self.rotator = gen['pw3rotator']
+            self.passcode = bytes(gen['pw3passcode'].view('B'))
+            self.fields = tuple('rotator passcode'.split())
+        else:
+            self.offset = gen['pw2offset']
+            self.length = gen['pw2length']
+            self.sctable = gen['pw2scattertable'].view('h').copy()
+            self.fields = tuple('offset length sctable'.split())
+        self.fields += ('version',)
+
+    def check(self, inputpwd, *, version=None):
         """Return True if inputpwd matches stored password."""
-        if passobj.version == 4:
+        version = version or self.version
+        if version == 4:
             inputpwd = pw4hash(inputpwd)
-        return passobj.get() == inputpwd
+        return self.get(version=version) == inputpwd
 
-    def get():
+    def get(self, *, version=None):
         """Return the expected password -- or a hash of it."""
-        expected = _GETSET_FUNCS[passobj.version][0](passobj)
+        version = version or self.version
+        expected = _GETSET_FUNCS[self.version][0](self)
         return expected
 
-    def set(inputpwd):
-        """Set password, according to passobj.version.
+    def set(self, inputpwd, *, version=None):
+        """Set password, according to self.version.
         """
+        version = version or self.version
         # wipe any attributes belonging to earlier versions
-        for k in dir(passobj):
+        for k in dir(self):
             if k in ('hash','rotator','passcode','offset','length','sctable'):
-                delattr(passobj, k)
-        _GETSET_FUNCS[passobj.version][1](passobj, inputpwd)
-    # ZE MAGICKS!
-    passobj.check = check
-    passobj.set = set
-    passobj.get = get
+                delattr(self, k)
+        _GETSET_FUNCS[self.version][1](self, inputpwd)
 
+    # XXX should be done by subclassing Transferable or similar.
+    def __repr__(self):
+        return repr(AttrStore(**{k:getattr(self, k) for k in self.fields}))
 
-
+LATEST_PASSWORD_VERSION = max(_GETSET_FUNCS.keys())

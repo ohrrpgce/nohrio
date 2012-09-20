@@ -3,8 +3,8 @@ from bits.dtype import DType, limited, enum, bitsets, OFFSET
 from nohrio.dtypes.bload import bsave, bload
 from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
 from nohrio.objutil import AttrStore
+from nohrio.dtypes._gen_password import PasswordStore, LATEST_PASSWORD_VERSION
 import numpy as np
-#from bits import pep3118_dtype
 
 
 #[[[cog
@@ -42,95 +42,38 @@ import numpy as np
 
 #[[[end]]] (checksum: f65a3269ba056b7c4b6279d6d90b71cf)
 
-
-# NOTE: DTYPE moved to bottom of module, cause it's huge.
-
-# PW4 hashing
-#
-# HURRAH AN EASILY IMPLEMENTED AND REASONABLY SECURE PASSWORD SCHEME!
-
-def _passwordhash (p):
-    if len(p) == 0:
-        return 0
-    hash = 0
-    for char in p:
-        hash = hash * 3 + ord(char) * 31
-    return (hash & 511) | 512
-
-def set_passwordhash (gen, pwd):
-    gen.passcodeversion = 4
-    if pwd:
-        gen.passwordhash = _passwordhash (pwd)
-    else:
-        gen.passwordhash = 0
-
-def _notimplemented (gen, pwd):
-    raise NotImplemented ('Password format #%d' % gen.passcodeversion)
-
-def check_password (general, password):
-    """Check the password given against the password/hash stored in the GEN lump.
-
-    Automatically determines password version and reads the right fields.
-
-    If there isn't a password on the RPG file, will always return True.
-    """
-    map = {
-        1: None, # XXX feel free to implement decoders for these.
-        2: None,
-        3: None,
-        4: lambda gen, pwd: (_passwordhash (pwd) == gen.passwordhash) if gen.passwordhash != 0 else True,
-        }
-    version = gen.passcodeversion
-    if version not in map:
-        raise ValueError ('unknown password format #%d' % version)
-    if map[version] == None:
-        raise NotImplemented ('password format version #%d' % version)
-    return map[version] (general, password)
-
-def set_password (general, password, version=4):
-    """Set the password to `password` using the specified format (default is the latest, #4)
-    """
-    map = {
-        1: None, # XXX feel free to implement encoders for these.
-        2: None,
-        3: None,
-        4: set_passwordhash,
-        }
-    if version not in map:
-        raise ValueError ('unknown password format #%d' % version)
-    if map[version] == None:
-        raise NotImplemented ('password format version #%d' % version)
-    map[version] (general, password)
-
 #yeah, it's a dissertation even in this format.
 
-# at the top here, I've given a sample of an interleaved format:
+# at the top here, I've given a sample of a RST-style tabular format.
+# it's intended as a format you can compile to a pretty-printed dtype()
+# call, rather than a realtime thing :)
 #
+# ~ means default.
 
-INTERLEAVED_SAMPLE = """<h
-maxmap^me
+TABLE_SAMPLE = """
 
-hhhh
-titlebg^f titlemusic^f victorymusic^f battlemusic^f
+:Defaults:
+    type : <h
 
+ ======= ================== ====== =========
+ offset      fieldname      groups type,shape
+ ======= ================== ====== =========
 
-hh17B
-passcodeversion^e pw3rotator^o pw3passcode^o
-
-x
-wasted
-
-10h
-pw1password^o
+ ======= ================== ====== =========
+         maxmap             e m
+         titlebg             f
+         titlemusic          f
+         victorymusic        f
+         battlemusic         f
+         passcodeversion    e
+         pw3rotator             o
+         pw3passcode            o  uint8[17]
+         WASTED                    x
+         pw1password            o  ~[10]
+ ======= ================== ====== =========
 
 """
 
-# YAY DECORATORS
-#_save = typechecked(DTYPE, bload_saver (expectedsize = 1000))
-#@array_saver
-#def _save (arr, f):
-    #if arr.dtype != DTYPE.freeze():
-        #raise ValueError ('Dtype mismatch: can\'t save array of non-%r dtype' % __name__)
 
 DTYPE = DType ("""
 <h:maxmap^me:
@@ -230,7 +173,7 @@ h:autosortscheme:
 
 7h:unused2:
 
-h:pw2scattertablehead^eo:160h:pw2scattertable^eo:
+161h:pw2scattertable^eo:
 
 140h:unused3:
 """.replace('\n','').replace(' ',''),
@@ -247,7 +190,7 @@ h:pw2scattertablehead^eo:160h:pw2scattertable^eo:
     m = 'max',
     M = 'softmax',
     o = 'obsolete',
-    x = 'gfx',)
+    x = 'gfx')
 
 # TODO: make a general ndarray subclass for nohrio array types to derive from
 # XXX: how do I modify which classes I'm subclassing?
@@ -289,6 +232,8 @@ def numpy2attr (src, dest, attrmap):
             tmp = src[field].item()
         except ValueError:
             tmp = src[field].squeeze().tolist()
+        except AttributeError:
+            tmp = src[field] #already a scalar.
         try:
             # convert np.void -> list
             if len(tmp):
@@ -358,7 +303,7 @@ _ATTRMAP = {'cap': {'damagecap': 'damage',
               'stunchar':   'stunchar',
               'titlebg':    'titlebg',
               'unlockedreservexp': 'unlockedreservexp'},
-     'password': {'passcodeversion': 'version',
+#     'password': {'passcodeversion': 'version',
 # only some of these are copied, manually, according to determination of the password format version.
 #              'passwordhash': 'passwordhash',
 #              'pw1length': 'pw1length',
@@ -370,7 +315,7 @@ _ATTRMAP = {'cap': {'damagecap': 'damage',
 #              'pw2scattertablehead': 'pw2scattertablehead',
 #              'pw3passcode': 'pw3passcode',
 #              'pw3rotator': 'pw3rotator'
-              },
+#              },
      'runtime': {'cameraarg':    'cameraarg',
                  'cameramode':  'cameramode',
                  'curbackdrop': 'curbackdrop',
@@ -475,8 +420,17 @@ _DOCSTRINGS = {
 #print ({k:len(v) for k,v in _CATEGORYMAP.items()})
 #print ('n'.join
 
-# XXX prefilter -- build category lists just the one time, so the GeneralData constructor can be much
-# faster and simpler.
+class ArrayUnwrap (np.ndarray):
+    """Turns numpy 0-dimensional arrays into scalars when getting items.
+    Otherwise behaves exactly like ndarray."""
+    __array_priority__ = 100
+    def __getitem__ (self, k):
+        tmp = np.ndarray.__getitem__ (self, k)
+        if not np.isscalar(tmp):
+            if tmp.ndim == 0:
+                return np.asscalar(tmp)
+        return tmp
+    # setitem isn't needed, ndarray does the right thing there.
 
 class GeneralData (IOHandler):
     _dtype = DTYPE
@@ -487,6 +441,7 @@ class GeneralData (IOHandler):
             # to a scalar.
             bloaded = bload (fh, newformat_ok = True)
             src = np.frombuffer(bloaded, self._dtype.freeze()).reshape(())
+            src = src.view(ArrayUnwrap)
             for submap, members in _ATTRMAP.items():
                 store = AttrStore()
                 numpy2attr(src, store, members)
@@ -497,30 +452,11 @@ class GeneralData (IOHandler):
                 print ('%s: %r' % (submap, store))
             self.formatversion = src['formatversion']
             print (self.formatversion)
-            v = self.password.version
-            self.password.present = False
-            if v in (256,257):
-                v = (256,257).index(v) + 3
-                if v == 4:
-                    self.password.hash = src['passwordhash']
-                    print ('current pwd hash == %s' % self.password.hash)
-                    # XXX hack, this should be a separate function in the outside scope.
-                    def _change(self2, newpassword):
-                        self2.hash = None if not newpassword else _passwordhash(newpassword)
-                        self2.present = bool(newpassword)
-                    self.password.change = _change
-                    self.password.check = lambda self2,inputpwd: _passwordhash(inputpwd) == self2.hash
-                    self.password.present = self.password.hash != 0
-                    print ('password is present: %r' % self.password.present)
-                else:
-                    raise NotImplementedError
-            elif v >= 3:
-                v = 2
-                raise NotImplementedError
-            else:
-                v = 1
-                raise NotImplementedError()
-            print ('I think the password version is %r' % v)
+            self.passinfo = PasswordStore(src)
+            self.passinfo.present = bool (self.passinfo.get())
+            print ('I think the password version is %r' % self.passinfo.version)
+            print ('passinfo obj: %r' % self.passinfo)
+            print ('passinfo vars: %r' % vars(self.passinfo))
             # TODO: use bits.bitsets or the ilk.
             #       * add self.misc.bitsets = bits.bitsets(bytearray merge of bitsets and bitsets2)
             #       * change self.runtime.suspendbits to be a bits.bitsets(bytearray conversion of suspendbits)
@@ -531,8 +467,8 @@ class GeneralData (IOHandler):
 
 
     def _save (self, fh):
+        raise NotImplementedError('save()')
         buf = np.zeros((),self._dtype)
-        # fill in
         bsave (buf, fh)
 
     def _load (fh):
@@ -548,7 +484,12 @@ class GeneralData (IOHandler):
 
 
 if __name__ == "__main__":
-    g = GeneralData('../../tests/ohrrpgce.rpgdir/ohrrpgce.gen')
+    import glob
+    rpgdir = '../../tests/ohrrpgce.rpgdir/'
+    if len(sys.argv) > 1:
+        rpgdir = sys.argv[1]
+    genpath = glob.glob(os.path.join(rpgdir, '*.gen'))[0]
+    g = GeneralData(genpath)
 
 
 
