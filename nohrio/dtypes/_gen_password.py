@@ -1,5 +1,5 @@
 import numpy as np
-from bits import Bitsets, AttrStore
+from bits import Bitsets, AttrStore, attr2numpy
 
 def pw4hash (password):
     """Return the 9-bit hash of `password`.
@@ -28,7 +28,7 @@ def get_pw3(self):
     for char in self.passcode[:]:
         char = char - rotator
         if char < 0:
-            char += 255
+            char += 256
         if char >= 32:
             chars.append (chr (char))
     return "".join(chars)
@@ -41,7 +41,7 @@ def set_pw3(self, new_password):
         for char in new_password:
             char = ord (char)
             char += rotator
-            char %= rotator
+            char %= 256
             res.append (char)
     while len(res) < 17:
         blank = random.randint (1,30) + rotator
@@ -137,7 +137,7 @@ class PasswordStore (object):
 
     def copyto(self, gen):
         V = self.version
-        gen['version'] = self._rawversion
+        gen['passcodeversion'] = self._rawversion
         if V == 4:
             gen['passwordhash'] = self.hash
             return
