@@ -8,7 +8,6 @@ Note that none of these tests actually complete yet.
 That's dependent on the API I'm designing here being actually implemented :)
 """
 
-
 from unittest import TestCase
 import nose
 from oktest import ok
@@ -16,9 +15,30 @@ import nohrio.nohrio2 as nohrio
 import os
 import numpy as np
 
+#Filled in later, just before nose kicks in.
 rpg = None
 
-def testCheckMaxes(self):
+# This one will actually just about complete. We just gotta get to having a rpg object in the first place :)
+def testCheckPassword():
+    """Check whether a password is present.
+    If it is, prompt the user to input the correct password in the terminal.
+    """
+    if rpg.gen.passinfo.present:
+        input_pwd = input('Type password > ')
+        rpg.gen.passinfo.check(input_pwd)
+
+# and this one too
+def testUpgradePassword():
+    from nohrio.dtypes.general import LATEST_PASSWORD_FORMAT
+    if rpg.gen.passinfo.present and rpg.gen.passinfo.version < LATEST_PASSWORD_FORMAT:
+        if rpg.gen.passinfo.version == 4:
+            input_pwd = input('Type password again > ')
+        else:
+            input_pwd = rpg.gen.passinfo.get()
+        rpg.gen.passinfo.set(input_pwd, version=LATEST_PASSWORD_FORMAT)
+        rpg.save(rpg.gen)
+
+def testCheckMaxes():
     """Check gen.max fields conform with rpg managers' size"""
     maxes = gen.max
     tocheck = (v for v in dir(maxes) if isinstance(getattr(maxes, v), int) and (not v.startswith('_')))
@@ -29,7 +49,7 @@ def testCheckMaxes(self):
         if not (nrecords == expected):
             print ('Gen vs lump mismatch! Gen says %d records, lump has %d' % (expected, nrecords))
 
-def testAddRecords(self):
+def testAddRecords():
     """Add some empty records to vehicle and attack lumps"""
     vehmax = rpg.max.vehicle
     attackmax = rpg.max.attack
@@ -43,7 +63,7 @@ def testAddRecords(self):
     ok(rpg.max.vehicle) == (vehmax + 2)
     ok(rpg.max.attack) == (attackmax + 2)
 
-def testDelRecord(self):
+def testDelRecord():
     """Delete a record from vehicle lump"""
     vehmax = rpg.max.vehicle
     attackmax = rpg.max.attack
@@ -51,13 +71,13 @@ def testDelRecord(self):
     rpg.update_max('vehicle')
     ok(rpg.max.vehicle) == (vehmax - 1)
 
-def testGetSprites(self):
+def testGetSprites():
     """Get a few hero sprites from rpg with default palettes."""
     # get a sequence of all 8 frames.
     heroa_gfx = rpg.gfx.hero.unpacked[0]
     herob_gfx = rpg.gfx.hero.unpacked[1]
 
-def testRichData(self):
+def testRichData():
     """Access hero sprites and palette from hero data"""
     heroa = rpg.heros[0]
     herob = rpg.heros[1]
@@ -69,7 +89,7 @@ def testRichData(self):
     bframes_data = herob.frames()
 
 #slow
-def testPaletteUsage(self):
+def testPaletteUsage():
     """For each 16-color palette, collect usage statistics."""
     #
     #
@@ -109,8 +129,17 @@ def testPaletteUsage(self):
         for user in map.npcdefs:
             palette = resolvepal(user.palette)
             usage[palette] += 1
-    # now run through all the npcs of all the maps-- phew.
-    for use
+    # what else?
+
+    #summarize:
+    totaluses = sum(usage)
+    indices = np.argsort(mostused)
+    topi = indices[:0x10]
+    print ('There were %d palette uses in total' % totaluses)
+    print ('Top 0x10 in usage:')
+    for index in topi:
+        print ('\t%d\t%6d uses' % (index, usage[index]))
+
 
 if __name__ == "__main__":
     # setup stuff here:
