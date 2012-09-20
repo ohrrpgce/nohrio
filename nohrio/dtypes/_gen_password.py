@@ -1,11 +1,15 @@
 import numpy as np
 from bits import Bitsets, AttrStore
 
-def pw4hash (p):
-    if not p:
+def pw4hash (password):
+    """Return the 9-bit hash of `password`.
+
+    Empty passwords hash to 0.
+    """
+    if not password:
         return 0
     hash = 0
-    for char in p:
+    for char in password:
         hash = hash * 3 + ord(char) * 31
     return (hash & 511) | 512
 
@@ -100,7 +104,7 @@ def set_pw2(self, newpassword):
             maxbitref += 16
     self.offset = offset
     self.length = len(newpassword) - 1
-    self.sctable = table
+    self.scattertable = table
 
 _GETSET_FUNCS = {4: (get_pw4, set_pw4),
                  3: (get_pw3, set_pw3),
@@ -116,15 +120,7 @@ class PasswordStore (object):
         """Transfer data from GEN array into an attribute store.
         Add get(), check() and set() methods to it.
         """
-        self.rawversion = gen['passcodeversion']
-        if self.rawversion < 256:
-            if self.rawversion < 3:
-                raise ValueError ('Ancient PW1-style password not supported!')
-            self.version = 2
-        else:
-            if self.rawversion > 257:
-                raise ValueError ('password rawversion %d unknown' % self.rawversion)
-            self.version = 3 + (self.rawversion - 256)
+        self._rawversion = gen['passcodeversion']
         V = self.version
         if V == 4:
             self.hash = gen['passwordhash']
@@ -137,8 +133,16 @@ class PasswordStore (object):
             self.offset = gen['pw2offset']
             self.length = gen['pw2length']
             self.sctable = gen['pw2scattertable'].view('h').copy()
-            self.fields = tuple('offset length sctable'.split())
-        self.fields += ('version',)
+            self.fields = tuple('offset length scattertable'.split())
+
+    def copyto(self, gen):
+        V = self.version
+        gen['version'] = self._rawversion
+        if V == 4:
+            gen['passwordhash'] = self.hash
+            return
+        else:
+            attr2numpy(self, gen, {k:'pw%d%s' % (V, k) for k in self.fields})
 
     def check(self, inputpwd, *, version=None):
         """Return True if inputpwd matches stored password."""
@@ -162,6 +166,25 @@ class PasswordStore (object):
             if k in ('hash','rotator','passcode','offset','length','sctable'):
                 delattr(self, k)
         _GETSET_FUNCS[self.version][1](self, inputpwd)
+
+    def _get_version(self):
+        rawv = self._rawversion
+        if rawv < 256:
+            if rawv < 3:
+                raise ValueError ('Ancient PW1-style password not supported!')
+            return 2
+        else:
+            if rawv > 257:
+                raise ValueError ('password rawversion %d unknown' % rawv)
+            return (3 + (rawv - 256))
+    def _set_version(self, nicev):
+        if nicev not in (2,3,4):
+            raise ValueError('Password version %d not supported!' % nicev)
+        self._rawversion = {2:255, # guessing at pw2 value.
+                            3:256,
+                            4:257}[nicev]
+    version = property(_get_version, _set_version, doc='Simplified password version. One of (2,3,4)')
+
 
     # XXX should be done by subclassing Transferable or similar.
     def __repr__(self):
