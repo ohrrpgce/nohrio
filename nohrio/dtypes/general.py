@@ -3,6 +3,7 @@ from bits.dtype import DType, limited, enum, bitsets, OFFSET
 from bits import numpy2attr, attr2numpy, UnwrappingArray, AttrStore
 from nohrio.dtypes.bload import bsave, bload
 from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
+
 from nohrio.dtypes._gen_password import PasswordStore, LATEST_PASSWORD_VERSION
 import numpy as np
 
@@ -192,63 +193,12 @@ h:autosortscheme:
     o = 'obsolete',
     x = 'gfx')
 
-# TODO: make a general ndarray subclass for nohrio array types to derive from
+
 # XXX: how do I modify which classes I'm subclassing?
 #      Needed for array2attr.
 #      .. I don't. instead, use type() to construct a new class.
 #      cf http://stackoverflow.com/questions/2783974/adding-inheritance-to-a-class-programmatically-in-python
 #      except really, I should only need to construct it once.
-#
-#
-#      What about this:
-#      I don't really need to use classes for this. A simple named-tuple
-#      (save = foo, load = bar, output_formats = ('array',),data = {some:stuff}) describes most everything.
-#      Classes can then be generated from that IF NEED BE.
-
-
-def consume (seq):
-    """Yield seq, receive a set of 'consumed items', remove them from seq,
-       yield the revised seq,... until no items of seq are left, or none
-       are removed.
-    """
-    seq = list(seq)
-    nremoved = 0xfffffff
-    while seq and nremoved:
-        consumed = (yield seq)
-        nremoved = 0
-        for v in consumed:
-            seq.remove(v)
-            nremoved += 1
-
-def numpy2attr (src, dest, attrmap):
-    """Copy numpy array fields to instance/class attributes semi-intelligently.
-    """
-    used = set ()
-    for field, destfield in attrmap.items():
-        if destfield in used:
-            raise ValueError('>1 instance of attribute name %s' % destfield)
-        used.add(destfield)
-        try:
-            tmp = src[field].item()
-        except ValueError:
-            tmp = src[field].squeeze().tolist()
-        except AttributeError:
-            tmp = src[field] #already a scalar.
-        try:
-            # convert np.void -> list
-            if len(tmp):
-                tmp = list(tmp)
-        except:
-            pass
-        setattr(dest, destfield, tmp )
-
-#[[[cog
-#import cog
-#]]]
-#[[[end]]]
-
-def shorten(shared, v):
-    return (v if not (v.startswith(shared) or v.endswith(shared)) else v.replace(shared,''))
 
 _ATTRMAP = {'cap': {'damagecap': 'damage',
              'levelcap':        'level',
@@ -368,70 +318,6 @@ _DOCSTRINGS = {
     'misc'   :  "Everything else.",
                }
 
-#_CATEGORYMAP = {
-#                'misc': {v:v for v in 'stunchar poisonchar mutechar defaultenemydissolve bitsets bitsets2 errorlevel unlockedreservexp #heroweakhp lockedreservexp damagedisplayrise enemyweakhp masterpalette damagedisplayticks equipmergeformula titlebg autosortscheme'.split(' ')},
-#                'max' : {v:shorten('max', v) for v in DTYPE.names() if 'max' in v},
-#                'sound' : {v:shorten('sfx', v) for v in DTYPE.names() if 'max' not in v and 'sfx' in v or 'music' in v},
-#                'script' : {v:shorten('script', v) for v in DTYPE.names() if 'max' not in v and 'script' in v},
-#                'unused' : {v:'_%d' % (i+1) for i,v in enumerate(DTYPE.names()) if 'unused' in v or 'wasted' in v},
-#                'runtime' : {v:v for v in DTYPE.names() if 'camera' in v or 'onetime' in v or 'cur' in v},
-#                'pass' : {v:v for v in DTYPE.names() if 'pass' in v or 'pw' in v},
-#                'cap' : {v:shorten('cap',v) for v in DTYPE.names() if 'cap' in v or 'numelem' in v},
-#                'start' : {v:shorten('start',v) for v in DTYPE.names() if 'start' in v or 'pw' in v},
-#                'formatversion': 'formatversion',
-#                }
-#_CATEGORYMAP['runtime'].update({v:v for v in 'playtime usejoystick suspendbits'.split(' ')})
-#_CATEGORYMAP['init'].update({v:v for v in })
-#seen = set()
-#for k,v in _CATEGORYMAP.items():
-#    if type(v) != dict:
-#        seen.add(k)
-#        continue
-#    this = set(v.keys())
-#    shared = seen.intersection(this)
-#    if shared:
-#        print ('SHARED! %r' % shared)
-#    seen.update(this)
-
-#import pprint
-#pprint.pprint(_CATEGORYMAP)
-
-
-#def prefilter (dtype):
-#    names = dtype.names()
-#    #remove preassigned from consideration
-#    for k,v in _CATEGORYMAP.items():
-#        for k2 in v:
-#            if k2 in names:
-#                names.remove(k2)
-#    consumer = consume(names)
-#    remaining = consumer.send(None)
-#    print (remaining)
-#    for v in ('start',):
-#        chosen = [name for name in remaining if v in name]
-#        print ('%s chose : %s' % (v, chosen))
-#        target = _CATEGORYMAP.setdefault(v, {})
-#        target.update({k:k for k in chosen})
-#        remaining = consumer.send(chosen)
-#    del consumer
-#    print ('Remaining(%d): %s' % (len(remaining), ' '.join(remaining)))
-
-#prefilter (DTYPE)
-#print ({k:len(v) for k,v in _CATEGORYMAP.items()})
-#print ('n'.join
-
-class ArrayUnwrap (np.ndarray):
-    """Turns numpy 0-dimensional arrays into scalars when getting items.
-    Otherwise behaves exactly like ndarray."""
-    __array_priority__ = 100
-    def __getitem__ (self, k):
-        tmp = np.ndarray.__getitem__ (self, k)
-        if not np.isscalar(tmp):
-            if tmp.ndim == 0:
-                return np.asscalar(tmp)
-        return tmp
-    # setitem isn't needed, ndarray does the right thing there.
-
 class GeneralData (IOHandler):
     _dtype = DTYPE
     # XXX for now, we only init from file.
@@ -441,7 +327,7 @@ class GeneralData (IOHandler):
             # to a scalar.
             bloaded = bload (fh, newformat_ok = True)
             src = np.frombuffer(bloaded, self._dtype.freeze()).reshape(())
-            src = src.view(ArrayUnwrap)
+            src = src.view(UnwrappingArray)
             for submap, members in _ATTRMAP.items():
                 store = AttrStore()
                 numpy2attr(src, store, members)
@@ -485,6 +371,8 @@ class GeneralData (IOHandler):
 
 if __name__ == "__main__":
     import glob
+    import sys
+    import os
     rpgdir = '../../tests/ohrrpgce.rpgdir/'
     if len(sys.argv) > 1:
         rpgdir = sys.argv[1]
