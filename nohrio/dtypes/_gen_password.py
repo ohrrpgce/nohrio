@@ -124,6 +124,9 @@ class PasswordStore (object):
         Add get(), check() and set() methods to it.
         """
         self._rawversion = gen['passcodeversion']
+        print ('RAW VERSION', self._rawversion)
+        if self._rawversion < 3:
+            raise ValueError('Password type=0x%x not supported' % self._rawversion)
         V = self.version
         if V == 4:
             self.hash = gen['passwordhash']

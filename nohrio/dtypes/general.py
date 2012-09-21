@@ -53,6 +53,9 @@ import struct
 #
 # ~ means default.
 
+MINIMUM_FORMAT = 2
+CURRENT_FORMAT = 17
+
 TABLE_SAMPLE = """
 
 :Defaults:
@@ -401,10 +404,14 @@ class GeneralData (IOHandler):
     _dtype = DTYPE
     # XXX for now, we only init from file.
     def __init__ (self, source):
+        print ('init from %r' % source)
         with Filelike(source, 'rb') as fh:
             # frombuffer always returns a shaped array, so we have to reshape it
             # to a scalar.
             bloaded = bload (fh, newformat_ok = True)
+            if len (bloaded) != self._dtype.itemsize:
+                raise ValueError('Wrong content length %d, expected %d' % (len(bloaded),
+                                                                          self._dtype.itemsize))
             src = np.frombuffer(bloaded, self._dtype.freeze()).reshape(())
             src = src.view(UnwrappingArray)
             for submap, members in _ATTRMAP.items():
@@ -414,8 +421,10 @@ class GeneralData (IOHandler):
                 #     Probably I should put it in the GeneralData docstring instead.
                 store.__doc__ = _DOCSTRINGS[submap]
                 setattr(self, submap, store)
-                print ('%s: %r' % (submap, store))
+            #    print ('%s: %r' % (submap, store))
             self.formatversion = src['formatversion']
+            if self.formatversion > CURRENT_FORMAT or self.formatversion < MINIMUM_FORMAT:
+                raise ValueError
             print (self.formatversion)
             self.passinfo = PasswordStore(src)
             self.passinfo.present = bool (self.passinfo.get())
