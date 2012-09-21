@@ -1,5 +1,6 @@
 import numpy as np
-from bits import Bitsets, AttrStore, attr2numpy
+from bits import AttrStore, attr2numpy
+from bitstring import BitArray, Bits
 
 def pw4hash (password):
     """Return the 9-bit hash of `password`.
@@ -62,8 +63,8 @@ def get_pw2(self):
     nbytes, remaining = divmod(self.length + 1, 8)
     if remaining:
         raise ValueError ('Number of bits %d in PW2 password not divisible by 8!' % (self.length+1))
-    table = self.sctable
-    bittable = Bitsets(table.view('B'))
+    table = self.scattertable
+    bittable = Bits(bytes(table.data))
     chars = []
     tableoffset = 1
     for byte in range(nbytes):
@@ -91,19 +92,21 @@ def set_pw2(self, newpassword):
         chars.append(chr(rotated))
     table = np.empty(161, dtype = 'h')
     table[0] = random.randint (1,254)
-    bittable = Bitsets(table.view('B'))
+    bittable = BitArray(table.view('B'))
     tableoffset = 1
     maxbitref = (16 * tableoffset) - 1
     for char in chars:
-        byte = int(char)
+        byte = ord(char)
         for bitindex in range(8):
             thisbit = 1 if (byte & (1 << bitindex)) else 0
             thispointer = choosebit (bittable, maxbitref, thisbit)
             table[tableoffset] = thispointer
+            bittable[tableoffset*16:(tableoffset+1)*16] = 'uintbe:16=%d' % thispointer
             tableoffset += 1
             maxbitref += 16
     self.offset = offset
-    self.length = len(newpassword) - 1
+    self.length = (len(newpassword) * 8) - 1
+    print ('reached end of set_pw2 %r' % table)
     self.scattertable = table
 
 _GETSET_FUNCS = {4: (get_pw4, set_pw4),
@@ -132,7 +135,7 @@ class PasswordStore (object):
         else:
             self.offset = gen['pw2offset']
             self.length = gen['pw2length']
-            self.sctable = gen['pw2scattertable'].view('h').copy()
+            self.scattertable = gen['pw2scattertable'].view('h').copy()
             self.fields = tuple('offset length scattertable'.split())
 
     def copyto(self, gen):
@@ -177,12 +180,19 @@ class PasswordStore (object):
             if rawv > 257:
                 raise ValueError ('password rawversion %d unknown' % rawv)
             return (3 + (rawv - 256))
+        raise ValueError ('How did you get here!')
     def _set_version(self, nicev):
         if nicev not in (2,3,4):
             raise ValueError('Password version %d not supported!' % nicev)
         self._rawversion = {2:255, # guessing at pw2 value.
                             3:256,
                             4:257}[nicev]
+        if nicev == 2:
+            self.fields = tuple('offset length scattertable'.split())
+        elif nicev == 3:
+            self.fields = tuple('rotator passcode'.split())
+        else:
+            self.fields = ('hash',)
     version = property(_get_version, _set_version, doc='Simplified password version. One of (2,3,4)')
 
 

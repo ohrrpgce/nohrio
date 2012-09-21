@@ -3,9 +3,11 @@ from bits.dtype import DType, limited, enum, bitsets, OFFSET
 from bits import numpy2attr, attr2numpy, UnwrappingArray, AttrStore
 from nohrio.dtypes.bload import bsave, bload
 from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
+from bitstring import BitArray
 
 from nohrio.dtypes._gen_password import PasswordStore, LATEST_PASSWORD_VERSION
 import numpy as np
+import struct
 
 
 #[[[cog
@@ -82,7 +84,7 @@ DTYPE = DType ("""
 h:titlebg^f:h:titlemusic^f:h:victorymusic^f:h:battlemusic^f:
 
 h:passcodeversion^e:h:pw3rotator^o:17B:pw3passcode^o:
-x:wasted:
+B:wasted:
 10h:pw1password^o:
 
 h:maxherogfx^mex:
@@ -318,7 +320,84 @@ _DOCSTRINGS = {
     'misc'   :  "Everything else.",
                }
 
+#[[[cog
+# import cog
+# import re, os
+# import requests
+# # there doesn't appear to be any constants for these in the source code
+# # ... so we webscrape instead.
+# response = requests.get('http://rpg.hamsterrepublic.com/ohrrpgce/GEN')
+# content = response.content.decode('utf8')
+# areas = re.findall('<td>[^<]+bitsets.+?</td>', content, re.DOTALL)
+# cog.outl('# taken from %d separate fields' % len(areas))
+# #rex = re.compile('<br(?: ?/)?>.+?')
+# rex = re.compile ('<br(?: ?/)?>(?:\n(?:<p>)?)?([0-9]+) *- *([^<]+)')
+# cog.outl('_BITSETS = [')
+# index = 0
+# for area in areas:
+#     allfound = rex.findall(area)
+#
+#     for number, name in allfound:
+#         name = name.partition('(')[0].strip().lower()
+#         name = re.sub('([a-z])-([a-z])','\\1\\2', name)
+#         name = re.sub("['.]+",'', name)
+#         tmp = '    %r,' % name
+#         if index % 8 == 0:
+#             tmp+= '    # %d' % index
+#         cog.outl(tmp)
+#         index += 1
+# cog.outl('    ]')
+#]]]
+# taken from 2 separate fields
+_BITSETS = [
+    'pause in battle on spell and item menus',    # 0
+    'enable caterpillar party',
+    'dont restore hp on levelup',
+    'dont restore mp on levelup',
+    'inns dont revive dead heros',
+    'hero swapping always available',
+    'hide ready meter in battle',
+    'hide health bar in battle',
+    'disable debugging keys',    # 8
+    'simulate old levelup bug',
+    'permit doubletriggering of scripts',
+    'skip title screen',
+    'skip load screen',
+    'pause in battle on all menus',
+    'disable heros battle cursor',
+    'default passability disabled by default',
+    'simulate pushable npc collision bug',    # 16
+    'disable esc to run from battle',
+    'dont save gameover/loadgame script ids',
+    'dead heroes gain share of experience',
+    'locked heros cant be rearranged',
+    'attack captions pause battle meters',
+    'dont randomize battle readymeters',
+    'battle menus wait for attack animations',
+    'enable better scancodes for scripts',    # 24
+    'simulate old fail vs elemental resist bit',
+    '0 damage when immune to attack elements',
+    'recreate map slices when changing maps',
+    'harm tiles harm noncaterpillar heroes',
+    'attacks ignore extra hits by default',
+    'dont divide experience between heroes',
+    'dont reset max stats after oob attack',
+    'dont limit max tags to 1000',    # 32
+    ]
+# [[[end]]] (checksum: c09233aea1f9dee9e35f07c76a87a70a)
+
+
+def load(cls, fh):
+    cls(fh)
+
 class GeneralData (IOHandler):
+    """Container for general data
+
+    GeneralData(filehandle_or_filename)
+
+    The data source must include the bload header.
+
+    """
     _dtype = DTYPE
     # XXX for now, we only init from file.
     def __init__ (self, source):
@@ -340,9 +419,14 @@ class GeneralData (IOHandler):
             print (self.formatversion)
             self.passinfo = PasswordStore(src)
             self.passinfo.present = bool (self.passinfo.get())
+            self.misc.bitsets = BitArray('uintbe:16=%d, uintbe:32=%d' % (src['bitsets'],
+                                                                 src['bitsets2']))
+            print ('bitsets sez: %s' % self.misc.bitsets.bin)
             print ('I think the password version is %r' % self.passinfo.version)
             print ('passinfo obj: %r' % self.passinfo)
             print ('passinfo vars: %r' % vars(self.passinfo))
+            print ('passinfo.get(): %r' % self.passinfo.get())
+
             # TODO: use bits.bitsets or the ilk.
             #       * add self.misc.bitsets = bits.bitsets(bytearray merge of bitsets and bitsets2)
             #       * change self.runtime.suspendbits to be a bits.bitsets(bytearray conversion of suspendbits)
@@ -353,19 +437,23 @@ class GeneralData (IOHandler):
 
 
     def _save (self, fh):
-        buf = np.zeros((),self._dtype)
+        buf = np.zeros((),self._dtype.freeze())
         for submap, members in _ATTRMAP.items():
             attr2numpy (getattr(self, submap), buf, members, reversed = True)
         buf['formatversion'] = self.formatversion
         self.passinfo.copyto(buf)
         bsave (buf, fh)
 
-    def _load (fh):
-        __class__(fh)
+    #def _load (fh):
+        #__class__(fh)
 
 
     def _reloadfrom (self, fh):
         raise NotImplementedError()
+
+# XXX for bits objutil:
+# bindfunc = lambda cls,f: f.__get__(cls)
+GeneralData._load = load.__get__(GeneralData)
 
 #print (len(DTYPE.names()))
 #_max, others = splitfilter (DTYPE.names(), lambda v: 'max' in v)
@@ -381,6 +469,8 @@ if __name__ == "__main__":
         rpgdir = sys.argv[1]
     genpath = glob.glob(os.path.join(rpgdir, '*.gen'))[0]
     g = GeneralData(genpath)
+    g.passinfo.set('123456')
+    g.save('/tmp/test.gen')
 
 
 
