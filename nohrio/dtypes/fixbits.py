@@ -50,10 +50,29 @@ fixbits_names = [
     'default_max_level',
     'UNUSED23',
     ]
-fixbits_nbytes = 3
+
+from bitstring import BitArray
+from nohrio.iohelpers import IOHandler
+def load(fh):
+    pass #stubbed
+
+class FixBits(BitArray,IOHandler):
+    def __str__(self):
+        return '%s(%r)' % (self.__class__.__name__,
+                           ' '.join(fixbits_names[i] for i,v in enumerate(self) if v))
+    def _save(self, fh):
+        pass
+        #stubbed
+    # that's it!
+
+f = FixBits(uint = int('10'*12,2), length = 24)
+print (str(f))
+#fixbits_nbytes = 3
 #[[[end]]] (checksum: 2517d7188d349cc80bbc67f298a366b8)
 
-from bits import Bitsets
-print(fixbits_names)
-buffer = bytearray((0b10101010,) * fixbits_nbytes)
-print('%s' % Bitsets(buffer, fixbits_names))
+
+
+#from bits import Bitsets
+#print(fixbits_names)
+#buffer = bytearray((0b10101010,) * fixbits_nbytes)
+#print('%s' % Bitsets(buffer, fixbits_names))
