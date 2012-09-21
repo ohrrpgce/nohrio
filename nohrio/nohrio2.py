@@ -59,8 +59,24 @@ def cp (srcrpg, destrpg, lumpnames):
                         length -= thisamount
                     outf.close()
 
+def ls (rpg):
+    """Return a list of (filename, offset, size) tuples, one for each file in the rpg."""
+    # rpgdir? easy!
+    if os.path.isdir(rpg):
+        import glob
+        return [(fname, os.path.getsize(fname)) for fname in glob.glob(os.path.join(rpg,'*'))]
+    contents = []
+    from nohrio.lump import read_lumpheader
+    lumpname = 'dummy'
+    with Filelike(rpg, 'rb') as f:
+        while lumpname != None:
+            lumpname, offset, length = read_lumpheader(f)
+            if lumpname != None:
+                lumpname = lumpname.lower()
+                contents.append((lumpname, offset, length))
+                f.seek(length,1)
+    return contents
 
-        #raise TypeError('lumped rpg not yet supported as source')
 
 def _memmap_bload (filename, dtype, mode = 'r', paddingok = False):
     import numpy as np
