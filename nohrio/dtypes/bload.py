@@ -2,6 +2,8 @@ from nohrio.iohelpers import Filelike
 import numpy as np
 import struct
 
+BLOAD_SIZE = 7
+
 _FORMAT = '>BHHH'
 _MAGIC = 0xfd
 _SEGMENT = 0x9999
@@ -64,4 +66,4 @@ def bload (infile, newformat_ok = False):
             raise ValueError ("Expecting %d bytes of data, only got %d" % (size, actual_size))
     return data
 
-__all__ = ('bload', 'bsave')
+__all__ = ('bload', 'bsave', 'BLOAD_SIZE')
