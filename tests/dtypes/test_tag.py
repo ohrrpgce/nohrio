@@ -7,7 +7,7 @@ from oktest import ok
 import os
 import io
 import nohrio.nohrio2 as nohrio
-from nohrio.dtypes.tag import TagCheck, _FIXEDVALUES
+from nohrio.dtypes.tag import TagCheckClass, _FIXEDVALUES
 
 
 
@@ -25,9 +25,10 @@ def load_from_bytes(cls, _bytes, *args, **kwargs):
 
 class TestTagCheck(TestCase):
     # XXX for now, we don't try to equip self to a real rpg object properly.
-    rpg = 'RPG'
+    class rpg(object):
+        filename = 'RPG'
     # XXX hack
-    Check = TagCheck(rpg, 1000).__class__
+    Check = TagCheckClass(rpg)
     def setUp (self):
         pass
     def tearDown (self):
@@ -85,11 +86,11 @@ class TestTagCheck(TestCase):
 
     def testRepr(self):
         """TagCheck() repr() looks normal"""
-        ok(repr(self.Check(1000))) == "TagCheck('RPG', on = 1000)"
-        ok(repr(self.Check(on = 1000))) == "TagCheck('RPG', on = 1000)"
-        ok(repr(self.Check(off = 1000))) == "TagCheck('RPG', off = 1000)"
-        ok(repr(self.Check(0))) == "TagCheck('RPG', on = 0)"
-        ok(repr(self.Check(1))) == "TagCheck('RPG', on = 1)"
+        ok(repr(self.Check(1000))) == "TagCheckClass(<class 'test_tag.rpg'>)(on = 1000)"
+        ok(repr(self.Check(on = 1000))) == "TagCheckClass(<class 'test_tag.rpg'>)(on = 1000)"
+        ok(repr(self.Check(off = 1000))) == "TagCheckClass(<class 'test_tag.rpg'>)(off = 1000)"
+        ok(repr(self.Check(0))) == "TagCheckClass(<class 'test_tag.rpg'>)(on = 0)"
+        ok(repr(self.Check(1))) == "TagCheckClass(<class 'test_tag.rpg'>)(on = 1)"
 
     def testSave(self):
         """TagCheck().save() outputs in correct binary format"""
@@ -101,6 +102,7 @@ class TestTagCheck(TestCase):
         """TagCheck.load() parses correct binary format appropriately"""
         # hack. I haven't decided how the class creator should be accessed yet
         cls = self.Check
+        print (cls)
         ok(load_from_bytes(cls, b'\xe8\x03')) == self.Check(1000)
         ok(load_from_bytes(cls, b'\x18\xfc')) == self.Check(-1000)
         ok(load_from_bytes(cls, b'\x00\x00')) == self.Check(0)
