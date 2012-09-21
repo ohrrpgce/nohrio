@@ -116,5 +116,10 @@ def dtype2struct (dtype, can_simplify = False):
         return struct.Struct(byteorder + char)
     raise NotImplementedError('Conversion of multi-field dtypes')
 
+def loadstruct (cls,fh):
+    """Create a new instance of cls, where cls has a 'struct' field
+    ... which matches the order and number of arguments for cls.__init__()"""
+    return cls(*IOHandler._load_struct(cls, fh))
+
 
 #def record_offset (arr,
