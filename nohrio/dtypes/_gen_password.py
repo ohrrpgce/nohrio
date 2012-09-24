@@ -2,7 +2,8 @@ import numpy as np
 from bits import AttrStore, attr2numpy
 from bitstring import BitArray, Bits
 
-def pw4hash (password):
+
+def pw4hash(password):
     """Return the 9-bit hash of `password`.
 
     Empty passwords hash to 0.
@@ -14,15 +15,17 @@ def pw4hash (password):
         hash = hash * 3 + ord(char) * 31
     return (hash & 511) | 512
 
+
 def set_pw4(self, new_password):
     self.version = 4
-    self.hash = pw4hash (new_password)
+    self.hash = pw4hash(new_password)
+
 
 def get_pw4(self):
-    return self.hash # as close as you get to the actual password :)
+    return self.hash  # as close as you get to the actual password :)
+
 
 # code adapted from old nohrio.lump module.
-
 def get_pw3(self):
     rotator = self.rotator
     chars = []
@@ -31,26 +34,28 @@ def get_pw3(self):
         if char < 0:
             char += 256
         if char >= 32:
-            chars.append (chr (char))
+            chars.append(chr(char))
     return "".join(chars)
+
 
 def set_pw3(self, new_password):
     import random
-    rotator = random.randint (1,254)
+    rotator = random.randint(1, 254)
     res = []
-    if new_password not in ('',None):
+    if new_password not in ('', None):
         for char in new_password:
-            char = ord (char)
+            char = ord(char)
             char += rotator
             char %= 256
-            res.append (char)
+            res.append(char)
     while len(res) < 17:
-        blank = random.randint (1,30) + rotator
+        blank = random.randint(1, 30) + rotator
         blank %= 255
-        res.append (blank)
+        res.append(blank)
     self.version = 3
     self.rotator = rotator
     self.passcode = bytes(res)
+
 
 def get_pw2(self):
     """Decode a PW2 format password.
@@ -62,7 +67,8 @@ def get_pw2(self):
     offset = self.offset
     nbytes, remaining = divmod(self.length + 1, 8)
     if remaining:
-        raise ValueError ('Number of bits %d in PW2 password not divisible by 8!' % (self.length+1))
+        raise ValueError('Number of bits %d in PW2 password'
+                         ' not divisible by 8!' % (self.length + 1))
     table = self.scattertable
     bittable = Bits(bytes(table.data))
     chars = []
@@ -77,21 +83,23 @@ def get_pw2(self):
         chars.append(chr(thisval))
     return ''.join(chars)
 
+
 def set_pw2(self, newpassword):
     import random
+
     def choosebit(b, maxbit, state):
         chosen = random.randint(0, maxbit)
         state = 1 if state else 0
         while b[chosen] != state:
             chosen = random.randint(0, maxbit)
         return chosen
-    offset = random.randint (1,254)
+    offset = random.randint(1, 254)
     chars = []
     for char in newpassword:
         rotated = (ord(char) + offset) % 256
         chars.append(chr(rotated))
-    table = np.empty(161, dtype = 'h')
-    table[0] = random.randint (1,254)
+    table = np.empty(161, dtype='h')
+    table[0] = random.randint(1, 254)
     bittable = BitArray(table.view('B'))
     tableoffset = 1
     maxbitref = (16 * tableoffset) - 1
@@ -99,34 +107,38 @@ def set_pw2(self, newpassword):
         byte = ord(char)
         for bitindex in range(8):
             thisbit = 1 if (byte & (1 << bitindex)) else 0
-            thispointer = choosebit (bittable, maxbitref, thisbit)
+            thispointer = choosebit(bittable, maxbitref, thisbit)
             table[tableoffset] = thispointer
-            bittable[tableoffset*16:(tableoffset+1)*16] = 'uintbe:16=%d' % thispointer
+            s = slice(tableoffset * 16, (tableoffset + 1) * 16)
+            bittable[s] = 'uintbe:16=%d' % thispointer
             tableoffset += 1
             maxbitref += 16
     self.offset = offset
     self.length = (len(newpassword) * 8) - 1
-    print ('reached end of set_pw2 %r' % table)
+    print('reached end of set_pw2 %r' % table)
     self.scattertable = table
+
 
 _GETSET_FUNCS = {4: (get_pw4, set_pw4),
                  3: (get_pw3, set_pw3),
                  2: (get_pw2, set_pw2),
                  }
 
-#XXX should be a class inheriting from AttrStore
 
-class PasswordStore (object):
+#XXX should be a class inheriting from AttrStore
+class PasswordStore(object):
     """Store OHRRPGCE RPG password info"""
     fields = ()
-    def __init__ (self, gen):
+
+    def __init__(self, gen):
         """Transfer data from GEN array into an attribute store.
         Add get(), check() and set() methods to it.
         """
         self._rawversion = gen['passcodeversion']
-        print ('RAW VERSION', self._rawversion)
+        print('RAW VERSION', self._rawversion)
         if self._rawversion < 3:
-            raise ValueError('Password type=0x%x not supported' % self._rawversion)
+            raise ValueError('Password type=0x%x'
+                             ' not supported' % self._rawversion)
         V = self.version
         if V == 4:
             self.hash = gen['passwordhash']
@@ -148,7 +160,7 @@ class PasswordStore (object):
             gen['passwordhash'] = self.hash
             return
         else:
-            attr2numpy(self, gen, {k:'pw%d%s' % (V, k) for k in self.fields})
+            attr2numpy(self, gen, {k: 'pw%d%s' % (V, k) for k in self.fields})
 
     def check(self, inputpwd, *, version=None):
         """Return True if inputpwd matches stored password."""
@@ -169,7 +181,8 @@ class PasswordStore (object):
         version = version or self.version
         # wipe any attributes belonging to earlier versions
         for k in dir(self):
-            if k in ('hash','rotator','passcode','offset','length','sctable'):
+            if k in ('hash', 'rotator', 'passcode',
+                     'offset', 'length', 'sctable'):
                 delattr(self, k)
         _GETSET_FUNCS[self.version][1](self, inputpwd)
 
@@ -177,30 +190,33 @@ class PasswordStore (object):
         rawv = self._rawversion
         if rawv < 256:
             if rawv < 3:
-                raise ValueError ('Ancient PW1-style password not supported!')
+                raise ValueError('Ancient PW1-style password not supported!')
             return 2
         else:
             if rawv > 257:
-                raise ValueError ('password rawversion %d unknown' % rawv)
+                raise ValueError('password rawversion %d unknown' % rawv)
             return (3 + (rawv - 256))
-        raise ValueError ('How did you get here!')
+        raise ValueError('How did you get here!')
+
     def _set_version(self, nicev):
-        if nicev not in (2,3,4):
+        if nicev not in (2, 3, 4):
             raise ValueError('Password version %d not supported!' % nicev)
-        self._rawversion = {2:255, # guessing at pw2 value.
-                            3:256,
-                            4:257}[nicev]
+        self._rawversion = {2: 255,  # guessing at pw2 value.
+                            3: 256,
+                            4: 257}[nicev]
         if nicev == 2:
             self.fields = tuple('offset length scattertable'.split())
         elif nicev == 3:
             self.fields = tuple('rotator passcode'.split())
         else:
             self.fields = ('hash',)
-    version = property(_get_version, _set_version, doc='Simplified password version. One of (2,3,4)')
 
+    version = property(_get_version, _set_version,
+                       doc='Simplified password version. One of (2,3,4)')
 
     # XXX should be done by subclassing Transferable or similar.
     def __repr__(self):
-        return repr(AttrStore(**{k:getattr(self, k) for k in self.fields}))
+        return repr(AttrStore(**{k: getattr(self, k) for k in self.fields}))
+
 
 LATEST_PASSWORD_VERSION = max(_GETSET_FUNCS.keys())

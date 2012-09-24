@@ -4,10 +4,12 @@
 from bits import copyattr
 from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
 
+
 class Archinym(IOHandler):
     """Represents general information about the structure of an RPG.
 
-    Detailed format information : http://rpg.hamsterrepublic.com/ohrrpgce/ARCHINYM.LMP
+    Detailed format information :
+    http://rpg.hamsterrepublic.com/ohrrpgce/ARCHINYM.LMP
 
     :Parameters:
       prefix : None or str
@@ -42,31 +44,34 @@ class Archinym(IOHandler):
       True
 
     """
-    def __init__ (self, prefix = None, creator = None, source = None):
+    def __init__(self, prefix=None, creator=None, source=None):
         if source:
             try:
-                with FilelikeLump (source, 'archinym.lmp') as f:
-                    self.load (f)
+                with FilelikeLump(source, 'archinym.lmp') as f:
+                    self.load(f)
                     return
             except IOError:
-                pass # empty or nonexistent file is okay.
+                pass  # empty or nonexistent file is okay.
         self.creator = creator
         self.prefix = prefix
 
-    def _save (self, fh):
-        for item in (self.prefix, self,creator):
+    def _save(self, fh):
+        for item in (self.prefix, self.creator):
             fh.write(item.encode('utf8'))
             fh.write(b'\n')
 
-    def _load (fh):
+    def _load(fh):
         data = fh.read().decode('utf8')
         data = data.strip()
-        newlines = data.count ('\n')
-        if newlines != 1:
-            raise ValueError('Malformed data (expected 2 lines in %s, got %d)' % (fh.name, newlines,))
-        return __class__(*data.split('\n'))
+        newlines = data.count('\n')
+        # handle any of unix, dos, mac endlines.
+        if newlines != 1 and data.count('\r') != 1:
+            raise ValueError('Malformed data (expected 2 lines in %s,'
+                             ' got %d)' % (fh.name, newlines,))
+        return __class__(*data.splitlines())
     #XXX this may not even need to be a function..
-    #    just a list of attributes to copy after calling self.__class__.load(fh).
-    def _reloadfrom (self, fh):
-        copyattr (__class__._load(fh), self, 'prefix','creator')
+    #    just a list of attributes to copy,
+    #     after calling self.__class__.load(fh).
 
+    def _reloadfrom(self, fh):
+        copyattr(__class__._load(fh), self, 'prefix', 'creator')
