@@ -17,9 +17,9 @@ def pw4hash(password):
     return (hash & 511) | 512
 
 
-def set_pw4(self, new_password):
+def set_pw4(self, newpassword):
     self.version = 4
-    self.hash = pw4hash(new_password)
+    self.hash = pw4hash(newpassword)
 
 
 def get_pw4(self):
@@ -47,12 +47,12 @@ def get_pw3(self):
     return "".join(chars)
 
 
-def set_pw3(self, new_password):
+def set_pw3(self, newpassword):
     import random
     rotator = random.randint(1, 254)
     res = []
-    if new_password not in ('', None):
-        for char in new_password:
+    if newpassword not in ('', None):
+        for char in newpassword:
             char = ord(char)
             char += rotator
             char %= 256
@@ -125,6 +125,14 @@ def set_pw2(self, newpassword):
     self.offset = offset
     self.length = (len(newpassword) * 8) - 1
     self.scattertable = table
+
+
+def get_pw1(self):
+    raise NotImplementedError()
+
+
+def set_pw1(self, newpassword):
+    raise NotImplementedError()
 
 
 _GETSET_FUNCS = {4: (get_pw4, set_pw4),
