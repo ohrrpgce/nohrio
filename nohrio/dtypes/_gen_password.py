@@ -1,7 +1,8 @@
+"""Decode / encode PW2/3/4 passwords.
+"""
+
 import numpy as np
 from bits import AttrStore, attr2numpy
-from bitstring import BitArray, Bits
-
 
 def pw4hash(password):
     """Return the 9-bit hash of `password`.
@@ -24,6 +25,14 @@ def set_pw4(self, new_password):
 def get_pw4(self):
     return self.hash  # as close as you get to the actual password :)
 
+
+def rotascii(s, offset):
+    def r(v):
+        v = v + offset
+        if v < 0:
+            v += 256
+        return v
+    return ''.join([chr(r(ord(c))) for c in s])
 
 # code adapted from old nohrio.lump module.
 def get_pw3(self):
@@ -66,22 +75,24 @@ def get_pw2(self):
     """
     offset = self.offset
     nbytes, remaining = divmod(self.length + 1, 8)
+    nbits = nbytes * 8
     if remaining:
         raise ValueError('Number of bits %d in PW2 password'
                          ' not divisible by 8!' % (self.length + 1))
-    table = self.scattertable
-    bittable = Bits(bytes(table.data))
-    chars = []
-    tableoffset = 1
-    for byte in range(nbytes):
-        thisval = 0
-        for bit in range(8):
-            thisval |= (1 if bittable[table[tableoffset]] else 0) << bit
-            tableoffset += 1
-        # equivalent to 'subtract offset, if result < 0 then add 256'
-        rotated = (thisval - offset) % 256
-        chars.append(chr(thisval))
-    return ''.join(chars)
+    table = self.scattertable.view('H')
+    init = []
+    for tabindex in range(1,nbits+1):
+        targetbit = table[tabindex]
+        init.append(1 if table[targetbit / 16] & (1 << (targetbit % 16)) else 0)
+    def bits2byte(b):
+        v = 0
+        for i,bit in enumerate(b):
+            v |= (bit << i)
+        return v
+    chars = [bits2byte(init[i:i+8]) for i in range(0, nbits, 8)]
+    chars = [chr(v) for v in chars]
+    tmp = rotascii(''.join(chars), offset * -1)
+    return tmp
 
 
 def set_pw2(self, newpassword):
@@ -89,33 +100,30 @@ def set_pw2(self, newpassword):
 
     def choosebit(b, maxbit, state):
         chosen = random.randint(0, maxbit)
-        state = 1 if state else 0
-        while b[chosen] != state:
+        state = bool(state)
+        while bool(b[chosen / 16] & (1 << (chosen % 16))) != state:
             chosen = random.randint(0, maxbit)
         return chosen
+
     offset = random.randint(1, 254)
     chars = []
     for char in newpassword:
         rotated = (ord(char) + offset) % 256
         chars.append(chr(rotated))
-    table = np.empty(161, dtype='h')
+    table = np.empty(161, dtype='H')
     table[0] = random.randint(1, 254)
-    bittable = BitArray(table.view('B'))
     tableoffset = 1
     maxbitref = (16 * tableoffset) - 1
     for char in chars:
         byte = ord(char)
         for bitindex in range(8):
             thisbit = 1 if (byte & (1 << bitindex)) else 0
-            thispointer = choosebit(bittable, maxbitref, thisbit)
+            thispointer = choosebit(table, maxbitref, thisbit)
             table[tableoffset] = thispointer
-            s = slice(tableoffset * 16, (tableoffset + 1) * 16)
-            bittable[s] = 'uintbe:16=%d' % thispointer
             tableoffset += 1
             maxbitref += 16
     self.offset = offset
     self.length = (len(newpassword) * 8) - 1
-    print('reached end of set_pw2 %r' % table)
     self.scattertable = table
 
 

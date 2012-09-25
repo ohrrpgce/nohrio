@@ -61,11 +61,11 @@ TABLE_SAMPLE = """
 :Defaults:
     type : <h
 
- ======= ================== ====== =========
- offset      fieldname      groups type,shape
- ======= ================== ====== =========
+ ======= ================== ====== ========= ===========
+ offset      fieldname      groups type,shape metadata id
+ ======= ================== ====== ========= ===========
 
- ======= ================== ====== =========
+ ======= ================== ====== ========= ===========
          maxmap             e m
          titlebg             f
          titlemusic          f
@@ -76,7 +76,7 @@ TABLE_SAMPLE = """
          pw3passcode            o  uint8[17]
          WASTED                    x
          pw1password            o  ~[10]
- ======= ================== ====== =========
+ ======= ================== ====== ========= ===========
 
 """
 
@@ -478,7 +478,7 @@ if __name__ == "__main__":
         rpgdir = sys.argv[1]
     genpath = glob.glob(os.path.join(rpgdir, '*.gen'))[0]
     g = GeneralData(genpath)
-    g.passinfo.set('123456')
+    g.passinfo.set('abcdefg')
     g.save('/tmp/test.gen')
 
 
