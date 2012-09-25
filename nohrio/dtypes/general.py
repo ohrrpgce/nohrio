@@ -1,6 +1,6 @@
 #coding=utf8
 from bits.dtype import DType, limited, enum, bitsets, OFFSET
-from bits import numpy2attr, attr2numpy, UnwrappingArray, AttrStore
+from bits import numpy2attr, attr2numpy, UnwrappingArray, AttrStore, int2bitlist, bitlist2int
 from nohrio.dtypes.bload import bsave, bload
 from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
 from bitstring import BitArray
@@ -55,31 +55,6 @@ import struct
 
 MINIMUM_FORMAT = 2
 CURRENT_FORMAT = 17
-
-TABLE_SAMPLE = """
-
-:Defaults:
-    type : <h
-
- ======= ================== ====== ========= ===========
- offset      fieldname      groups type,shape metadata id
- ======= ================== ====== ========= ===========
-
- ======= ================== ====== ========= ===========
-         maxmap             e m
-         titlebg             f
-         titlemusic          f
-         victorymusic        f
-         battlemusic         f
-         passcodeversion    e
-         pw3rotator             o
-         pw3passcode            o  uint8[17]
-         WASTED                    x
-         pw1password            o  ~[10]
- ======= ================== ====== ========= ===========
-
-"""
-
 
 DTYPE = DType ("""
 <h:maxmap^me:
@@ -349,7 +324,11 @@ _DOCSTRINGS = {
 #             tmp+= '    # %d' % index
 #         cog.outl(tmp)
 #         index += 1
+# while index < 48:
+#     cog.outl("    'UNUSED%d'," % index)
+#     index += 1
 # cog.outl('    ]')
+# cog.outl('_BITSETS.reverse()  # BitArray is big endian, OHRRPGCE is little-endian.')
 #]]]
 # taken from 2 separate fields
 _BITSETS = [
@@ -386,8 +365,24 @@ _BITSETS = [
     'dont divide experience between heroes',
     'dont reset max stats after oob attack',
     'dont limit max tags to 1000',    # 32
+    'UNUSED33',
+    'UNUSED34',
+    'UNUSED35',
+    'UNUSED36',
+    'UNUSED37',
+    'UNUSED38',
+    'UNUSED39',
+    'UNUSED40',
+    'UNUSED41',
+    'UNUSED42',
+    'UNUSED43',
+    'UNUSED44',
+    'UNUSED45',
+    'UNUSED46',
+    'UNUSED47',
     ]
-# [[[end]]] (checksum: c09233aea1f9dee9e35f07c76a87a70a)
+#_BITSETS.reverse()
+# [[[end]]] (checksum: 922a420558c47b66b15c7377dcf2b587)
 
 
 def load(cls, fh):
@@ -428,8 +423,11 @@ class GeneralData (IOHandler):
             print (self.formatversion)
             self.passinfo = PasswordStore(src)
             self.passinfo.present = bool (self.passinfo.get())
-            self.misc.bitsets = BitArray('uintbe:16=%d, uintbe:32=%d' % (src['bitsets'],
-                                                                 src['bitsets2']))
+            bittmp = int2bitlist(src['bitsets'], 16) + int2bitlist(src['bitsets2'], 32)
+            print (bin(src['bitsets']), bin(src['bitsets2']))
+            self.misc.bitsets = BitArray(bittmp)
+                                         #'uint:32=%d, uintne:16=%d' % (src['bitsets2'],
+                                          #                       src['bitsets']))
             print ('bitsets sez: %s' % self.misc.bitsets.bin)
             print ('I think the password version is %r' % self.passinfo.version)
             print ('passinfo obj: %r' % self.passinfo)
@@ -450,6 +448,11 @@ class GeneralData (IOHandler):
         for submap, members in _ATTRMAP.items():
             attr2numpy (getattr(self, submap), buf, members, reversed = True)
         buf['formatversion'] = self.formatversion
+        self.misc.bitsets.reverse()
+        b = self.misc.bitsets.uint
+        buf['bitsets'] = b & 0xffff
+        buf['bitsets2'] = (b >> 16) & 0xffffffff
+        self.misc.bitsets.reverse()
         self.passinfo.copyto(buf)
         bsave (buf, fh)
 

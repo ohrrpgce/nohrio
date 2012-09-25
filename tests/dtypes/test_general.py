@@ -8,8 +8,9 @@ from oktest import ok
 import nohrio.nohrio2 as nohrio
 import os
 from nohrio.iohelpers import FilelikeLump
+from bits import showbitsets
 
-from nohrio.dtypes.general import GeneralData
+from nohrio.dtypes.general import GeneralData, _BITSETS
 
 # test that all is where it should be in the gen data type.
 # some fixed data strings go here
@@ -63,6 +64,24 @@ class TestGeneralData(TestCase):
             bio = BytesIO(a)
             ok(lambda :GeneralData(source=bio)).raises(ValueError)
         #ok(self.gen.nbytes) == 1000
+
+    def testBitsets(self):
+        """GeneralData saves/restores bitsets correctly"""
+        from io import BytesIO
+        bio = BytesIO()
+        bitsets = self.gen.misc.bitsets
+        showbitsets (bitsets, _BITSETS)
+        self.gen.save(bio)
+        bio2 = BytesIO(bio.getvalue())
+        nextgen = GeneralData(bio2)
+        newbitsets = nextgen.misc.bitsets
+        #newbitsets.reverse()
+        #print (newbitsets.bin)
+        #print (len(newbitsets), len(_BITSETS))
+        #newbitsets.byteswap()
+        showbitsets (newbitsets, _BITSETS)
+        #raise ValueError()
+        ok(bitsets) == newbitsets
 
     def testPassword(self):
         """Password data is consistent"""
