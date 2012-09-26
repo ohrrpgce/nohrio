@@ -1,5 +1,6 @@
 #coding=utf8
 from bits.dtype import DType, limited, enum, bitsets, OFFSET
+from bits.enum import Enum, MultiRange
 from bits import numpy2attr, attr2numpy, UnwrappingArray, AttrStore, int2bitlist, bitlist2int
 from nohrio.dtypes.bload import bsave, bload
 from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
@@ -388,6 +389,12 @@ _BITSETS = [
 def load(cls, fh):
     cls(fh)
 
+class AutosortScheme(Enum):
+    map = {0: 'by type', 1: 'usable/not usable',
+           2: 'alphabetically', 3: 'by id number',
+           4: 'compact only'}
+    valid = MultiRange(((0,4),))
+
 class GeneralData (IOHandler):
     """Container for general data
 
@@ -416,6 +423,8 @@ class GeneralData (IOHandler):
                 #     Probably I should put it in the GeneralData docstring instead.
                 store.__doc__ = _DOCSTRINGS[submap]
                 setattr(self, submap, store)
+            self.misc.autosortscheme = AutosortScheme(self.misc.autosortscheme)
+            print ('autosort is set to %r' % self.misc.autosortscheme)
             #    print ('%s: %r' % (submap, store))
             self.formatversion = src['formatversion']
             if self.formatversion > CURRENT_FORMAT or self.formatversion < MINIMUM_FORMAT:

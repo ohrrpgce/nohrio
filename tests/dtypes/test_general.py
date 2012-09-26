@@ -71,6 +71,7 @@ class TestGeneralData(TestCase):
         bio = BytesIO()
         bitsets = self.gen.misc.bitsets
         showbitsets (bitsets, _BITSETS)
+        print ('bitsets =', bitsets)
         self.gen.save(bio)
         bio2 = BytesIO(bio.getvalue())
         nextgen = GeneralData(bio2)
@@ -80,14 +81,16 @@ class TestGeneralData(TestCase):
         #print (len(newbitsets), len(_BITSETS))
         #newbitsets.byteswap()
         showbitsets (newbitsets, _BITSETS)
+        print ('newbitsets =', newbitsets)
         #raise ValueError()
         ok(bitsets) == newbitsets
 
     def testPassword(self):
-        """Password data is consistent"""
-        pass
-    def testfoo(self):
-        pass
+        """passinfo.set(pwd); passinfo.check(pwd) == True"""
+        pwd = 'abcdefg'
+        self.gen.passinfo.set(pwd)
+        ok(self.gen.passinfo.check(pwd)) == True
+
 
 
 if __name__ == "__main__":

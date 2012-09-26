@@ -126,7 +126,19 @@ def set_pw2(self, newpassword):
     self.length = (len(newpassword) * 8) - 1
     self.scattertable = table
 
-
+# Here's the code from OHRRPGCE unlump for PW1:
+#
+# 'Read old-old-old password (very similar to PW3)
+# FUNCTION read_PW1_password () as string
+# DIM rpas as string
+# FOR i as integer = 1 TO gen(genPW1Length)
+#  IF gen(4 + i) >= 0 AND gen(4 + i) <= 255 THEN rpas = rpas + CHR(loopvar(gen(4 + i), 0, 255, gen(genPW1Offset) * -1))
+# NEXT i
+# RETURN rpas
+# END FUNCTION
+#
+#
+#
 def get_pw1(self):
     raise NotImplementedError()
 
