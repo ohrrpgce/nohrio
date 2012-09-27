@@ -46,7 +46,7 @@ RPG Creation and opening
 Once this section is fully filled out, it will list all you need to know for basic RPG manipulation via
 a RPG object.
 
-For other more things, like implementing support for a new format, you'll need to look in:
+For other more technical things, like implementing support for a new format, you'll need to look in:
 
 ===================
 Hacking Essentials

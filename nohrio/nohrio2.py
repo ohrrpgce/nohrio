@@ -4,8 +4,9 @@ import os
 from bits import copyattr
 from bits.subfile import SubFile
 from nohrio.dtypes.archinym import Archinym
-from nohrio.dtypes.general import GeneralData, BrowseInfo
+from nohrio.dtypes.general import GeneralData, BrowseInfo, CURRENT_FORMAT
 from nohrio.iohelpers import Filelike, FilelikeLump
+from collections import namedtuple
 import numpy as np
 
 CREATOR_NAME = 'nohrio v3'
@@ -149,8 +150,16 @@ def openrpgdirlump(self, lump, mode):
 
 def openrpglump(self, lump, mode):
     tmp = open(self.source, mode)
-    tmp.seek(self.index[lump].offset)
-    return SubFile(tmp, self.index[lump].size)
+    print ('opened %r, mode %r' % (self.source, mode))
+    dest = self.index[lump].offset
+    print ('seeking to %r' % dest)
+    tmp.seek(dest)
+    tmp = SubFile(tmp, self.index[lump].size)
+    print (tmp)
+    return tmp
+
+
+SubLumpInfo=namedtuple('SubLumpInfo', 'offset size')
 
 class RPG(object):
     """R/W, Object oriented access to RPG contents.
@@ -168,33 +177,42 @@ class RPG(object):
     def __init__(self, source, mode=None, function=None):
         if mode not in ('r','r+'):
             raise ValueError('Mode flag %r not understood (should be one of (r r+))' % mode)
-        source_isdir = False
-
-        try:
-            source_isdir = os.path.isdir(source)
-            if not source_isdir and type(source) == str:
-                if not os.path.exists(source):
-                    raise OSError('File/rpgdir %r doesn\'t exist!' % source)
-        except TypeError:
-            pass  # filehandle or function
-
         if not os.path.exists (source):
             raise OSError ('File/rpgdir %r doesn\'t exist!' % source)
+        
         isrpgdir = os.path.isdir(source)
         self.source = source
         function = function or (openrpgdirlump if isrpgdir else openrpglump)
         self._openlump = function
+        print ('openlump set to %r' % self._openlump)
         self.isrpgdir = isrpgdir
         self.mode = mode + 'b'
         if not isrpgdir:
-            raise NotImplementedError()
+            self.index = {}
+            for name, offset, size in ls(source):
+                self.index[name] = SubLumpInfo(offset, size)
+            print(self.index)
+#            raise NotImplementedError()
+        
         with self.openlump('archinym.lmp') as f:
-        #FilelikeLump(source, , mode='rb') as f:
+            print ('fh', f)
             self.arch = Archinym (source=f)
-        print(dir(self.arch))
-        sanity_check (source, self.arch.prefix)
+        
+        if isrpgdir:
+            sanity_check (source, self.arch.prefix)
+        
         with self.openlump('gen') as f:
             self.gen = GeneralData (f)
+            fmtversion = self.gen.formatversion
+            if fmtversion != CURRENT_FORMAT:
+                if fmtversion > CURRENT_FORMAT:
+                    print('RPGFile version %d is newer than'
+                          ' the format understood by nohrio (%d)' % (fmtversion, CURRENT_FORMAT))
+                else:
+                    print('RPGFile version %d is older than'
+                          ' the format understood by nohrio (%d)' % (fmtversion, CURRENT_FORMAT))
+                
+        
         with self.openlump('browse.txt') as f:
             browse = BrowseInfo(f)
             copyattr(browse, self,'about','longname')
@@ -217,7 +235,7 @@ class RPG(object):
         #return FileLike(index[lump]
 
 if __name__ == "__main__":
-    r = RPG('../ohrrpgce/vikings/vikings.rpgdir/', 'r')
+    r = RPG('../tests/ohrrpgce.new', 'r')
     print (r.arch)
     print (r.about,'|', r.longname)
 
