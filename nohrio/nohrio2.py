@@ -179,7 +179,7 @@ class RPG(object):
             raise ValueError('Mode flag %r not understood (should be one of (r r+))' % mode)
         if not os.path.exists (source):
             raise OSError ('File/rpgdir %r doesn\'t exist!' % source)
-        
+
         isrpgdir = os.path.isdir(source)
         self.source = source
         function = function or (openrpgdirlump if isrpgdir else openrpglump)
@@ -193,14 +193,14 @@ class RPG(object):
                 self.index[name] = SubLumpInfo(offset, size)
             print(self.index)
 #            raise NotImplementedError()
-        
+
         with self.openlump('archinym.lmp') as f:
             print ('fh', f)
             self.arch = Archinym (source=f)
-        
+
         if isrpgdir:
             sanity_check (source, self.arch.prefix)
-        
+
         with self.openlump('gen') as f:
             self.gen = GeneralData (f)
             fmtversion = self.gen.formatversion
@@ -211,8 +211,8 @@ class RPG(object):
                 else:
                     print('RPGFile version %d is older than'
                           ' the format understood by nohrio (%d)' % (fmtversion, CURRENT_FORMAT))
-                
-        
+
+
         with self.openlump('browse.txt') as f:
             browse = BrowseInfo(f)
             copyattr(browse, self,'about','longname')

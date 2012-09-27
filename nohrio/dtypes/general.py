@@ -1,7 +1,9 @@
 #coding=utf8
 from bits.dtype import DType, limited, enum, bitsets, OFFSET
 from bits.enum import Enum, MultiRange
-from bits import numpy2attr, attr2numpy, UnwrappingArray, AttrStore, int2bitlist, bitlist2int
+from bits import (numpy2attr, attr2numpy, UnwrappingArray, AttrStore,
+                 bitsetsfromlebytes, lebytesfrombitsets, showbitsets)
+#int2bitlist, bitlist2int
 from nohrio.dtypes.bload import bsave, bload
 from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
 from bitstring import BitArray
@@ -132,7 +134,7 @@ h:pw1offset^eo:
 h:pw1length^eo:
 
 h:maxbackdrop^mx:
-H:bitsets:
+2B:bitsets:
 h:startx:h:starty:h:startmap:
 h:onetimenpcindexer^e:130B:onetimenpcplaceholder^e:
 
@@ -142,7 +144,7 @@ h:acceptsfx^f:
 h:cancelsfx^f:
 h:choosesfx^f:
 h:textboxlettersfx^f:
-I:bitsets2:
+4B:bitsets2:
 h:itemlearnsfx^f:h:cantlearnsfx^f:
 h:buysfx^f:h:hiresfx^f:h:sellsfx^f:
 h:cantsellsfx^f:h:cantbuysfx^f:
@@ -420,6 +422,7 @@ class GeneralData(IOHandler):
 
     """
     _dtype = DTYPE
+    BITSETS = _BITSETS
     # XXX for now, we only init from file.
     def __init__ (self, source):
         print ('init from %r' % source)
@@ -448,12 +451,15 @@ class GeneralData(IOHandler):
             print (self.formatversion)
             self.passinfo = PasswordStore(src)
             self.passinfo.present = bool (self.passinfo.get())
-            bittmp = int2bitlist(src['bitsets'], 16) + int2bitlist(src['bitsets2'], 32)
-            print (bin(src['bitsets']), bin(src['bitsets2']))
-            self.misc.bitsets = BitArray(bittmp)
+            self.misc.bitsets = bitsetsfromlebytes(BitArray,
+                                                   src['bitsets'].tolist() + src['bitsets2'].tolist())
+            #bittmp = int2bitlist(src['bitsets'], 16) + int2bitlist(src['bitsets2'], 32)
+            #print (bin(src['bitsets']), bin(src['bitsets2']))
+            #self.misc.bitsets = BitArray(bittmp)
                                          #'uint:32=%d, uintne:16=%d' % (src['bitsets2'],
                                           #                       src['bitsets']))
             print ('bitsets sez: %s' % self.misc.bitsets.bin)
+            showbitsets(self.misc.bitsets, self.BITSETS)
             print ('I think the password version is %r' % self.passinfo.version)
             print ('passinfo obj: %r' % self.passinfo)
             print ('passinfo vars: %r' % vars(self.passinfo))
@@ -473,11 +479,14 @@ class GeneralData(IOHandler):
         for submap, members in _ATTRMAP.items():
             attr2numpy (getattr(self, submap), buf, members, reversed = True)
         buf['formatversion'] = self.formatversion
-        self.misc.bitsets.reverse()
-        b = self.misc.bitsets.uint
-        buf['bitsets'] = b & 0xffff
-        buf['bitsets2'] = (b >> 16) & 0xffffffff
-        self.misc.bitsets.reverse()
+        #self.misc.bitsets.reverse()
+        bytes = lebytesfrombitsets(self.misc.bitsets)
+        buf['bitsets'] = bytes[:2]
+        buf['bitsets2'] = bytes[2:]
+        #b = self.misc.bitsets.uint
+        #buf['bitsets'] = b & 0xffff
+        #buf['bitsets2'] = (b >> 16) & 0xffffffff
+        #self.misc.bitsets.reverse()
         self.passinfo.copyto(buf)
         bsave (buf, fh)
 
