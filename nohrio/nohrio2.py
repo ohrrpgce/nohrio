@@ -1,8 +1,11 @@
 #coding=utf8
 import functools
 import os
+from bits import copyattr
+from bits.subfile import SubFile
 from nohrio.dtypes.archinym import Archinym
-from nohrio.iohelpers import Filelike
+from nohrio.dtypes.general import GeneralData, BrowseInfo
+from nohrio.iohelpers import Filelike, FilelikeLump
 import numpy as np
 
 CREATOR_NAME = 'nohrio v3'
@@ -133,12 +136,95 @@ def sanity_check(name, prefix):
                 errors.append((lumpname,'size', actual_size))
     # TODO: also check fixbits and add any 'missing' fixes to the missing list
     for lumpname, size in STANDARD_SIZES.items():
+        print ('LS', lumpname, size)
         lumpname = lumpname.replace('*', prefix)
         check (lumpname, size)
     # TODO: report when gen.rpgversion is higher than we know of.
     if not errors:
         return True
     return missing
+
+def openrpgdirlump(self, lump, mode):
+    return open(os.path.join(self.source, lump), mode)
+
+def openrpglump(self, lump, mode):
+    tmp = open(self.source, mode)
+    tmp.seek(self.index[lump].offset)
+    return SubFile(tmp, self.index[lump].size)
+
+class RPG(object):
+    """R/W, Object oriented access to RPG contents.
+
+    :Parameters:
+        source: path to file or directory
+        mode: str
+            'r' or 'r+'
+        function: function accepting (lump, mode) params, returning context manager.
+            Used to get a filehandle when reading/writing lumps.
+            If you don't specify this, it's automatically chosen
+            according to whether source points at rpg or rpgdir.
+    """
+
+    def __init__(self, source, mode=None, function=None):
+        if mode not in ('r','r+'):
+            raise ValueError('Mode flag %r not understood (should be one of (r r+))' % mode)
+        source_isdir = False
+
+        try:
+            source_isdir = os.path.isdir(source)
+            if not source_isdir and type(source) == str:
+                if not os.path.exists(source):
+                    raise OSError('File/rpgdir %r doesn\'t exist!' % source)
+        except TypeError:
+            pass  # filehandle or function
+
+        if not os.path.exists (source):
+            raise OSError ('File/rpgdir %r doesn\'t exist!' % source)
+        isrpgdir = os.path.isdir(source)
+        self.source = source
+        function = function or (openrpgdirlump if isrpgdir else openrpglump)
+        self._openlump = function
+        self.isrpgdir = isrpgdir
+        self.mode = mode + 'b'
+        if not isrpgdir:
+            raise NotImplementedError()
+        with self.openlump('archinym.lmp') as f:
+        #FilelikeLump(source, , mode='rb') as f:
+            self.arch = Archinym (source=f)
+        print(dir(self.arch))
+        sanity_check (source, self.arch.prefix)
+        with self.openlump('gen') as f:
+            self.gen = GeneralData (f)
+        with self.openlump('browse.txt') as f:
+            browse = BrowseInfo(f)
+            copyattr(browse, self,'about','longname')
+
+    def lumpname(self, lump):
+        return self.arch.lumpname(lump)
+
+    def openlump(self, lump, mode = None):
+        """Return a file handle pointing to a given lump.
+
+        """
+        mode = mode or self.mode
+        # naturally self.arch is not available until archinym.lmp is loaded.
+        if lump != 'archinym.lmp':
+            lump = self.lumpname(lump)
+        return self._openlump(self, lump, mode)
+        #if self.isrpgdir:
+            #return FileLike(lump, mode=mode)
+        #self.source.seek(self.index[lump])
+        #return FileLike(index[lump]
+
+if __name__ == "__main__":
+    r = RPG('../ohrrpgce/vikings/vikings.rpgdir/', 'r')
+    print (r.arch)
+    print (r.about,'|', r.longname)
+
+
+
+
+
 
 def open_rpg(name, mode):
     if mode not in ('r','r+'):
@@ -150,7 +236,7 @@ def open_rpg(name, mode):
         raise OSError ('File/rpgdir %r doesn\'t exist!' % name)
     is_rpgdir = os.path.isdir(name)
     if not is_rpgdir:
-        raise NotImplemented
+        raise NotImplementedError()
     arch = Archinym (name)
     sanity_check (name, arch.prefix)
 
