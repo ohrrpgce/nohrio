@@ -395,7 +395,17 @@ class AutosortScheme(Enum):
            4: 'compact only'}
     valid = MultiRange(((0,4),))
 
-class GeneralData (IOHandler):
+class BrowseInfo(IOHandler):
+    """Holds author and long game name info
+    """
+    def __init__(self, source):
+        self.longname = readstr(fh, 2, 1, 38)
+        self.about = readstr(fh, 2, 1, 38)
+    def _save(self, fh):
+        writestr(self.longname, 2, 1, 38)
+        writestr(self.about, 2, 1, 38)
+
+class GeneralData(IOHandler):
     """Container for general data
 
     GeneralData(filehandle_or_filename)
