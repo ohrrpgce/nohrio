@@ -1,7 +1,7 @@
 from unittest import TestCase
 import nose
 from oktest import ok
-from nohrio.dtypes.formation import FormationData
+from nohrio.dtypes.formation import FormationData, FormationSetData
 from bits import AttrStore
 from io import BytesIO
 
@@ -40,7 +40,18 @@ class testFormation(TestCase):
         ok(io.getvalue()) == self.record
 
 class testFormationSet(TestCase):
-    pass
+    fs = FormationSetData('../../ohrrpgce/vikings/vikings.rpgdir/viking.efs')
+    def testLoad(self):
+        ok(int(self.fs.tagcheck)) == 0
+        ok(self.fs.unused) == [0, 0, 0]
+        ok(self.fs.frequency) == 4
+        ok(self.fs.entries) == [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 150, 138, 139, 140, 141, 142]
+    def testSave(self):
+        io = BytesIO()
+        self.fs.save(io)
+        io2 = BytesIO(io.getvalue())
+        fs2 = FormationSetData(io2)
+        ok(self.fs) == fs2
 
 if __name__ == "__main__":
     nose.main(defaultTest='test_formation.py')
