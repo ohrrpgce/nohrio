@@ -47,9 +47,9 @@ class Archinym(IOHandler, AttrStore):
     def __init__(self, prefix='ohrrpgce', creator='nohrio pre3', source=None):
         if source:
             try:
-                with FilelikeLump(source, 'archinym.lmp', mode = 'rb') as fh:
-                    print ('archinym __init__')
-                    data = fh.read().decode('utf8')
+                with Filelike(source, mode = 'rb') as fh:
+                    data = fh.read()
+                    data = data.decode('utf8')
                     data = data.strip()
                     newlines = data.count('\n')
                     # handle any of unix, dos, mac endlines.
@@ -57,11 +57,9 @@ class Archinym(IOHandler, AttrStore):
                         raise ValueError('Malformed data (expected 2 lines in %s,'
                                          ' got %d)' % (fh.name, newlines,))
                     prefix, creator = data.splitlines()
-                    print ('prefix, creator:', prefix, creator)
             except ValueError:
                 raise
                 #pass  # empty or nonexistent file is okay.
-        print ('prefix, creator:', prefix, creator)
         prefix = prefix.lower()
         self.creator = creator
         self.prefix = prefix

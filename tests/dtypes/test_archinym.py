@@ -9,7 +9,6 @@ import io
 from nohrio.dtypes.archinym import Archinym
 
 
-
 class TestArchinym(TestCase):
     prefix = 'foo'
     creator='Bazifier v.1.2bar'
@@ -26,7 +25,7 @@ class TestArchinym(TestCase):
 
     def testFileInit (self):
         """Create from file"""
-        a = Archinym(source='../../ohrrpgce/vikings/vikings.rpgdir/')
+        a = Archinym(source='../../ohrrpgce/vikings/vikings.rpgdir/archinym.lmp')
         ok(a.prefix) == 'viking'
         ok(a.creator) == 'OHRRPGCE Editor: serendipity 20060218'
 
