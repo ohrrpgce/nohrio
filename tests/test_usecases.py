@@ -32,6 +32,7 @@ def testUpgradePassword():
     from nohrio.dtypes.general import LATEST_PASSWORD_FORMAT
     if rpg.gen.passinfo.present and rpg.gen.passinfo.version < LATEST_PASSWORD_FORMAT:
         if rpg.gen.passinfo.version == 4:
+            # this is obviously insecure, it needs starring-out.
             input_pwd = input('Type password again > ')
         else:
             input_pwd = rpg.gen.passinfo.get()
@@ -140,6 +141,34 @@ def testPaletteUsage():
     for index in topi:
         print ('\t%d\t%6d uses' % (index, usage[index]))
 
+
+def test_formationUsage():
+    """List formations and formationsets that are not used."""
+    nformations = len(rpg.formation)
+    nformsets = len(rpg.formset)
+    allformsets = list(range(nformsets))
+    allforms = list(range(nformations))
+    unusedfsets = set(allformsets)
+    unusedforms = set(allforms)
+
+    for map in rpg.maps:
+        foemap = map.foemap
+        for used in np.unique(foemap):
+            unusedformsets.discard(used)
+    for i, formset in enumerate(rpg.formset):
+        if i in unusedfsets:
+            # since the fset isn't used, the formations
+            # it uses don't qualify as used either.
+            continue
+        for used in formset.entries:
+            used -= 1
+            if used == 0:
+                continue
+            unusedforms.discard(used)
+    unusedfsets = sorted(unusedfsets)
+    unusedforms = sorted(unusedforms)
+    print ("Unused formationsets: ", ' '.join(str(v) for v in unusedfsets))
+    print ("Unused formations: ", ' '.join(str(v) for v in unusedforms))
 
 if __name__ == "__main__":
     # setup stuff here:
