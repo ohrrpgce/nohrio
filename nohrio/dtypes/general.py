@@ -395,12 +395,18 @@ class AutosortScheme(Enum):
            4: 'compact only'}
     valid = MultiRange(((0,4),))
 
+def readstr(fh, lengthbytes, characterbytes, maxchars):
+    length = fh.read(lengthbytes)[0]
+    print(repr(length))
+    data = fh.read(maxchars * characterbytes)[::characterbytes]
+    return ''.join(chr(c) for c in data[:length])
+
 class BrowseInfo(IOHandler):
     """Holds author and long game name info
     """
     def __init__(self, source):
-        self.longname = readstr(fh, 2, 1, 38)
-        self.about = readstr(fh, 2, 1, 38)
+        self.longname = readstr(source, 2, 1, 38)
+        self.about = readstr(source, 2, 1, 38)
     def _save(self, fh):
         writestr(self.longname, 2, 1, 38)
         writestr(self.about, 2, 1, 38)
