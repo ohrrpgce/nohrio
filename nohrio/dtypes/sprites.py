@@ -6,9 +6,20 @@ def load(cls, fh):
     pass
 
 class OHRSprite(IOHandler, np.ndarray):
+    """Paletted sprite. May be packed (4bpp) or unpacked(8bpp).
+
+       :Attributes:
+            packed: bool
+                True if the content is 4bpp packed (2 pixels/byte)
+                along the last axis(y)
+            nframes: int
+                1 if self.ndim == 2, else self.shape[-1]
+    """
 
     def __new__ (cls, *args, packed=True, origin=None, dtype='B', **kwargs):
         self = np.asarray(*args, dtype=dtype, **kwargs).view(cls)
+        if self.ndims < 2:
+            raise ValueError('OHRSprites can only be instantiated as a >= 2-d array')
         self.packed = packed
         self.origin = origin
         return self
