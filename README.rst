@@ -110,7 +110,7 @@ TeeEmCee :
   Also wrote the first non-trivial program that uses nohrio -- 'colouruse.py' which counts
   usage of master palette colors throughout an RPGDir.
 
-  Further testing and suggestions on the RELOAD module later.
+  Further testing and suggestions on the RELOAD module later, and on the new API.
 
 Myself :
   Wrote quite a few utilities for OHRRPGCE, and made the new master palette for it

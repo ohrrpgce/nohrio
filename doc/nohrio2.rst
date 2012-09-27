@@ -42,9 +42,15 @@ RPG Creation and opening
 .. automodule:: nohrio.nohrio2
     :members:
 
-===========
-Essentials
-===========
+
+Once this section is fully filled out, it will list all you need to know for basic RPG manipulation via
+a RPG object.
+
+For other more things, like implementing support for a new format, you'll need to look in:
+
+===================
+Hacking Essentials
+===================
 
 .. automodule:: nohrio.dtypes.archinym
     :members:
@@ -52,11 +58,14 @@ Essentials
 .. automodule:: nohrio.dtypes.general
     :members:
 
+.. :members:
+
 .. automodule:: nohrio.dtypes.bload
     :members:
 
 .. automodule:: nohrio.iohelpers
-    :members:
+#    :members:
+
 
 
     
@@ -67,7 +76,7 @@ Essentials
     * nohrio.iohelpers.IOHandler.template
 
 ================
-
+foo
 ================
 
 

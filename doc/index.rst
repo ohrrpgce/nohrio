@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 3
 
    nohrio2.rst
+   todo.rst
 
 Indices and tables
 ==================
