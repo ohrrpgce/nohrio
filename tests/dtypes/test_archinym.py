@@ -26,7 +26,9 @@ class TestArchinym(TestCase):
 
     def testFileInit (self):
         """Create from file"""
-        raise NotImplementedError()
+        a = Archinym(source='../../ohrrpgce/vikings/vikings.rpgdir/')
+        ok(a.prefix) == 'viking'
+        ok(a.creator) == 'OHRRPGCE Editor: serendipity 20060218'
 
 if __name__ == "__main__":
     nose.main(defaultTest='test_archinym.py')
