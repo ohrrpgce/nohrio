@@ -1,3 +1,7 @@
+from bitstring import BitArray
+from bits import bitsetsfromlebytes, lebytesfrombitsets
+from nohrio.iohelpers import IOHandler, Filelike
+
 #[[[cog
 # import cog
 # import re, os
@@ -19,8 +23,11 @@
 #             name = "_".join([v.lower() for v in parts])
 #         info.append((id, name))
 # info.sort (key = lambda v: v[0])
+# # add 8 bits of padding to show up unknown new bitsets
+# info.extend((v, 'UNKNOWN%d' % v) for v in range(len(info), len(info)+8))
 # for id, name in info:
 #     cog.outl('    %r,' % name)
+#
 # cog.outl('    ]')
 # cog.outl('fixbits_nbytes = %d' % ((info[-1][0] + 8) / 8))
 #]]]
@@ -49,30 +56,52 @@ fixbits_names = [
     'remove_damage',
     'default_max_level',
     'UNUSED23',
+    'UNKNOWN24',
+    'UNKNOWN25',
+    'UNKNOWN26',
+    'UNKNOWN27',
+    'UNKNOWN28',
+    'UNKNOWN29',
+    'UNKNOWN30',
+    'UNKNOWN31',
     ]
-
-from bitstring import BitArray
-from nohrio.iohelpers import IOHandler
-def load(fh):
-    pass #stubbed
+fixbits_nbytes = 4
+#[[[end]]] (checksum: b41bf88f4b4a9a9f18447eb63f53d565)
 
 class FixBits(BitArray,IOHandler):
+    def __init__(self, *args, source=None, **kwargs):
+        """Accepts a filename/handle as initializer (via 'source' kwarg)
+        """
+        pass
+
+    def __new__(cls, *args, source=None, **kwargs):
+        if not source:
+            return BitArray.__new__(cls, *args, **kwargs)
+
+        tmp=None
+        with Filelike(source, 'rb') as fh:
+            tmp = bitsetsfromlebytes(cls, fh.read())
+        return tmp
+
     def __str__(self):
-        return '%s(%r)' % (self.__class__.__name__,
+        return '%s(0x%s,%r)' % (self.__class__.__name__,
+                              self.hex,
                            ' '.join(fixbits_names[i] for i,v in enumerate(self) if v))
     def _save(self, fh):
-        pass
-        #stubbed
+        bytes = lebytesfrombitsets(self)
+        fh.write(bytes)
+
+    def __getitem__(self, k):
+        if type(k) == str:
+            return BitArray.__getitem__(self, fixbits_names.index(k))
+        return BitArray.__getitem__(self, k)
     # that's it!
-
-f = FixBits(uint = int('10'*12,2), length = 24)
-print (str(f))
-#fixbits_nbytes = 3
-#[[[end]]] (checksum: 2517d7188d349cc80bbc67f298a366b8)
-
-
-
-#from bits import Bitsets
-#print(fixbits_names)
-#buffer = bytearray((0b10101010,) * fixbits_nbytes)
-#print('%s' % Bitsets(buffer, fixbits_names))
+def _load(cls, fh):
+    return cls(source=fh)
+FixBits._load = _load.__get__(FixBits)
+#f = FixBits(uint = int('10'*12,2), length = 24)
+#print (str(f))
+#f = FixBits(source = '../../ohrrpgce/vikings/vikings.rpgdir/fixbits.bin')
+#print (f.bin)
+#print (str(f))
+#print ([hex(v) for v in lebytesfrombitsets(f)])

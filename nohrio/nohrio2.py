@@ -1,13 +1,16 @@
 #coding=utf8
-import functools
 import os
+import functools
+from collections import namedtuple
+import numpy as np
+
 from bits import copyattr
 from bits.subfile import SubFile
 from nohrio.dtypes.archinym import Archinym
 from nohrio.dtypes.general import GeneralData, BrowseInfo, CURRENT_FORMAT
+from nohrio.dtypes.fixbits import FixBits
+from nohrio.dtypes.binsize import Binsizes
 from nohrio.iohelpers import Filelike, FilelikeLump
-from collections import namedtuple
-import numpy as np
 
 CREATOR_NAME = 'nohrio v3'
 STANDARD_SIZES = {
@@ -217,6 +220,12 @@ class RPG(object):
             browse = BrowseInfo(f)
             copyattr(browse, self,'about','longname')
 
+        with self.openlump('fixbits.bin') as f:
+            self.fixbits = FixBits(source=f)
+
+        with self.openlump('binsize.bin') as f:
+            self.binsize = Binsizes(f)
+
     def lumpname(self, lump):
         return self.arch.lumpname(lump)
 
@@ -236,8 +245,8 @@ class RPG(object):
 
 if __name__ == "__main__":
     r = RPG('../tests/ohrrpgce.new', 'r')
-    print (r.arch)
-    print (r.about,'|', r.longname)
+    for v in 'arch about longname fixbits binsize'.split():
+        print(getattr(r, v))
 
 
 
