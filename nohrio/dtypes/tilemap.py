@@ -1,10 +1,11 @@
 from nohrio.iohelpers import IOHandler, Filelike
+from nohrio.dtypes.bload import BLOAD_SIZE
 from collections import defaultdict
 from bits import AttrStore, UnwrappingArray
 from bits.dtype import DType
 from bits.enum import Enum, MultiRange
 from numpy import dtype
-from struct import unpack
+from struct import unpack, pack
 import numpy as np
 
 class TilemapBase(IOHandler, np.ndarray):
@@ -20,14 +21,23 @@ class TilemapBase(IOHandler, np.ndarray):
                 raise ValueError('%d-d tilemaps not supported.' % source.ndim)
             elif source.ndim < 2:
                 raise ValueError('tilemaps must be at least 2-d, not %d-d.' % source.ndim)
-            self = np.asarray(source).view(cls)
+            self = np.asarray(source)
         else:
-            with FileLike(source) as fh:
-                w, h = unpack ('<2h', fh.read(4))
+            with Filelike(source, 'rb') as fh:
+                # skip bload header -- we can't do this the nice way.
+                # NOTE: this means we don't currently load very old maps correctly --
+                # see http://rpg.hamsterrepublic.com/ohrrpgce/T
+                fh.seek(BLOAD_SIZE)
+                #print ('FH', fh)
+                tmp = fh.read(4)
+                #print ('tmp', tmp)
+                w, h = unpack ('<2h', tmp)
+                print (w,h)
                 layer_nbytes = h * w
                 layerindex = 0
+                layerdata = []
                 while layerindex < maxlayers:
-                    data = f.read(layer_nbytes)
+                    data = fh.read(layer_nbytes)
                     if len(data) > 0 and len(data) < layer_nbytes:
                         raise IOError('Incomplete tilemap layer detected.'
                                       ' Read %d bytes,'
@@ -36,24 +46,47 @@ class TilemapBase(IOHandler, np.ndarray):
                     if data:
                         layerdata.append(data)
                     layerindex += 1
+                print ('data len: %d, w,h = %d,%d' % (sum(len(l) for l in layerdata), w, h))
                 self = np.fromstring(b''.join(layerdata),'B').reshape((-1, h, w))
-        return self
+        return self.view(cls)
     def __str__(self):
         return '%s<w=%d, h=%d, layers=%d, hash=0x%x>' % (self.__class__.__name__,
-                                                         self.w,
-                                                         self.h,
+                                                         self.width,
+                                                         self.height,
                                                          self.nlayers,
                                                          hash(self.data))
+    def _save(self, fh):
+        fh.write(b'\x00' * BLOAD_SIZE)
+        fh.write(pack('<2h', self.width, self.height))
+        fh.write(self.tostring())
+
+    width = property(lambda self: self.shape[-1])
+    height = property(lambda self: self.shape[-2])
+    nlayers = property(lambda self: 1 if len(self.shape) == 2 else self.shape[-3])
 
 class Tilemap(TilemapBase):
     def __new__(cls, *args, **kwargs):
         return TilemapBase.__new__(cls, *args, maxlayers=8, **kwargs)
 
 class Foemap(TilemapBase):
-    pass
+    def __new__(cls, *args, **kwargs):
+        self = TilemapBase.__new__(cls, *args, maxlayers=1, **kwargs)
+        self.shape = self.shape[1:]
+        return self
+
 
 class Wallmap(TilemapBase):
-    pass
+    NORTH, EAST, SOUTH, WEST = 1, 2, 3, 4
+    VEHA, VEHB, HARM, OVERHEAD = 5, 6, 7, 8
+    def __new__(cls, *args, **kwargs):
+        self = TilemapBase.__new__(cls, *args, maxlayers=1, **kwargs)
+        self.shape = self.shape[1:]
+        return self
+
+WALL_NORTH, WALL_EAST, WALL_SOUTH, WALL_EAST = (Wallmap.NORTH, Wallmap.EAST,
+                                                Wallmap.SOUTH, Wallmap.WEST)
+WALL_VEHA, WALL_VEHB, WALL_HARM, WALL_OVERHEAD = (Wallmap.VEHA, Wallmap.VEHB,
+                                                  Wallmap.HARM, Wallmap.OVERHEAD)
 
 # zm: 5 250 5
 # x: 100
@@ -73,15 +106,64 @@ class Wallmap(TilemapBase):
 
 class Zonemap(IOHandler):
     def __init__(self, source):
-        pass
+        w,h = None, None
+        toplevel = RELOAD(source)['zonemap']
+        w, h = toplevel['w','h']
+        self.w = w
+        self.h = h
+        names = {}
+        extradata = {}
+        zones = toplevel['zones']
+        for zone in zone.iter('zone'):
+            thiszone = zone.value
+            name = zone.get('name?') or ''
+            extra = [0,0,0]
+            for extraitem in zone.iter('extra?'):
+                extra[extraitem.value] = extraitem['int']
+            names[thiszone] = name
+            extradata[thiszone] = tuple(extra)
+        self.name = names
+        self.extradata = extradata
+        rows = {}
+        _rows = toplevel['rows']
+        for y in _rows.iter('y'):
+            thisrow = {}
+            for zone in y.iter('zone'):
+                thisrow[zone.value] = zone['spans']
+            rows[y.value] = tuple(thisrow)
+        self.map = rows
+
+    def _save(self, fh):
+        writer = RELOADWriter(fh)
+        zm = writer.sub('zonemap')
+        zm['w','h'] = self.w, self.h
+        zi = zm.sub('zones')
+        for zone, info in self.info.items():
+            thiszone = zi.sub('zone', zone)
+            thiszone['name'] = info[0]
+            for i, extra in enumerate(info[1]):
+                with thiszone.sub('extra', i) as x:
+                    x['int'] = extra
+            thiszone.close()
+        zi.close()
+        with zm.sub('rows') as rows:
+            for yvalue in sorted(self.map.keys()):
+                y = rows.sub('y', yvalue)
+                for zoneindex in sorted(self.map[yvalue].keys()):
+                    zone = y.sub('zone', zoneindex)
+                    zone['spans'] = self[map][yvalue][zone]
+                    zone.close()
+                y.close()
+        zm.close()
+        writer.close()
+
+
+
 
 def in_zonemap(self, zoneindex, x, y):
-    if zoneindex not in self.zones:
+    if y not in self.map or zoneindex not in self.map[y]:
         return False
-    thiszone = self.zones[zoneindex]
-    if y not in thiszone:
-        return False
-    thisrow = thiszone[y]
+    thisrow = self.map[y][zoneindex]
     on=True  # first run will be False
     cx=0
     for length in thisrow:
@@ -92,7 +174,7 @@ def in_zonemap(self, zoneindex, x, y):
     return on
 
 def encodezonemapline(line):
-    b = bytearray(0 for 0 in range(64))
+    b = bytearray(0 for v in range(64))
     index = 0
     inputindex = 0
     inputlen = len(line)
@@ -134,3 +216,7 @@ def packzonemap(lines):
     return index, dest
 
 
+
+
+if __name__ == "__main__":
+    pass
