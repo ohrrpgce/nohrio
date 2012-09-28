@@ -175,6 +175,30 @@ class RPG(object):
             Used to get a filehandle when reading/writing lumps.
             If you don't specify this, it's automatically chosen
             according to whether source points at rpg or rpgdir.
+
+    :Attributes:
+        source:
+            as above.
+        mode:
+            as above.
+        isrpgdir: bool
+            True if this RPG object represents an RPGDir
+        arch: Archinym
+            info about flexibly-named-lump prefix and creator.
+        about: str
+            game 'about' line
+        binsize: Binsizes
+            sizes of variable-sized lumps.
+        fixbits: FixBits
+            bitsets array indicating which 'fixes' have been made to lumps
+        gen: GeneralData
+            general mess of data about the RPG.
+        longname:
+            game 'long name'
+
+    :Note:
+        A warning will be printed if the rpg format version found doesn't equal the
+        current rpg format version.
     """
 
     def __init__(self, source, mode=None, function=None):
