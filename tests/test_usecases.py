@@ -89,6 +89,51 @@ def testRichData():
     apal_data = heroa.palette()
     bframes_data = herob.frames()
 
+#SLOW
+def testBackground():
+    """Compile some simple statistics on backgrounds"""
+    bgs = rpg.gfx.bg
+    npixels = 320 * 200
+    num = len(bgs)
+    entropy = []
+    for bg in bgs:
+        bg = bg.linear()
+        thisentropy = np.count_nonzero(np.diff(bg)) / npixels
+        entropy.append(entropy)
+    print ('Number of BGs: %d' % num)
+    print ('min, max, average detail level:' % (min(entropy),
+                                               max(entropy),
+                                               sum(entropy) / num))
+
+def testTileAnimations():
+    """Compile some simple statistics on tile animations"""
+    nused = 0
+    nchanges = 0
+    size = 0
+    wait = 0
+    ncond = 0
+    for map in rpg.maps:
+        tap = map.tileanim
+        for subtap in tap:
+            size += len(subtap)
+            if not subtap.disablewhen.alwaysfalse():
+                nused += 1
+            for action, param in subtap:
+                if action in TAP_UP,TAP_RIGHT,TAP_LEFT,TAP_DOWN:
+                    nchanges += 1
+                elif action == TAP_CHECK:
+                    ncond += 1
+                elif action == TAP_WAIT:
+                    wait += param
+    nmaps = len(rpg.maps)
+    ntaps = nmaps * 2
+    print ('%f animations per map' % (nused / nmaps))
+    print ('Average animation slowness: %2.2f    '
+           'change: 2.2f    '
+           '# conditionals: %2.2f    '
+           'size: 2.2f    ' % (wait / nused, nchanges / (nused * 9),
+                               ncond / nused, size / nused))
+
 #slow
 def testPaletteUsage():
     """For each 16-color palette, collect usage statistics."""
