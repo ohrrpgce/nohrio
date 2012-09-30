@@ -8,6 +8,7 @@ from nohrio.dtypes.bload import bsave, bload
 from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
 from bitstring import BitArray
 
+from nohrio.dtypes.common import readstr
 from nohrio.dtypes._gen_password import PasswordStore, LATEST_PASSWORD_VERSION
 import numpy as np
 import struct
@@ -396,12 +397,6 @@ class AutosortScheme(Enum):
            2: 'alphabetically', 3: 'by id number',
            4: 'compact only'}
     valid = MultiRange(((0,4),))
-
-def readstr(fh, lengthbytes, characterbytes, maxchars):
-    length = fh.read(lengthbytes)[0]
-    print(repr(length))
-    data = fh.read(maxchars * characterbytes)[::characterbytes]
-    return ''.join(chr(c) for c in data[:length])
 
 class BrowseInfo(IOHandler):
     """Holds author and long game name info
