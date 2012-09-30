@@ -133,7 +133,7 @@ h:maxshop^me:
 h:pw1offset^eo:
 h:pw1length^eo:
 
-h:maxbackdrop^mx:
+h:numbackdrops^mx:
 2B:bitsets:
 h:startx:h:starty:h:startmap:
 h:onetimenpcindexer^e:130B:onetimenpcplaceholder^e:
@@ -190,7 +190,7 @@ _ATTRMAP = {'cap': {'damagecap': 'damage',
      #'formatversion': 'formatversion',
      'max': {'maxattack':    'attack',
              'maxattackgfx': 'attackgfx',
-             'maxbackdrop':  'backdrop',
+#             'maxbackdrop':  'backdrop',
              'maxboxbordergfx': 'boxbordergfx',
              'maxenemy':        'enemy',
              'maxenemy1gfx':    'enemy1gfx',
@@ -442,6 +442,7 @@ class GeneralData(IOHandler):
                 #     Probably I should put it in the GeneralData docstring instead.
                 store.__doc__ = _DOCSTRINGS[submap]
                 setattr(self, submap, store)
+            self.max.backdrops = src['numbackdrops'] - 1
             self.misc.autosortscheme = AutosortScheme(self.misc.autosortscheme)
             print ('autosort is set to %r' % self.misc.autosortscheme)
             #    print ('%s: %r' % (submap, store))
@@ -478,6 +479,7 @@ class GeneralData(IOHandler):
         buf = np.zeros((),self._dtype.freeze())
         for submap, members in _ATTRMAP.items():
             attr2numpy (getattr(self, submap), buf, members, reversed = True)
+        src['numbackdrops'] = self.max.backdrops + 1
         buf['formatversion'] = self.formatversion
         #self.misc.bitsets.reverse()
         bytes = lebytesfrombitsets(self.misc.bitsets)
