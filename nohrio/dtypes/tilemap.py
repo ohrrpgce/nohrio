@@ -1,6 +1,7 @@
 from nohrio.iohelpers import IOHandler, Filelike
 from nohrio.dtypes.bload import BLOAD_SIZE
-from collections import defaultdict
+from nohrio.dtypes.common import readint, writeint
+from collections import defaultdict, namedtuple
 from bits import AttrStore, UnwrappingArray
 from bits.dtype import DType
 from bits.enum import Enum, MultiRange
@@ -157,6 +158,56 @@ class Zonemap(IOHandler):
         zm.close()
         writer.close()
 
+TAP_END = 0
+TAP_UP, TAP_DOWN, TAP_RIGHT, TAP_LEFT = 1, 2, 3, 4
+TAP_WAIT, TAP_CHECK = 5, 6
+TAP_MAX = 6
+MAX_TAP_COMMANDS = 9
+
+TAPCommand = namedtuple('TAPCommand','op param')
+
+class TileAnimationPattern(IOHandler,AttrStore):
+    """Single tile-animation-pattern. There are two per map.
+
+    """
+    def __init__(self, source=None, starttile=0, disableif=0, code=None):
+        if not source:
+            if not code:
+                code= [TAPCommand(TAP_END, 0),] * MAX_TAP_COMMANDS
+        else:
+            with Filelike(source, 'rb') as fh:
+                starttile, disableif = readint(fh, n=2)
+                actions = readint(fh, n=MAX_TAP_COMMANDS)
+                params = readint(fh, n=MAX_TAP_COMMANDS)
+                code = [TAPCommand(a, p) for a, p in zip(actions, params)]
+        self.starttile = starttile
+        self.disableif = disableif
+        self.code = code
+
+    def __getitem__(self, k):
+        return self.code[k]
+
+    def __setitem__(self, k, v):
+        if type(v) != TAPCommand:
+            raise ValueError('Cannot set TAP code from object of type %r' % type(v))
+        if v.op > TAP_MAX:
+            raise ValueError('Unknown TAP operation %d' % v.op)
+        if not (-32768 < v.param < 32767):
+            raise ValueError('TAP parameter value %d exceeds storable value range -32768..+32767' % v.param)
+        self.code[k] = v
+
+    def _save(self, fh):
+        writeint(fh, self.starttile, self.disableif)
+        actions = []
+        params = []
+        for a, p in self:
+            actions.append(a)
+            params.append(p)
+        while len(actions) < MAX_TAP_COMMANDS:
+            actions.append(TAP_END)
+            params.append(0)
+        writeint(fh, *(actions + params))
+
 
 
 
@@ -215,8 +266,11 @@ def packzonemap(lines):
         start += length
     return index, dest
 
-
+def invalidzonemap(width, line):
+    """Return True if the decoded data of `line` is the wrong length."""
+    return sum(line) != width
 
 
 if __name__ == "__main__":
-    pass
+    t = TileAnimationPattern('../../ohrrpgce/vikings/vikings.rpgdir/viking.tap')
+    print(t)
