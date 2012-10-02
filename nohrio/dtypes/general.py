@@ -161,7 +161,7 @@ h:autosortscheme:
 161h:pw2scattertable^eo:
 
 140h:unused3:
-""".replace('\n','').replace(' ',''),
+""",
     suspendbits = bitsets ('npcs player obstruction herowalls npcwalls caterpillar'
                            ' randomenemies boxadvance overlay ambientmusic'),
     maxlevel = limited (99), # start, stop, [individualitems]
