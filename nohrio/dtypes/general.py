@@ -8,7 +8,7 @@ from nohrio.dtypes.bload import bsave, bload
 from nohrio.iohelpers import Filelike, FilelikeLump, IOHandler
 from bitstring import BitArray
 
-from nohrio.dtypes.common import readstr
+from nohrio.dtypes.common import readstr, scalararray
 from nohrio.dtypes._gen_password import PasswordStore, LATEST_PASSWORD_VERSION
 import numpy as np
 import struct
@@ -416,7 +416,7 @@ class GeneralData(IOHandler):
     The data source must include the bload header.
 
     """
-    _dtype = DTYPE
+    _dtype = DTYPE.freeze()
     BITSETS = _BITSETS
     # XXX for now, we only init from file.
     def __init__ (self, source):
@@ -428,8 +428,8 @@ class GeneralData(IOHandler):
             if len (bloaded) != self._dtype.itemsize:
                 raise ValueError('Wrong content length %d, expected %d' % (len(bloaded),
                                                                           self._dtype.itemsize))
-            src = np.frombuffer(bloaded, self._dtype.freeze()).reshape(())
-            src = src.view(UnwrappingArray)
+            src = scalararray(self._dtype, data=bloaded)
+
             for submap, members in _ATTRMAP.items():
                 store = AttrStore()
                 numpy2attr(src, store, members)
@@ -471,10 +471,10 @@ class GeneralData(IOHandler):
 
 
     def _save (self, fh):
-        buf = np.zeros((),self._dtype.freeze())
+        buf = scalararray(self._dtype)
         for submap, members in _ATTRMAP.items():
             attr2numpy (getattr(self, submap), buf, members, reversed = True)
-        src['numbackdrops'] = self.max.backdrops + 1
+        buf['numbackdrops'] = self.max.backdrops + 1
         buf['formatversion'] = self.formatversion
         #self.misc.bitsets.reverse()
         bytes = lebytesfrombitsets(self.misc.bitsets)
