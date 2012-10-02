@@ -16,9 +16,15 @@ PalettedPic = namedtuple('PalettedPic', 'pic pal')
 StatList = namedtuple('StatList', 'hp mp str acc defe dog mag wil spd ctr foc xhits')
 
 def readstr(fh, lengthbytes, characterbytes, maxchars):
-    length = fh.read(lengthbytes)[0]
-    print(repr(length))
-    data = fh.read(maxchars * characterbytes)[::characterbytes]
+    length = None
+    data = None
+    if isinstance(fh, np.ndarray):
+        length = fh[0]
+        data = fh[lengthbytes:lengthbytes +maxchars * characterbytes:characterbytes]
+    else:
+        length = fh.read(lengthbytes)[0]
+        print(repr(length))
+        data = fh.read(maxchars * characterbytes)[::characterbytes]
     return ''.join(chr(c) for c in data[:length])
 
 def writestr(fh, s, lengthbytes, characterbytes, maxchars):
