@@ -1,6 +1,10 @@
 from collections import namedtuple
+import struct
 import numpy as np
 from bits import UnwrappingArray
+
+MAX_ELEMENTS = 64
+INT16_MAX = 0x7fff
 
 _statlist = 'hp mp str acc def dog mag wil spd ctr foc xhits'.split()
 stats = ''.join('h:%s:' % v for v in _statlist)
@@ -10,7 +14,6 @@ spelllist = '24T{h:attack:h:level:}'
 Coords = namedtuple('Coords', 'x y')
 PalettedPic = namedtuple('PalettedPic', 'pic pal')
 StatList = namedtuple('StatList', 'hp mp str acc defe dog mag wil spd ctr foc xhits')
-MAX_ELEMENTS = 64
 
 def readstr(fh, lengthbytes, characterbytes, maxchars):
     length = fh.read(lengthbytes)[0]
@@ -31,6 +34,14 @@ def writestr(fh, s, lengthbytes, characterbytes, maxchars):
     contentbuffer[::characterbytes] = s
     fh.write(contentbuffer)
 
+def readint(fh, n = 1):
+    tmp = struct.unpack('<%dh' % n, fh.read(2*n))
+    return (tmp if len(tmp) > 1 else tmp[0])
+
+def writeint(fh, *args):
+    tmp = struct.pack('<%dh' % len(args), *args)
+    fh.write(tmp)
+
 def scalararray(dtype, data=None):
     """Create a new scalar array of dtype, optionally initialized from data"""
     tmp = None
@@ -39,6 +50,7 @@ def scalararray(dtype, data=None):
     else:
         tmp = np.zeros((), dtype)
     return tmp.reshape(()).view(UnwrappingArray)
+
 
 ALL=object()
 PUBLIC=object()
