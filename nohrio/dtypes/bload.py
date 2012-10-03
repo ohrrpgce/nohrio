@@ -1,10 +1,10 @@
-from nohrio.iohelpers import Filelike
 import numpy as np
 import struct
+from nohrio.iohelpers import Filelike
 
 BLOAD_SIZE = 7
 
-_FORMAT = '>BHHH'
+_FORMAT = '<BHHH'
 _MAGIC = 0xfd
 _SEGMENT = 0x9999
 _OFFSET = 0

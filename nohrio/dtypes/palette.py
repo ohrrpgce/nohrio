@@ -34,7 +34,6 @@ class MasterPalette(IOHandler, np.ndarray):
                                                                   (256 * 3 * 2)))
                     loaded = np.fromstring(tmp, dtype='h')
                     loaded = loaded.astype('B')
-                print ('LS', loaded.shape)
                 loaded.shape = (-1, 256, 3)
                 new = np.empty(shape = loaded.shape[:-1] + (4,),
                                dtype = loaded.dtype)
