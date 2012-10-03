@@ -253,6 +253,13 @@ class RPG(object):
     def lumpname(self, lump):
         return self.arch.lumpname(lump)
 
+    def __contains__(self, lumpid):
+        if type(lumpid) != str:
+            raise ValueError()
+        if '.' not in lumpid:
+            return self.lumpname(lumpid) in self.index
+        return lumpid in self.index
+
     def openlump(self, lump, mode = None):
         """Return a file handle pointing to a given lump.
 
@@ -271,6 +278,9 @@ if __name__ == "__main__":
     r = RPG('../tests/ohrrpgce.new', 'r')
     for v in 'arch about longname fixbits binsize'.split():
         print(getattr(r, v))
+    from nohrio.dtypes.palette import loadallpalettes
+    master, sprite = loadallpalettes(r)
+    print (master.shape, sprite.shape)
 
 
 
