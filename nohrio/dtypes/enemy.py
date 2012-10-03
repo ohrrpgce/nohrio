@@ -1,7 +1,8 @@
-from bits import Enum
+from collections import namedtuple
+from bits import Enum, AttrStore
 from bits.dtype import DType
 from nohrio.iohelpers import IOHandler, Filelike
-from nohrio.dtypes.common import (PalettedPic, scalararray,
+from nohrio.dtypes.common import (PalettedPic, Coords, scalararray,
                                   readstr, writestr, copyfrom)
 
 class Thievability(Enum):
@@ -9,6 +10,8 @@ class Thievability(Enum):
     map = {-1: 'never',
            0: 'once only',
            1: 'infinite'}
+
+ItemStealInfo = namedtuple('ItemStealInfo', 'item rate')
 
 class DissolveType(Enum):
     valid = range(0, 11)
@@ -27,8 +30,8 @@ class DissolveType(Enum):
             11: 'Flicker'
           }
 
-DTYPE = DType("""34B:name: h:thievability: h:stealable_item: h:stealchance:
-               h:raresteal_item: h:raresteal_chance: h:dissolve: h:dissolvespeed:
+DTYPE = DType("""34B:name: h:thievability: h:stealitem: h:stealchance:
+               h:rarestealitem: h:rarestealchance: h:dissolve: h:dissolvespeed:
                h:deathsound: 2h:battlecursor: 26h:unused: h:picture: h:palette: h:picsize: 6h:rewards: 12h:stats:
                10B:bitsets:
                T{h:death:h:nonelemdeath:h:alone:h:nonelemhit:8h:elemhit:h:amount:}:spawning:
@@ -72,11 +75,34 @@ DTYPE = DType("""34B:name: h:thievability: h:stealable_item: h:stealchance:
 #[[[end]]]
 
 
-class Enemy(IOHandler):
+class Enemy(IOHandler, AttrStore):
     def __init__(self, source):
         with Filelike(source, 'rb') as fh:
             src = scalararray(DTYPE, fh.read(DTYPE.itemsize))
             print(src['elemdamage'])
+            self.vis = AttrStore(pic=src['picture'],
+                                 pal=src['palette'],
+                                 size=src['picsize'])
+            self.thievability = Thievability(src['thievability'])
+            self.steal = [ItemStealInfo(src[k+'item'],src[k+'chance']) for k in
+                                         ('steal','raresteal')]
+            self.dissolve = AttrStore(type=DissolveType(src['dissolve']),
+                                      speed=src['dissolvespeed'])
+            self.deathsound = src['deathsound']
+            self.battlecursor = Coords(*src['battlecursor'])
+            attacks = src['attacks']
+            self.attacks = AttrStore()
+            copyfrom(attacks, self.attacks,
+                     skeys=('regular','desperation','alone',
+                                     'counterstat'), dattrs=True)
+            print('ATK', attacks)
+            self.attacks.counterelem = (attacks['counterelem'] +
+                                      attacks['counterelem2'])
+            self._unused = src['unused'].tolist()
+            self.elemdamage = src['elemdamage'].tolist()
+            self.stats = src['stats']
+
+
     def _save(self, fh):
         pass
 
