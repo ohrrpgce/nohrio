@@ -1,5 +1,5 @@
 from collections import namedtuple
-from bits import Enum, MultiRange, AttrStore
+from bits import Enum, MultiRange, AttrStore, mkenum
 from bits.dtype import DType
 from nohrio.dtypes.common import (INT16_MAX, PalettedPic,
                                   scalararray, readstr, writestr, copyfrom)
@@ -29,6 +29,213 @@ DTYPE = DType("""<h:picture: h:palette: h:animpattern:
 
 # Enum int int
 ChainCondition = namedtuple('ChainCondition', 'type val1 val2')
+
+AnimationType = mkenum('AnimationType',
+                       ('cycle forward',
+                        'cycle backward',
+                        'oscillate',
+                        'random'),
+                       MultiRange(((0,3),)))
+
+TargetType = mkenum('TargetType',
+                    ('enemy',
+                     'ally excluding dead',
+                     'self',
+                     'all',
+                     'ally including dead',
+                     'ally excluding self',
+                     'revenge (last hit)',
+                     'revenge (whole battle)',
+                     'previous target',
+                     'recorded target',
+                     'dead allies (heroes only)',
+                     'thankvenge (last to cure attacker)',
+                     'thankvenge (whole battle)')
+                    MultiRange(((0,12),)))
+
+TargetFocusing = mkenum('TargetFocusing',
+                        ('focused',
+                         'spread',
+                         'optional spread',
+                         'random focus',
+                         'first target'),
+                         MultiRange(((0,4),)))
+
+DamageEquation = mkenum('DamageEquation',
+                        ('normal: atk - def * .5',
+                         'blunt: atk * .8 - def * .1',
+                         'sharp: atk * 1.3 - def',
+                         'pure damage',
+                         'no damage',
+                         'set target stat to (100 + xdam)% of max',
+                         'set target stat to (100 + xdam)% of current',
+                         '(100 + xdam)% of max',
+                         '(100 + xdam)% of current')
+                        MultiRange(((0,8),)))
+
+AimMath = mkenum('AimMath',
+                 ('normal: aim * 4 vs dog',
+                  'poor: aim * 2 vs dog',
+                  'bad: aim vs dog',
+                  'never misses',
+                  'magic: mag vs wil * 1.25'),
+                 MultiRange(((0,4),)))
+
+AttackStat = mkenum('AttackStat',
+                    ('atk',
+                     'mag',
+                     'hp',
+                     'lost hp',
+                     'random (0 to 999)',
+                     '100',
+                     'hp',
+                     'mp',
+                     'atk',
+                     'aim',
+                     'def',
+                     'dog',
+                     'mag',
+                     'wil',
+                     'spd',
+                     'ctr',
+                     'focus',
+                     'xhits',
+                     'previous attack',
+                     'last damage to attacker',
+                     'last damage to target',
+                     'last cure to attacker',
+                     'last cure to target')
+                    MultiRange(((0,22),)))
+
+AttackerAnim = mkenum('AttackerAnim',
+                      ('strike',
+                       'cast',
+                       'dash in',
+                       'spinstrike',
+                       'jump',
+                       'land',
+                       'null',
+                       'standing cast',
+                       'teleport'),
+                      MultiRange(((0,8),)))
+
+AttackAnim = mkenum('AttackAnim',
+                    ('normal',
+                     'projectile',
+                     'reverse projectile',
+                     'drop',
+                     'ring',
+                     'wave',
+                     'scatter',
+                     'sequential projectile',
+                     'meteor',
+                     'driveby',
+                     'null',)
+                    MultiRange(((0,10),)))
+
+TargetStat = mkenum('TargetStat',
+                    ('hp',
+                     'mp',
+                     'atk',
+                     'aim',
+                     'def',
+                     'dog',
+                     'mag',
+                     'wil',
+                     'spd',
+                     'ctr',
+                     'focus',
+                     'xhits',
+                     'poison register',
+                     'regen register',
+                     'stun register',
+                     'mute register'),
+                    MultiRange(((0, 15),)))
+
+PreferredTarget = mkenum('PreferredTarget',
+                         ('default',
+                          'first',
+                          'closest',
+                          'farthest',
+                          'random',
+                          'weakest',
+                          'strongest',
+                          'weakest%',
+                          'strongest%'),
+                         MultiRange(((0, 8),)))
+
+CaptionTime = mkenum('CaptionTime',
+                     {-1: 'do not display',
+                      0: 'full duration of attack'}
+                     MultiRange(((-1, INT16_MAX),)),
+                     lambda self: '%d ticks' % int(self))
+
+DefenseStat = mkenum('DefenseStat',
+                     ('default',
+                      'hp',
+                      'mp',
+                      'atk',
+                      'aim',
+                      'def',
+                      'dog',
+                      'mag',
+                      'wil',
+                      'spd',
+                      'ctr',
+                      'focus',
+                      'xhits'),
+                     MultiRange(((0, 15),)))
+
+TagCondition = mkenum('TagCondition',
+                      ('never',
+                       'always',
+                       'hit',
+                       'miss',
+                       'kill')
+                      MultiRange(((0, 4),)))
+
+PrefTargStrStat = mkenum('PrefTargStrStat',
+                         ('target stat',
+                          'hp',
+                          'mp',
+                          'atk',
+                          'aim',
+                          'def',
+                          'dog',
+                          'mag',
+                          'wil',
+                          'spd',
+                          'ctr',
+                          'focus',
+                          'xhits',
+                          'poison register',
+                          'regen register',
+                          'stun register',
+                          'mute register'),
+                          MultiRange(((0, 16),)))
+
+ChainConditionType = mkenum('ChainConditionType',
+                            ('no special conditions',
+                             'tagcheck val1 + val2',
+                             'attacker stat val1 > val2',
+                             'attacker stat val1 < val2',
+                             'attacker stat val1% > val2%',
+                             'attacker stat val1% < val2%'),
+                            MultiRange(((0, 5),)))
+
+TransmogrifyStat = mkenum('TransmogrifyStat',
+                          ('keep current',
+                           'restore to new max',
+                           'preserve % of max',
+                           'keep current, cap to new max'),
+                          MultiRange(((0, 3))))
+
+
+
+
+
+
+
 
 
 class AttackId(Enum):
@@ -63,7 +270,7 @@ class ChainInfo(AttrStore):
         fh.write(lebytesfrombitsets(self.bitsets))
 
 
-class AttackData(IOHandler):
+class AttackData(IOHandler,AttrStore):
 
     def __init__(self, source, fixbits=None):
         with Filelike(source, 'rb') as fh:
@@ -85,8 +292,6 @@ class AttackData(IOHandler):
 
     def _save(self, fh):
         buf = scalararray(DTYPE)
-        for chain in (self.chain.else_, self.chain.instead):
-            chain.save(fh)
 
 if __name__ == "__main__":
     from io import BytesIO
