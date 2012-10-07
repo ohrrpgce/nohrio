@@ -51,7 +51,7 @@ def set_pw3(self, newpassword):
     import random
     rotator = random.randint(1, 254)
     res = []
-    if newpassword not in ('', None):
+    if newpassword not in {'', None}:
         for char in newpassword:
             char = ord(char)
             char += rotator
@@ -209,8 +209,8 @@ class PasswordStore(object):
         version = version or self.version
         # wipe any attributes belonging to earlier versions
         for k in dir(self):
-            if k in ('hash', 'rotator', 'passcode',
-                     'offset', 'length', 'sctable'):
+            if k in {'hash', 'rotator', 'passcode',
+                     'offset', 'length', 'sctable'}:
                 delattr(self, k)
         _GETSET_FUNCS[self.version][1](self, inputpwd)
 
@@ -227,7 +227,7 @@ class PasswordStore(object):
         raise ValueError('How did you get here!')
 
     def _set_version(self, nicev):
-        if nicev not in (2, 3, 4):
+        if nicev not in {2, 3, 4}:
             raise ValueError('Password version %d not supported!' % nicev)
         self._rawversion = {2: 255,  # guessing at pw2 value.
                             3: 256,

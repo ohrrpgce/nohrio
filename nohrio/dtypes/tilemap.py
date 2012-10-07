@@ -13,7 +13,7 @@ class TilemapBase(IOHandler, np.ndarray):
     __array_priority__ = 100
     def __new__ (cls, source, *args, maxlayers = 1,**kwargs):
         self = None
-        if type(source) in (tuple, list):
+        if type(source) in {tuple, list}:
             self = np.zeros(source,'B')
         elif isinstance(source, np.ndarray):
             if source.dtype.kind != 'u':

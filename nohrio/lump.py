@@ -64,7 +64,7 @@ def write_lumpheader (srcpath, file):
         raise ValueError ('invalid NULs in lump name %r' % base)
     file.write(base)
     file.write('\x00')
-    for v in ((size >> 16) & 0xff, (size >> 24) & 0xff  ,size & 0xff, (size >> 8) & 0xff):
+    for v in {(size >> 16) & 0xff, (size >> 24) & 0xff  ,size & 0xff, (size >> 8) & 0xff}:
         file.write(chr(v))
 
 def lump (srcpath, file):
@@ -144,7 +144,7 @@ class Passcode (object):
         import random
         rotator = random.randint (1,254)
         res = []
-        if new_password not in ('',None):
+        if new_password not in {'', None}:
             for char in new_password:
                 char = ord (char)
                 char += rotator
