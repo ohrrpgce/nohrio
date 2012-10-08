@@ -50,7 +50,7 @@ TargetType = mkenum('TargetType',
                      'recorded target',
                      'dead allies (heroes only)',
                      'thankvenge (last to cure attacker)',
-                     'thankvenge (whole battle)')
+                     'thankvenge (whole battle)'),
                     MultiRange(((0,12),)))
 
 TargetFocusing = mkenum('TargetFocusing',
@@ -70,7 +70,7 @@ DamageEquation = mkenum('DamageEquation',
                          'set target stat to (100 + xdam)% of max',
                          'set target stat to (100 + xdam)% of current',
                          '(100 + xdam)% of max',
-                         '(100 + xdam)% of current')
+                         '(100 + xdam)% of current'),
                         MultiRange(((0,8),)))
 
 AimMath = mkenum('AimMath',
@@ -104,7 +104,7 @@ AttackStat = mkenum('AttackStat',
                      'last damage to attacker',
                      'last damage to target',
                      'last cure to attacker',
-                     'last cure to target')
+                     'last cure to target'),
                     MultiRange(((0,22),)))
 
 AttackerAnim = mkenum('AttackerAnim',
@@ -130,7 +130,7 @@ AttackAnim = mkenum('AttackAnim',
                      'sequential projectile',
                      'meteor',
                      'driveby',
-                     'null',)
+                     'null'),
                     MultiRange(((0,10),)))
 
 TargetStat = mkenum('TargetStat',
@@ -166,7 +166,7 @@ PreferredTarget = mkenum('PreferredTarget',
 
 CaptionTime = mkenum('CaptionTime',
                      {-1: 'do not display',
-                      0: 'full duration of attack'}
+                      0: 'full duration of attack'},
                      MultiRange(((-1, INT16_MAX),)),
                      lambda self: '%d ticks' % int(self))
 
@@ -191,7 +191,7 @@ TagCondition = mkenum('TagCondition',
                        'always',
                        'hit',
                        'miss',
-                       'kill')
+                       'kill'),
                       MultiRange(((0, 4),)))
 
 PrefTargStrStat = mkenum('PrefTargStrStat',
@@ -230,14 +230,6 @@ TransmogrifyStat = mkenum('TransmogrifyStat',
                            'keep current, cap to new max'),
                           MultiRange(((0, 3))))
 
-
-
-
-
-
-
-
-
 class AttackId(Enum):
     valid = range(0, INT16_MAX)
     map = {0: 'No attack'}
@@ -269,6 +261,26 @@ class ChainInfo(AttrStore):
                  self.condition.val1, self.condition.val2)
         fh.write(lebytesfrombitsets(self.bitsets))
 
+
+# with dest << src
+#     .vis = PalettedPic(.picture, .palette)
+#     .name = .name as ohrstr(4, 2, 10)
+#     .description = .description as ohrstr(2, 1, 38)
+#     .cost = .mp hp money in .cost
+#     .chain = AttrStore
+#     .instead, .else_ in .chain = (
+#         << rate
+#         .attack = .attack
+#         .condition = ChainCondition(.cond_type, *.cond_value) in .chain_instead, .chain_else
+#         .bitsets = .bitsets as lebitsets)
+#         in .instead, .else_
+#     .to in .chain = (
+#         .attack = .chainto
+#         .rate = .chainrate
+#         .condition = ChainCondition(.chaincond, *.chaincond_value)
+#
+#chain_info = 'h:attack: h:cond_type: h:rate: 2h:cond_value: 2B:bitsets:'
+#
 
 class AttackData(IOHandler,AttrStore):
 
