@@ -6,17 +6,26 @@ import nohrio.nohrio2 as nohrio
 import os
 from nohrio.iohelpers import FilelikeLump
 from bits import showbitsets
-from nohrio.dtypes.attack import AttackData
+from nohrio.dtypes.reload import RELOAD, ReadNode, WriteNode
 from testutils import loadsaveok
 
 class testReadReload(TestCase):
     def testOpen(self):
         """Open simple document"""
-        assert 0
+        tmp = RELOAD(self.simple_testdata, 'r')
+        root = tmp['root']
+        ok([c.name for c in root.children]) == ['simple', 'nested']
+        ok(root['simple']) == 42
+        nested = root['nested']
+        ok(type(nested)) == ReadNode
+        ok(nested['count']) == 7
+        ok(len(root.ignored_nodes())) == 0
 
     def testSingleAccess(self):
-        """[existing_name] -> ReadNode"""
-        assert 0
+        """[existing_simple_node_name] -> simple type"""
+        tmp = RELOAD(self.simple_testdata, 'r')
+        root = tmp['root']
+        ok(type(root['simple'])) == 42
 
     def testNoexistAccess(self):
         """[nonexisting_name] raises KeyError """
