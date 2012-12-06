@@ -24,7 +24,13 @@ DTYPE = DType("""<h:picture: h:palette: h:animpattern:
               h:chaincond_value: h:chaincond_value2:
               2B:chain_bitsets: T{{{chain_info}}}:else_chain:
               T{{{chain_info}}}:instead_chain:
-              h:learn_sound:""".format(chain_info=chain_info)).freeze()
+              h:learn_sound:
+              h:transmog_to:h:transmog_hpadjust:h:transmog_statadjust:
+              64f:elemental_attack_failure_threshold:
+              h:weapon_picture_override:h:weapon_palette_override:
+              2T{h:x:h:y:}:wpoverride_handle:
+              h:attack_delay_turns:
+              """.format(chain_info=chain_info)).freeze()
 
 
 # Enum int int
