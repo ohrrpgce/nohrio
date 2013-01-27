@@ -376,8 +376,11 @@ if __name__ == '__main__':
         unsupported("RPG file format not supported.", rpgformat, 19)
 
     if rpgformat >= 19 and lumpid == 'heroes':
-        print "Exporting/importing heroes from newer RPG files is not supported; will not be until a total tabulate.py rewrite."
-        sys.exit(1)
+        if export:
+            print "Warning: newer RPG format; reading old hero data. Missing some data fields, and re-importing hero data into this game is not supported."
+        else:
+            print "Importing heroes into newer RPG files is not supported; will not be until a total tabulate.py rewrite."
+            sys.exit(1)
 
     if binsizes[lumpid]:
         lumpsize = dt[lumpnames[lumpid]].itemsize
