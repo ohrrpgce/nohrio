@@ -335,7 +335,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     lumpnames = {'items': 'itm', 'enemies': 'dt1', 'heroes': 'dt0', 'attacks': 'attack.full', 'textboxes': 'say'}
-    binsizes = {'items': 'item', 'enemies': None, 'heroes': 'hero', 'attacks': 'attack', 'textboxes': 'say'}
+    binsizes = {'items': 'item', 'enemies': 'enemy', 'heroes': 'hero', 'attacks': 'attack', 'textboxes': 'say'}
 
     if len(sys.argv) != 6:
         print "Not enough arguments"
@@ -372,8 +372,12 @@ if __name__ == '__main__':
         sys.exit(1)
             
     rpgformat = rpg.data('gen').version
-    if rpgformat not in (16, 17):
-        unsupported("RPG file format not supported.", rpgformat, 17)
+    if rpgformat not in (16, 17, 18, 19):
+        unsupported("RPG file format not supported.", rpgformat, 19)
+
+    if rpgformat >= 19 and lumpid == 'heroes':
+        print "Exporting/importing heroes from newer RPG files is not supported; will not be until a total tabulate.py rewrite."
+        sys.exit(1)
 
     if binsizes[lumpid]:
         lumpsize = dt[lumpnames[lumpid]].itemsize
