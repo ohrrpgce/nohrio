@@ -35,6 +35,20 @@ class Script(object):
         else:
             self.strtable = None
 
+    def __str__(self):
+        if self.numargs is not None:
+            numargs = self.numargs
+            args = '(' + ', '.join('local%d' % i for i in range(self.numargs)) + ')'
+        else:
+            numargs = 0
+            args = '(?)'
+        ret = 'Script ' + self.name + args + '\n'
+        if self.numvars:
+            ret += 'variable(' + ', '.join('local%d' % i for i in range(numargs, self.numvars)) + ')\n'
+        #ret += str(self.cmds) + '\n'
+        ret += str(self.root()) + '\n'
+        return ret
+
     def drop_data(self):
         "Delete script data from this object, preserving just metadata about the script"
         del self.cmds
@@ -147,6 +161,9 @@ def read_commands_bin(f, offset, size):
 kNoop, kInt, kFlow, kGVar, kLVar, kMath, kCmd, kScript = range(8)
 kinds_with_args = kFlow, kMath, kCmd, kScript
 flowtypes = 'do', 'begin', 'end', 'return', 'if', 'then', 'else', 'for', 'while', 'break', 'continue', 'exitscript', 'exitreturning', 'switch', 'case'
+
+# Math function nodes
+kSetvariable, kIncrement, kDecrement = 16, 17, 18
 mathcmds = 'random', 'exponent', 'modulus', 'divide', 'multiply', 'subtract', 'add', 'xor', 'or', 'and', 'equal', 'notequal', 'lessthan', 'greaterthan', 'lessthanorequalto', 'greaterthanorequalto', 'setvariable', 'increment', 'decrement', 'not', 'logand', 'logor', 'logxor', 'abs', 'sign', 'sqrt'
 mathcmds_infix = '', '^', '%', '/', '*', '--', '+', 'xor', 'or', 'and', '==', '<>', '<', '>', '<=', '>=', ':=', '+=', '-=', '', '&&', '||', '^^', '', '', ''
 
@@ -179,6 +196,13 @@ class ScriptNode(object):
         elif kind == kMath:
             if self.id < 0 or self.id >= len (mathcmds):
                 return 'BAD_MATH(%d)' % self.id
+            if self.id in (kSetvariable, kIncrement, kDecrement):
+                varid = self.arg (0)._get_id()
+                if varid < 0:
+                    varname = 'local%d' % (-1 - varid)
+                else:
+                    varname = 'globald' % varid
+                return '%s %s %s' % (varname, mathcmds_infix[self.id], self.arg (1))
             if mathcmds_infix[self.id]:
                 return '%s %s %s' % (self.arg (0), mathcmds_infix[self.id], self.arg (1))
             ret = mathcmds[self.id]
