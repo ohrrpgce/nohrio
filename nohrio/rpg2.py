@@ -177,7 +177,23 @@ class RPGHandler (object):
        'mas' : (7,0),
        'fnt' : (7,0),
     }
+    def lump_name (self, lump, n=None):
+        "Get the full archinymized name of a lump, e.g. gen -> ohrrpgce.gen"
+        if n:
+            raise NotImplementedError()
+        if lump.startswith ('.'):
+            lump = lump [1:]
+        if not "." in lump:
+            lump = self.archinym.prefix + "." + lump
+        return lump
     def prepare (self):
+        "NOTE: This currently is used by and supports RPGDir only."
+        if self.lump_path ('gen') not in self.manifest:
+            raise CorruptionError ('Missing .gen lump from %s' % self.path)
+        gen_len = self.lump_size ('gen')
+        if gen_len != 1007:
+            raise CorruptionError ('Unexpected .gen lump length %d in  %s' % (gen_len, self.path))
+
         self.general = self.data ('gen')
         #self.passcode = Passcode (self.general)
         self.binsize = binSize (self.lump_path('binsize.bin'))
@@ -356,14 +372,7 @@ class RPGDir (RPGHandler):
             return self.mmaps[lump]
 
     def lump_path (self, lump, n = None):
-        if n:
-            raise NotImplementedError()
-        if lump.startswith ('.'):
-            lump = lump [1:]
-        if not "." in lump:
-            filename = os.path.join (self.path, self.archinym.prefix + "." + lump)
-        else:
-            filename = os.path.join (self.path, lump)
+        filename = os.path.join (self.path, self.lump_name(lump, n))
         #if filename in self.manifest:
         return filename
 
