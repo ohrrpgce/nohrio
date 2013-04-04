@@ -362,7 +362,11 @@ class fixBits (object):
               'defaultdissolve', 'defaultdissolveenemy',
               'pushnpcbug_compat', 'default_maxitem', 'blankdoorlinks',
               'shopsounds', 'extended_npcs', 'heroportrait',
-              'textbox_portrait', 'npclocation_format', 'initdamagedisplay']
+              'textbox_portrait', 'npclocation_format', 'initdamagedisplay',
+              'defaultlevelcap', 'heroelementals', 'oldelementalfailbit',
+              'attackelementfails', 'enemyelementals', 'itemelementals', 
+              'numelements', 'removedamagemp', 'defaultmaxlevel', 'unused23']
+
     def __init__ (self, file, offset = 0, **kwargs):
         self.file = filename_or_handle (file, 'rb+')
         self.origin = offset
@@ -391,7 +395,11 @@ class fixBits (object):
         except ValueError:
             return object.__getattribute__ (self, k)
         self.file.seek (self.origin + (k / 8))
-        result = ord (self.file.read(1)) & (1 << k % 8)
+        byte = self.file.read (1)
+        if len (byte) == 0:
+            # file is short
+            return 0
+        result = ord (byte) & (1 << k % 8)
         if result > 0:
             return 1
         else:
