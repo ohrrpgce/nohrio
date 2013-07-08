@@ -750,7 +750,7 @@ dtypes = {
                   unused2 = (np.uint16, 140)),
     'itm' : make ('name info value attack weaponattack equippable teach oobuse weaponpic weaponpal',
                   'bonuses equippableby bitsets consumability own_tag in_inventory_tag equipped_tag',
-                  'equippedby_active_tag frame2handle frame1handle elemdmg',
+                  'equippedby_active_tag frame2handle frame1handle elemdmg stacksize',
                   name = vstr2 (9), info = vstr2(37),
                   bonuses = STATS_DTYPE,
                   equippableby = ('B', 8),
