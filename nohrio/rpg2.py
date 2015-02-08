@@ -188,6 +188,7 @@ class RPGHandler (object):
         return lump
     def prepare (self):
         "NOTE: This currently is used by and supports RPGDir only."
+        self.binsize = binSize (self.lump_path('binsize.bin'))
         if self.lump_path ('gen') not in self.manifest:
             raise CorruptionError ('Missing .gen lump from %s' % self.path)
         gen_len = self.lump_size ('gen')
@@ -196,7 +197,6 @@ class RPGHandler (object):
 
         self.general = self.data ('gen')
         #self.passcode = Passcode (self.general)
-        self.binsize = binSize (self.lump_path('binsize.bin'))
         #XXX fixbits
     def rename (self, newname):
         """Rename the rpg file/dir, adjusting the lumps and ARCHINYM.LMP
@@ -334,10 +334,13 @@ class RPGDir (RPGHandler):
         # Special cases
         if lump == 'attack.full':
             if self.has_lump('attack.bin'):
-                attack_bin = self.data('attack.bin', dtype = [('attack.bin', np.uint8, self.binsize.attack)])
+                attack_bin = self.flexidata('attack.bin', dtype = [('attack.bin', np.uint8, self.binsize.attack)])
             else:
                 attack_bin = None
             return AttackData(self.data('dt6'), attack_bin, dt['attack.full'])
+        if type == VarLenOhrData:
+            if lump in self.binsize:
+                kwargs['binsize'] = self.binsize[lump]
         # General case
         if type == None:
             type = OhrDataMemmap
@@ -361,15 +364,16 @@ class RPGDir (RPGHandler):
             raise NotImplementedError('flags')
         if n != None:
             raise NotImplementedError('subindexed lumps')
+        # Memmaps are cached in self.mmaps
         if lump in self.mmaps:
             if self.mmaps[lump].dtype == dtype:
                 return self.mmaps[lump]
-            del self.mmaps[lump]
-            self.mmaps[lump] = self._load_data (lump, dtype = dtype, offset = offset, type = type, **kwargs)
-            return self.mmaps[lump]
-        else:
-            self.mmaps[lump] = self._load_data (lump, dtype = dtype, offset = offset, type = type, **kwargs)
-            return self.mmaps[lump]
+        self.mmaps[lump] = self._load_data (lump, dtype = dtype, offset = offset, type = type, **kwargs)
+        return self.mmaps[lump]
+
+    def flexidata (self, *args, **kwargs):
+        """Convenience wrapper"""
+        return self.data (*args, type = VarLenOhrData, **kwargs)
 
     def lump_path (self, lump, n = None):
         filename = os.path.join (self.path, self.lump_name(lump, n))
