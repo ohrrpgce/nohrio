@@ -487,6 +487,7 @@ class binSize (object):
     It is a wrapper for an ndarray, but one that isn't a memmap. Writing to the array should write to file."""
 
     fields = 'attack stf songdata sfxdata map menu menuitem uicolor say npcdef hero enemy item'.split()
+    lumps = 'attack.bin stf songdata.bin sfxdata.bin map menus.bin menuitem.bin uicolors.bin say d dt0 dt1 itm'.split()
     defaults = [0, 64, 0, 0, 40, 0, 0, 0, 400, 30, 636, 320, 200]
 
     def __init__ (self, file, offset = 0):
@@ -506,14 +507,24 @@ class binSize (object):
         #    dtype.append (('unknown', INT, len (sizes) - len (dtype)))
         #self.sizes = np.ndarray(sizes, dtype = dtype)
         self.sizes = sizes
-    def __getitem__ (self, k):
+    def _resolve_key (self, k):
         if type (k) in (str, unicode):
-            k = self.fields.index (k)
+            if k in self.fields:
+                k = self.fields.index (k)
+            else:
+                k = self.lumps.index (k)
+        return k
+    def __contains__ (self, k):
+        "Check whether a lump has a binsize"
+        return k in self.lumps
+    def __getitem__ (self, k):
+        "The key may be either a lump name like 'itm' or 'menus.bin', or a name like 'item'"
+        k = self._resolve_key (k)
         # Don't return a numpy scalar
         return int (self.sizes.__getitem__ (k))
     def __setitem__ (self, k, v):
-        if type (k) in (str, unicode):
-            k = self.fields.index (k)
+        "The key may be either a lump name like 'itm' or 'menus.bin', or a name like 'item'"
+        k = self._resolve_key (k)
         self.sizes.__setitem__ (k, v)
         if self.origin:
             raise IOError("Should not be modifying binsize.bin in a lumped RPG")
