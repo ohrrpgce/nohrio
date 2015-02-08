@@ -2,6 +2,7 @@
    to provide nice eg map[0].doors.x[0] access.
 
 """
+import os
 from numpy import memmap, ndarray
 import numpy as np
 
@@ -35,6 +36,44 @@ class OhrData (md5Array):
 class OhrDataMemmap (OhrData, memmap):
     pass
 
+class VarLenOhrData (OhrData):
+    """Like a memmap, but allows zero-extended binsized records and ignores
+    trailing data if the lump isn't an integer multiple of the record
+    length.
+
+    Doesn't support writing back to file because the data is loaded into memory.
+
+    WARNING: if binsize isn't given then a memmap is returned.
+    """
+    def __new__ (cls, filename, binsize = None, dtype = None, offset = 0, **kwargs):
+        if binsize is None:
+            mmap_dtype = dtype
+        else:
+            mmap_dtype = np.dtype([('data', np.uint8, binsize)])
+
+        try:
+            mmap = memmap.__new__ (cls, filename, dtype = mmap_dtype, offset = offset, **kwargs)
+        except ValueError:
+            # probably error due to file being wrong length
+            filesize = os.stat(filename).st_size
+            records = (filesize - offset) / binsize
+            print ("Warning: ignoring last partial record (idx %d) of lump %s (size %d): only length %s, binsize %d"
+                   % (records, filename, filesize, (filesize - offset) % binsize, binsize))
+            mmap = memmap.__new__ (cls, filename, shape = (records,), dtype = mmap_dtype, offset = offset, **kwargs)
+
+        if binsize is None:
+            return mmap
+        else:
+            self = OhrData.__new__ (cls, mmap.shape, dtype = dtype)
+
+            # Copy from the memmap to self and zero the rest
+            extraspace = np.dtype(dtype).itemsize - binsize
+            _masking_dtype = np.dtype([('present', np.uint8, binsize), ('extra', np.uint8, extraspace)])
+            byteview = self.view(_masking_dtype)
+            byteview['present'] = mmap['data']
+            byteview['extra'] = 0
+            return self
+
 class AttackData (OhrData):
     # virtualization of the awkward attack data format,
     # that needs "stapling together"
@@ -48,14 +87,18 @@ class AttackData (OhrData):
         # of in __new__, but we don't want that: only the top level object, not any views
         # into it, has special logic
 
-        self = super(AttackData, cls).__new__ (cls, len(dt6), dtype = dtype)
-
         if attack_bin is not None:
-            assert len(dt6) == len(attack_bin)
+            if len(dt6) != len(attack_bin):
+                print "Warning: dt6 and attack.bin num records differ: %d vs %d" % (len(dt6), len(attack_bin))
+                records = min(len(dt6), len(attack_bin))
+                dt6 = dt6[:records]
+                attack_bin = attack_bin[:records]
             attack_binsize = attack_bin.dtype.itemsize
-            self._attack_bin = attack_bin.view((np.uint8, attack_binsize))
+            raw_attack_bin = attack_bin.view((np.uint8, attack_binsize))
         else:
             attack_binsize = 0
+
+        self = super(AttackData, cls).__new__ (cls, len(dt6), dtype = dtype)
 
         self._dt6 = dt6.view((np.uint8, 80))
         extraspace = dtype.itemsize - dt6.itemsize - attack_binsize
@@ -64,6 +107,7 @@ class AttackData (OhrData):
         byteview = self.view (self._masking_dtype)
         byteview['dt6'] = self._dt6
         if attack_bin is not None:
+            self._attack_bin = raw_attack_bin
             byteview['attack.bin'] = self._attack_bin
         byteview['extra'] = 0
         return self
@@ -237,4 +281,4 @@ def pack (src, dest = None, transpose = None):
     #raise NotImplementedError('pack')
     # reverse the above transform
 
-__all__ = ('md5Array','AttackData','NpcLocData','DoorLinks','DoorDefs','OhrData','OhrDataMemmap','pack','PackedImageData')
+__all__ = ('md5Array','AttackData','NpcLocData','DoorLinks','DoorDefs','OhrData','OhrDataMemmap','VarLenOhrData','pack','PackedImageData')
