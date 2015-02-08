@@ -549,13 +549,34 @@ def seq_to_str (src):
     return "".join([chr(v) for v in src[-1][:src[0]]])
 
 def adjust_for_binsize (dtype, binsize):
+    """Trim fields or subfields until .itemsize == binsize, returning new dtype.
+    However we don't truncate arrays, so this often fails."""
+    if isinstance (dtype, np.dtype):
+        dtype = dtype.descr
     dtsize = np.dtype (dtype).itemsize
+    #print "initial dtype size=%d, binsize=%d" % (dtsize, binsize)
     while dtsize > binsize:
-        dtype['names'].pop()
-        dtype['formats'].pop()
-        dtsize = np.dtype (dtype).itemsize
+        to_trim = dtype[-1]
+        field_size = np.dtype([to_trim]).itemsize
+        # This field is described by a triple if it is an array which isn't a string,
+        # for example ('counter_elem2', '<i2', (56,)).
+        # Note that ('data', (np.character, 6)) gets translated to ('data', 'S6').
+        if isinstance(to_trim[1], list) and dtsize - field_size < binsize:
+            # Recurse on subfields, as we may want to trim, for example attacks.counter_stat from an enemy.
+            # However this may result in trimming something that should be atomic, like a string
+            to_trim[1] = adjust_for_binsize(to_trim[1], binsize - (dtsize - field_size))
+            dtype[-1] = to_trim
+            dtsize = np.dtype(dtype).itemsize
+            # If we haven't already raised a ValueError, then we expect to be aligned correctly
+            if dtsize != np.dtype(dtype).itemsize:
+                raise ValueError ('Struct padding caused dtype trimming to fail')
+        else:
+            dtype.pop()
+            dtsize = np.dtype (dtype).itemsize
+            #print " trimmed %s, now itemsize=%d" % (to_trim, dtsize)
     if dtsize != binsize:
         raise ValueError ('dtype is misaligned with binsize!')
+    return dtype
 
 def vstr (len):
     "dtype of an OHRRPGCE string (BYTE length, BYTE-based characters) totaling ``len`` bytes"
