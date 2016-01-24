@@ -365,7 +365,8 @@ class fixBits (object):
               'textbox_portrait', 'npclocation_format', 'initdamagedisplay',
               'defaultlevelcap', 'heroelementals', 'oldelementalfailbit',
               'attackelementfails', 'enemyelementals', 'itemelementals', 
-              'numelements', 'removedamagemp', 'defaultmaxlevel', 'unused23']
+              'numelements', 'removedamagemp', 'defaultmaxlevel', 'unused23',
+              'wipegen', 'setoldattackposbit', 'wrapcroppedmapsbit']
 
     def __init__ (self, file, offset = 0, **kwargs):
         self.file = filename_or_handle (file, 'rb+')
