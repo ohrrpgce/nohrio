@@ -90,19 +90,22 @@ class Script(object):
         self.flags = 0
         self.vartable_off = 0
 
-        headerlen = min (self.data_off, 22)
+        headerlen = min (self.data_off, 28)
         if headerlen > 4:
             f.seek (offset)
             data = f.read (headerlen)
             # nearly everything defaults to 0
-            data += '\0' * 22
-            header = np.ndarray ((1), dtype = 'i2, i2, i2, i2, i4, i4, i2, i4', buffer = data)
+            data += '\0' * 28
+            header = np.ndarray ((1), dtype = 'i2, i2, i2, i2, i4, i2, i2, i2, i4, i2, i4', buffer = data)
             self.numargs = header[0][2]
             self.format_version = header[0][3]
             self.strtable_off = header[0][4]
-            self.strtable_size = header[0][5]
-            self.flags = header[0][6]
-            self.vartable_off = header[0][7]
+            self.parent = header[0][5]
+            self.nesting_depth = header[0][6]
+            self.num_nonlocals = header[0][7]
+            self.strtable_size = header[0][8]
+            self.flags = header[0][9]
+            self.vartable_off = header[0][10]
 
         if self.format_version == 0:
             self.int = INT
