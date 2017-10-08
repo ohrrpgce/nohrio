@@ -8,9 +8,8 @@ def usage():
     sys.exit("""Usage:  decompile.py <.hs/.hsp file> [script id or name]
 If no script is specified, prints a list of script ids and names.
 
-Warning: decompile results likely won't compile correctly. In particular,
-brackets to enforce correct grouping of operators are omitted! """)
-
+Warning: decompile results likely won't compile. In particular, 'for' and
+'switch' aren't decompiled to valid HS syntax, and plotstrings are lost""")
 if len(sys.argv) <= 1:
     usage()
 

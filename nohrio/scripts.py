@@ -166,13 +166,14 @@ kinds_with_args = kFlow, kMath, kCmd, kScript
 flowtypes = 'do', 'begin', 'end', 'return', 'if', 'then', 'else', 'for', '!!FLOW8!!', '!!FLOW9!!', 'while', 'break', 'continue', 'exitscript', 'exitreturning', 'switch', 'case'
 # How to print the different flow types
 flow_oneline = 'return', 'break', 'continue', 'exitscript', 'exitreturning'
-flow_withheader = 'if', 'while', 'for', 'switch'
+flow_withheader = 'if', 'while', 'switch' #'for'
 # case and switch aren't handled nicely
 
 # Math function nodes
 kSetvariable, kIncrement, kDecrement = 16, 17, 18
 mathcmds = 'random', 'exponent', 'modulus', 'divide', 'multiply', 'subtract', 'add', 'xor', 'or', 'and', 'equal', 'notequal', 'lessthan', 'greaterthan', 'lessthanorequalto', 'greaterthanorequalto', 'setvariable', 'increment', 'decrement', 'not', 'logand', 'logor', 'logxor', 'abs', 'sign', 'sqrt'
 mathcmds_infix = '', '^', ',mod,', '/', '*', '--', '+', ',xor,', ',or,', ',and,', '==', '<>', '<', '>', '<=', '>=', ':=', '+=', '-=', '', '&&', '||', '^^', '', '', ''
+math_precedence = 0, 20, 30, 30, 30, 40, 40, 60, 60, 60, 50, 50, 50, 50, 50, 50, 80, 80, 80, 0, 65, 70, 70, 0, 0, 0
 
 class ScriptNode(object):
 
@@ -184,7 +185,26 @@ class ScriptNode(object):
         self.scrdata = weakref.ref (script.cmds)
         self.offset = offset
 
+    def _is_infix(self):
+        return self.kind == kMath and mathcmds_infix[self.id]
+
+    def precedence(self):
+        if self.kind != kMath:
+            return 0
+        return math_precedence[self.id]
+
+    def _protected_arg(self, argnum):
+        "String repr of one of the args, surrounded by brackets if required."
+        child = self.arg(argnum)
+        if self._is_infix() and child._is_infix():
+            p1 = self.precedence()
+            p2 = child.precedence()
+            if p1 < p2 or (p1 == p2 and argnum == 1):
+                return '(%s)' % child
+        return '%s' % child
+
     def _format(self, indent):
+        "Decompile to a string"
         kind = self.kind
         separator = ', '
         if kind == kNoop:
@@ -210,10 +230,10 @@ class ScriptNode(object):
                 if varid < 0:
                     varname = 'local%d' % (-1 - varid)
                 else:
-                    varname = 'globald' % varid
-                return '%s %s %s' % (varname, mathcmds_infix[self.id], self.arg (1))
-            if mathcmds_infix[self.id]:
-                return '%s %s %s' % (self.arg (0), mathcmds_infix[self.id], self.arg (1))
+                    varname = 'global%d' % varid
+                return '%s %s %s' % (varname, mathcmds_infix[self.id], self._protected_arg(1))
+            elif mathcmds_infix[self.id]:
+                return '%s %s %s' % (self._protected_arg(0), mathcmds_infix[self.id], self._protected_arg(1))
             ret = mathcmds[self.id]
         elif kind == kCmd:
             ret = self.scriptset().commandname (self.id)
@@ -244,7 +264,7 @@ class ScriptNode(object):
         return ret
 
     def __str__(self):
-        """Decompiles the script"""
+        """Decompile to a string"""
         return self._format(0)
 
     def _get_kind(self):
