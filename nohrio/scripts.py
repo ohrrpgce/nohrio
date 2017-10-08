@@ -163,12 +163,16 @@ def read_commands_bin(f, offset, size):
 
 kNoop, kInt, kFlow, kGVar, kLVar, kMath, kCmd, kScript = range(8)
 kinds_with_args = kFlow, kMath, kCmd, kScript
-flowtypes = 'do', 'begin', 'end', 'return', 'if', 'then', 'else', 'for', 'while', 'break', 'continue', 'exitscript', 'exitreturning', 'switch', 'case'
+flowtypes = 'do', 'begin', 'end', 'return', 'if', 'then', 'else', 'for', '!!FLOW8!!', '!!FLOW9!!', 'while', 'break', 'continue', 'exitscript', 'exitreturning', 'switch', 'case'
+# How to print the different flow types
+flow_oneline = 'return', 'break', 'continue', 'exitscript', 'exitreturning'
+flow_withheader = 'if', 'while', 'for', 'switch'
+# case and switch aren't handled nicely
 
 # Math function nodes
 kSetvariable, kIncrement, kDecrement = 16, 17, 18
 mathcmds = 'random', 'exponent', 'modulus', 'divide', 'multiply', 'subtract', 'add', 'xor', 'or', 'and', 'equal', 'notequal', 'lessthan', 'greaterthan', 'lessthanorequalto', 'greaterthanorequalto', 'setvariable', 'increment', 'decrement', 'not', 'logand', 'logor', 'logxor', 'abs', 'sign', 'sqrt'
-mathcmds_infix = '', '^', '%', '/', '*', '--', '+', 'xor', 'or', 'and', '==', '<>', '<', '>', '<=', '>=', ':=', '+=', '-=', '', '&&', '||', '^^', '', '', ''
+mathcmds_infix = '', '^', ',mod,', '/', '*', '--', '+', ',xor,', ',or,', ',and,', '==', '<>', '<', '>', '<=', '>=', ':=', '+=', '-=', '', '&&', '||', '^^', '', '', ''
 
 class ScriptNode(object):
 
@@ -191,6 +195,8 @@ class ScriptNode(object):
             if self.id < 0 or self.id >= len (flowtypes):
                 return 'BAD_FLOW(%d)' % self.id
             ret = flowtypes[self.id]
+            oneline = ret in flow_oneline  # Print it like other statements, on one line
+            withheader = ret in flow_withheader  # First arg is an expression, the rest are special
             separator = '\n' + ' ' * (indent + 2)
         elif kind == kGVar:
             return 'global%d' % self.id
@@ -217,16 +223,28 @@ class ScriptNode(object):
             return 'BAD_NODE(kind=%d, id=%d)' % (self.kind, self.id)
         ret += '('
         pre = ''
-        if kind == kFlow:
+        if kind == kFlow and not oneline:
             pre = separator
-        for arg in self.args ():
-            ret += pre + arg._format(indent + 2)
-            pre = separator
-        if kind == kFlow and ret[-1] != '(':
-            ret += '\n' + ' ' * indent
-        return ret + ')'
+            if withheader:
+                pre = ''
+            for idx, arg in enumerate(self.args ()):
+                ret += pre + arg._format(indent + 2)
+                if withheader and idx == 0:
+                    ret += ')'
+                pre = separator
+            if not withheader:
+                if ret[-1] != '(':
+                    ret += '\n' + ' ' * indent
+                ret += ')'
+        else:
+            for arg in self.args ():
+                ret += pre + arg._format(indent + 2)
+                pre = separator
+            ret += ')'
+        return ret
 
     def __str__(self):
+        """Decompiles the script"""
         return self._format(0)
 
     def _get_kind(self):
@@ -257,6 +275,12 @@ class ScriptNode(object):
 
 
 class HSScripts(object):
+
+    # Public:
+    #.scriptnames   : id -> scriptname dict
+    #.scriptids     : scriptname -> id dict
+    #.commands_info
+    #.source
 
     def __init__(self, filename):
         self.file = open (filename, 'rb')
