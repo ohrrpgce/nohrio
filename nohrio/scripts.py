@@ -284,8 +284,8 @@ class ScriptNode(object):
     def args(self):
         if self.kind not in kinds_with_args:
             return
-        ret = ScriptNode(self.scriptset(), self.script, 0)
         for i in range(self.argnum):
+            ret = ScriptNode(self.scriptset(), self.script, 0)
             ret.offset = int(self.scrdata()[self.offset + 3 + i])
             yield ret
 
