@@ -611,6 +611,7 @@ _say_conditionals_dtype += [('fight', _saytagpair_dtype), ('shop', _saytagpair_d
 _say_conditionals_dtype += [('hero', _saytagpair_dtype), ('jumptoafter', _saytagpair_dtype)]
 _say_conditionals_dtype += [('money', _saytagpair_dtype), ('usedoor', _saytagpair_dtype)]
 _say_conditionals_dtype += [('items', [('tagcheck', INT), ('item', INT), ('heroswap', INT), ('herolock', INT)])]
+_say_gameconditional_dtype = [('tagcheck', INT), ('deletegame', INT), ('savegame', INT), ('load_or_endgame', INT)]
 
 # Shapes of pt? graphics data
 # ===========================
@@ -694,7 +695,8 @@ dtypes = {
                           'weapon_picture weapon_palette weapon_frame1handle weapon_frame2handle',
                           'attack_delay_turns dramatic_pause_ticks stat_cost_stat stat_cost_amnt',
                           'baseacc_stat basedog_stat acc_mult dog_mult alk_mulk def_mult aim_extra',
-                          'absorb randomization',
+                          'absorb randomization damage_color transmog_rewards counterattacks',
+                          #'miss_sound fail_sound steal_fail_sound',   # Not merged yet
                           bitsets1 = ('B', 64 / 8), bitsets2 = ('B', 128 / 8),
                           cost = [('hp', INT), ('mp', INT), ('money', INT)],
                           name = [('length', INT), ('unused', INT), ('data', (np.character, 10*2))],
@@ -740,7 +742,7 @@ dtypes = {
                   'raresteal_item raresteal_chance dissolve dissolvespeed',
                   'deathsound cursorcoord unused picture palette picsize rewards stats',
                   'bitsets spawning attacks spawning_elemhit elemdmg death_bequest',
-                  'attacks_counter_nonelem',
+                  'attacks_counter_nonelem appear_dissolve appear_dissolvespeed multielem_hit',
                   name = vstr2 (17),
                   cursorcoord = xycoord_dtype,
                   rewards = make ('gold exp item itemchance rareitem rareitemchance'),
@@ -793,6 +795,7 @@ dtypes = {
     'itm' : make ('name info value attack weaponattack equippable teach oobuse weaponpic weaponpal',
                   'bonuses equippableby bitsets consumability own_tag in_inventory_tag equipped_tag',
                   'equippedby_active_tag frame2handle frame1handle elemdmg stacksize equippableby2',
+                  'equipslot_bits',
                   name = vstr2 (9), info = vstr2(37),
                   bonuses = STATS_DTYPE,
                   equippableby = ('B', 8),
@@ -869,6 +872,7 @@ dtypes = {
 # :since: ubersetzung
 # :obsoletes: mas_
 
+    # Note: has a four-byte header
     'palettes.bin' : np.dtype ([('color', ([('r', np.uint8),
                                             ('g', np.uint8),
                                             ('b', np.uint8)], 256))]),
@@ -882,10 +886,12 @@ dtypes = {
     'say' : make ('text reserved1 conditional reserved2 choicebitsets choice1 unused choice2',
                   'menuconditional verticalpos shrink textcolor bordercolor backdrop music menu',
                   'portraittype portraitpic portraitpal portraitx portraity soundeffect linesound',
+                  'gameconditional',
                   text = ('S38', 8), reserved1 = 'B', conditional = _say_conditionals_dtype,
                   reserved2 = 'B', choicebitsets = ('B', (1,)), choice1 = _saychoice_dtype,
-                  unused = 'B', choice2 = _saychoice_dtype),
-    'sfxdata.bin' : np.dtype ([('name', fvstr (30)), ('streaming', INT)]),
+                  unused = 'B', choice2 = _saychoice_dtype,
+                  gameconditional = _say_gameconditional_dtype),
+    'sfxdata.bin' : np.dtype ([('name', fvstr (30)), ('unused', INT)]),
     'sho' : np.dtype ([('name', vstr2 (16)), ('nitems', INT), ('bitsets', ('B',2)),
                   ('inncost', INT), ('innscript', INT)]),
     'songdata.bin' : np.dtype ([('name', fvstr (30))]),

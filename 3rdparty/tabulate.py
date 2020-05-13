@@ -372,8 +372,8 @@ if __name__ == '__main__':
         sys.exit(1)
             
     rpgformat = rpg.data('gen').version
-    if rpgformat not in (16, 17, 18, 19, 20):
-        unsupported("RPG file format not supported.", rpgformat, 20)
+    if rpgformat not in (16, 17, 18, 19, 20, 21):
+        unsupported("RPG file format not supported.", rpgformat, 21)
 
     if rpgformat >= 19 and lumpid == 'heroes':
         if export:
