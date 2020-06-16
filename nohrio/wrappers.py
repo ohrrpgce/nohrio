@@ -37,9 +37,9 @@ class OhrDataMemmap (OhrData, memmap):
     pass
 
 class VarLenOhrData (OhrData):
-    """Like a memmap, but allows zero-extended binsized records and ignores
-    trailing data if the lump isn't an integer multiple of the record
-    length.
+    """Like a memmap, but can read records from a game with a binsize smaller than
+    the current binsize/dtype (zero-extended), and can read trailing data
+    if the lump isn't an integer multiple of the record length.
 
     Doesn't support writing back to file because the data is loaded into memory.
 
@@ -53,24 +53,41 @@ class VarLenOhrData (OhrData):
 
         try:
             mmap = memmap.__new__ (cls, filename, dtype = mmap_dtype, offset = offset, **kwargs)
+            records = mmap.shape[0]
+            trailing = None
         except ValueError:
-            # probably error due to file being wrong length
+            # probably error due to file length not being divisible by binsize/dtype size
             filesize = os.stat(filename).st_size
             records = (filesize - offset) / binsize
-            print ("Warning: ignoring last partial record (idx %d) of lump %s (size %d): only length %s, binsize %d"
-                   % (records, filename, filesize, (filesize - offset) % binsize, binsize))
+            trailing_shape = (filesize - offset) % binsize
+            if trailing_shape:
+                print ("Warning: last record (idx %d) of lump %s (size %d) is partial: only length %s, binsize %d"
+                       % (records, filename, filesize, (filesize - offset) % binsize, binsize))
+            else:
+                raise
             mmap = memmap.__new__ (cls, filename, shape = (records,), dtype = mmap_dtype, offset = offset, **kwargs)
+            # Also load the last partial record separately
+            trailing_offset = offset + records * binsize
+            records += 1
+            trailing = memmap.__new__ (cls, filename, shape = (trailing_shape,), dtype = np.uint8, offset = trailing_offset, **kwargs)
 
         if binsize is None:
             return mmap
         else:
-            self = OhrData.__new__ (cls, mmap.shape, dtype = dtype)
+            self = OhrData.__new__ (cls, (records,), dtype = dtype)
 
             # Copy from the memmap to self and zero the rest
             extraspace = np.dtype(dtype).itemsize - binsize
             _masking_dtype = np.dtype([('present', np.uint8, binsize), ('extra', np.uint8, extraspace)])
             byteview = self.view(_masking_dtype)
-            byteview['present'] = mmap['data']
+            #print "byteview: " , byteview.shape, "mmap", mmap.shape, "records", records
+            # If there's only one record and it's partial, then mmap is empty
+            if mmap.size != 0:
+                byteview[:mmap.shape[0]]['present'] = mmap['data']
+            # Copy in the last partial record, after zeroing
+            if trailing is not None:
+                byteview[-1]['present'].fill(0)  # Old np versions don't like '= 0'
+                byteview[-1]['present'][:trailing_shape] = trailing
             byteview['extra'] = 0
             return self
 
