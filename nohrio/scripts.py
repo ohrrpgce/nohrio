@@ -63,7 +63,7 @@ class Script(object):
     def _md5(self, cmds):
         md5 = hashlib.md5 ()
         md5.update (cmds)
-        if self.strtable != None:
+        if self.strtable is not None:
             md5.update (self.strtable)
         return md5.digest ()
 
