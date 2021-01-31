@@ -14,7 +14,7 @@ It is based upon the dtype system of NumPy, so it's strongly recommended to have
 of NumPy to get the most out of nohrio. In the future less knowledge will be required -- you will
 still need such an understanding to get best performance.
 
-OHRRPGCE: http://gilgamesh.hamsterrepublic.com/wiki/ohrrpgce/index.php/Main_Page
+OHRRPGCE: https://rpg.hamsterrepublic.com/ohrrpgce
 
 Requires NumPy; requires PyYAML if you want to serialize to/ read from YAML.
 
@@ -46,22 +46,6 @@ Some of the non-obvious ways this goal could be fulfilled:
 
  * migrating OHRRPGCE fileformats to be self-describing
 
-Updating from gitorious
------------------------
-
-Chances are that you got your copy of nohrio via ``git clone git://gitorious.org/nohrio/nohrio.git``.
-
-In case you don't know how to update it, this is how; run the following command in the nohrio directory:
-
-``git pull --rebase``
-
-If you are doing your own development on a branch (recommended),
-you will want to switch back to 'master' branch before running ``git pull --rebase``,
-using the command ``git checkout master``
-(and probably switch back to your branch with 'git checkout <yourbranchname>' afterwards,
-maybe after checking out the ``git log`` to see what is new)
-
-
 
 Quickstart
 ----------
@@ -76,7 +60,7 @@ On linux you will need to prepend ``sudo`` to those commands
 
 
 Start up an ipython session (or well, just a Python session -- but ipython is
-vastly better, believe me. ) (http://ipython.scipy.org)
+vastly better, believe me.) (http://ipython.scipy.org)
 
 >>> from nohrio.ohrrpgce import *
 
@@ -192,10 +176,23 @@ as in::
 Credits
 -------
 
+David Gowers :
+  Author.
+  Wrote quite a few utilities for OHRRPGCE, and made the new master palette for it
+  with a good deal of research and experimentation. Without those I would never have made these,
+  this is a total paradigm shift (my old utilities were written when OHR ran on DOS :)
+
 James Paige :
   Created the OHRRPGCE, through which I have learnt a surprising amount about fileformats.
   James would tell you not to use it as an example! And I would agree --
   it's a better counterexample. James is also a really nice guy.
+
+Ralph Versteegen :
+  Ongoing maintenance, initial testing and feedback, Script and other classes.
+  It's easy, in your own intimate knowledge of a software  system you created, to be completely
+  out of touch with 'what things people need to know'. He helped remedy that :)
+  Also wrote several programs that use nohrio -- '3rdparty/colouruse.py', '3rdparty/tabulate.py',
+  and [rpgbatch](https://github.com/ohrrpgce/tools/tree/tools/rpgbatch).
 
 Fenrir-Lunaris :
   Created Vikings of Midgard, for which part of it's aim is to show off features.
@@ -203,21 +200,7 @@ Fenrir-Lunaris :
   reasons (And well, I like the game).
   Also an artistic inspiration, as both an example and counter-example.
 
-TeeEmCee :
-  Initial testing and feedback. It's easy, in your own intimate knowledge of a software
-  system you created, to be completely out of touch with 'what things people
-  need to know'. He helped remedy that, and spotted a Windows-only bug :)
-  Also wrote the first non-trivial program that uses nohrio -- 'colouruse.py' which counts
-  usage of master palette colors throughout an RPGDir.
-
-  Further testing and suggestions on the RELOAD module later.
-
-Myself :
-  Wrote quite a few utilities for OHRRPGCE, and made the new master palette for it
-  with a good deal of research and experimentation. Without those I would never have made these,
-  this is a total paradigm shift (my old utilities were written when OHR ran on DOS :)
-
 A vast array of XML-abusers:
   Tremendously effective counter-examples. XML is not a Data Language, it's a Markup Language!
 
-.. _systemantics: http://en.wikipedia.org/Systemantics
+.. _systemantics: https://en.wikipedia.org/wiki/Systemantics
