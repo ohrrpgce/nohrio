@@ -175,6 +175,11 @@ mathcmds = 'random', 'exponent', 'modulus', 'divide', 'multiply', 'subtract', 'a
 mathcmds_infix = '', '^', ',mod,', '/', '*', '--', '+', ',xor,', ',or,', ',and,', '==', '<>', '<', '>', '<=', '>=', ':=', '+=', '-=', '', '&&', '||', '^^', '', '', ''
 math_precedence = 0, 20, 30, 30, 30, 40, 40, 60, 60, 60, 50, 50, 50, 50, 50, 50, 80, 80, 80, 0, 65, 70, 70, 0, 0, 0
 
+class FakeScriptNode:
+    def __init__(self, value):
+        self.kind = kInt
+        self.id = value
+
 class ScriptNode(object):
 
     def __init__(self, scriptset, script, offset):
@@ -278,7 +283,12 @@ class ScriptNode(object):
             return 0
         return int(self.scrdata()[self.offset + 2])
 
-    def arg(self, i):
+    def arg(self, i, default=None):
+        if i >= self.argnum:
+            if default is not None:
+                return FakeScriptNode(default)
+            #raise IndexError("index %d out of range (only has %d arg(s))" % (i, self.argnum))
+            return None
         return ScriptNode(self.scriptset(), self.script, int(self.scrdata()[self.offset + 3 + i]))
 
     def args(self):
