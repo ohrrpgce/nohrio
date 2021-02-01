@@ -229,10 +229,8 @@ class RPGFile (RPG):
 
 class RPGDir (RPG):
     def __init__ (self, directory):
-        import glob
         self.directory = os.path.abspath (directory)
-        self.lumps = glob.glob (os.path.join (directory, '*'))
-        self.lumps = [os.path.basename (v) for v in self.lumps]
+        self.lumps = os.listdir(directory)
         for filename in self.lumps:
             if not self.lumpname_ok (filename):
                 raise CorruptionError ('corrupted or non canonical lump name %r' % filename)

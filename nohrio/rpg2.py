@@ -14,6 +14,11 @@ from struct import unpack
 
 from nohrio.wrappers import *
 
+
+def listdir_with_path(directory):
+    "Return all files in `directory` with `directory` prepended."
+    return [os.path.join(directory, fname) for fname in os.listdir(directory)]
+
 def map_filename (path, prefix, type, n):
     if n < 100:
         tmp = os.path.join (path, '%s.%s%02d' % (prefix, type, n))
@@ -279,8 +284,7 @@ class RPGFile (RPGHandler):
         return dest
     def __del__ (self):
         if self.rm_unlump_dir:
-            import glob
-            for fn in glob.glob (os.path.join (self.unlump_dir, '*')):
+            for fn in listdir_with_path(self.unlump_dir):
                 os.remove (fn)
             try:
                 os.rmdir (self.unlump_dir)
@@ -290,8 +294,7 @@ class RPGFile (RPGHandler):
 
 class RPGDir (RPGHandler):
     def __init__ (self, path, mode):
-        import glob
-        filenames = glob.glob (os.path.join (path,'*') )
+        filenames = listdir_with_path(path)
         # classify filenames into old-style: WANDER.XYZ
         # and new style: XYZ.ABC
         if 'b' in mode:
@@ -421,7 +424,6 @@ def create (dest, prefix, template = None,
 
     Returns the path to the new rpgfile or rpgdir.
     """
-    import glob
     if len (prefix) > (50-4):
         raise ValueError ('lump prefix too long')
     if os.path.exists (dest):
@@ -450,12 +452,12 @@ def create (dest, prefix, template = None,
     # to remedy it.
     a = archiNym (lmppath, 0, prefix, version)
     #now rename all relevant lumps to match.
-    for filename in glob.glob (os.path.join (tempdir,'*')):
-        if os.path.basename (filename).startswith('ohrrpgce.'):
-            parts = os.path.split (filename)
-            newfilename = parts[-1].replace('ohrrpgce.', prefix + '.')
-            newfilename = os.path.join (parts[0], newfilename)
-            os.rename (filename, newfilename)
+    for filename in os.listdir(tempdir):
+        if filename.startswith('ohrrpgce.'):
+            newfilename = filename.replace('ohrrpgce.', prefix + '.')
+            newpath = os.path.join(tempdir, newfilename)
+            oldpath = os.path.join(tempdir, filename)
+            os.rename(oldpath, newpath)
     # XXX we need to check that all source lumps are arriving safely!
     # since we generate a file 10k smaller currently..
     if not dir:
