@@ -161,9 +161,9 @@ def read_commands_bin(f, offset, size):
     return command_names
     
 
-kNoop, kInt, kFlow, kGVar, kLVar, kMath, kCmd, kScript = range(8)
+kNoop, kInt, kFlow, kGVar, kLVar, kMath, kCmd, kScript, kNonlocal = range(9)
 kinds_with_args = kFlow, kMath, kCmd, kScript
-flowtypes = 'do', 'begin', 'end', 'return', 'if', 'then', 'else', 'for', '!!FLOW8!!', '!!FLOW9!!', 'while', 'break', 'continue', 'exitscript', 'exitreturning', 'switch', 'case'
+flowtypes = 'do', 'begin', 'end', 'return', 'if', 'then', 'else', 'for', '!!FLOW8!!', '!!FLOW9!!', 'while', 'break', 'continue', 'exitscript', 'exitreturning', 'switch', 'case'  # case never appears in hsz
 # How to print the different flow types
 flow_oneline = 'return', 'break', 'continue', 'exitscript', 'exitreturning'
 flow_withheader = 'if', 'while', 'switch' #'for'
@@ -231,7 +231,7 @@ class ScriptNode(object):
             if self.id < 0 or self.id >= len (mathcmds):
                 return 'BAD_MATH(%d)' % self.id
             if self.id in (kSetvariable, kIncrement, kDecrement):
-                varid = self.arg (0)._get_id()
+                varid = self.arg(0)._get_id()
                 if varid < 0:
                     varname = 'local%d' % (-1 - varid)
                 else:
@@ -244,6 +244,9 @@ class ScriptNode(object):
             ret = self.scriptset().commandname (self.id)
         elif kind == kScript:
             ret = self.scriptset().scriptnames [self.id]
+        elif kind == kNonlocal:
+            varid = self.id
+            return 'nonlocal%d_%d' % (varid // 256, varid % 256)
         else:
             return 'BAD_NODE(kind=%d, id=%d)' % (self.kind, self.id)
         ret += '('
