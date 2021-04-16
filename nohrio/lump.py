@@ -99,7 +99,7 @@ def lumpname_ok (name):
     if len (name) > 50:
         return False
     else:
-        m = re.match ('[A-Za-z0-9._-]+', name)
+        m = re.match ('[A-Za-z0-9~._-]+', name)
         if m == None or m.end() != (len (name)):
             return False
     return True
