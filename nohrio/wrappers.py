@@ -106,7 +106,7 @@ class AttackData (OhrData):
 
         if attack_bin is not None:
             if len(dt6) != len(attack_bin):
-                print "Warning: dt6 and attack.bin num records differ: %d vs %d" % (len(dt6), len(attack_bin))
+                print("Warning: dt6 and attack.bin num records differ: %d vs %d" % (len(dt6), len(attack_bin)))
                 records = min(len(dt6), len(attack_bin))
                 dt6 = dt6[:records]
                 attack_bin = attack_bin[:records]

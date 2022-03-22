@@ -116,7 +116,7 @@ def partial_resort (node, dtype = None):
 
     """
     from yaml import MappingNode, SequenceNode
-    from ohrrpgce import dtypes, np
+    from .ohrrpgce import dtypes, np
     if type (node) == MappingNode:
 
 # when we are trying to find a node to identify with a dtype,
@@ -138,7 +138,7 @@ def partial_resort (node, dtype = None):
                 if keycontent == 'savoffset':
                     import pdb
                     pdb.set_trace()
-                    print (key, value)
+                    print((key, value))
                 if keycontent in names:
                     if type (value) == MappingNode:
                         partial_resort(value, dtype[keycontent])
@@ -177,15 +177,15 @@ def escape_node_strings (node):
 
 def unescape_object_strings (object):
     from yaml import MappingNode, SequenceNode
-    if type (object) == dict:
+    if type(object) == dict:
         for key, value in object.items():
-            if type (value) == str:
-                object[key]= value.decode('string_escape')
-            elif type (value) in (dict, list):
-                unescape_object_strings (value)
-    elif type (object) == SequenceNode:
+            if type(value) == str:
+                object[key] = value.decode('string_escape')
+            elif type(value) in (dict, list):
+                unescape_object_strings(value)
+    elif type(object) == SequenceNode:
         for item in object:
-            unescape_object_strings (item)
+            unescape_object_strings(item)
 
 
 # YAML dumping and loading
@@ -217,7 +217,7 @@ def find_dtype (mapping):
     return None
 
 def assign_array (array, value):
-    from ohrrpgce import set_str8, set_str16
+    from .ohrrpgce import set_str8, set_str16
     for key in array.dtype.names:
         if key in value:
             if array.dtype[key].names == None:
@@ -244,7 +244,7 @@ def py2array (object):
     or like [{'DTYPENAME':objectdata}, {'DTYPENAME':objectdata},..]
      (where all 'DTYPENAME' match. this is a 1d array -- shape == (len(object),) )
     """
-    from ohrrpgce import dtypes, np
+    from .ohrrpgce import dtypes, np
     if type (object) == dict:
         # easy
         shape = ()
@@ -272,10 +272,10 @@ def print_pr (mapping):
     r = yaml.SafeRepresenter()
     node = r.represent_data (mapping)
     partial_resort (node)
-    print yaml.serialize (mapping)
+    print(yaml.serialize (mapping))
 
 def init ():
-    import ohrrpgce
+    from . import ohrrpgce
     import numpy as np
     for dtype in ohrrpgce.dtypes:
         dtype = np.dtype (dtype)

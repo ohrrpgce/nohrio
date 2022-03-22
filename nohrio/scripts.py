@@ -132,13 +132,13 @@ def read_scripts_txt(f, offset, size):
     scriptids = {}
     for scriptname in lines:
         try:
-            id = int (lines.next())
-            args = int (lines.next())
-            for i in range (args):
-                lines.next()
+            id = int(next(lines))
+            args = int(next(lines))
+            for i in range(args):
+                next(lines)
         except StopIteration:
             raise CorruptionError ('scripts.txt is corrupt')
-        scriptname = scriptname.strip ()
+        scriptname = scriptname.strip()
         scriptnames[id] = scriptname
         scriptids[scriptname] = id
     return scriptnames, scriptids
@@ -161,7 +161,7 @@ def read_commands_bin(f, offset, size):
     return command_names
     
 
-kNoop, kInt, kFlow, kGVar, kLVar, kMath, kCmd, kScript, kNonlocal = range(9)
+kNoop, kInt, kFlow, kGVar, kLVar, kMath, kCmd, kScript, kNonlocal = list(range(9))
 kinds_with_args = kFlow, kMath, kCmd, kScript
 flowtypes = 'do', 'begin', 'end', 'return', 'if', 'then', 'else', 'for', '!!FLOW8!!', '!!FLOW9!!', 'while', 'break', 'continue', 'exitscript', 'exitreturning', 'switch', 'case'  # case never appears in hsz
 # How to print the different flow types
@@ -362,7 +362,7 @@ class HSScripts(object):
         return script
 
     def _remove_from_cache(self, script):
-        for k, v in self._scriptcache.iteritems ():
+        for k, v in self._scriptcache.items():
             if v is script:
                 del self._scriptcache[k]
                 return

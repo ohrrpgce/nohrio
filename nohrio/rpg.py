@@ -173,10 +173,10 @@ class RPGFile (RPG):
         # build a table of available lumps
         f = open (filename, 'rb')
         self.lump_map = read_lumplist(f)[1]
-        if not lumpnames_dont_collide (lump_map.keys()):
-            raise CorruptionError ('Conflicting lump names (duplicated, or identical except for case)')
+        if not lumpnames_dont_collide(list(lump_map.keys())):
+            raise CorruptionError('Conflicting lump names (duplicated, or identical except for case)')
 
-        self.lump_prefix = guess_lump_prefix (self.lump_map.keys())
+        self.lump_prefix = guess_lump_prefix(list(self.lump_map.keys()))
         f.close()
 
     def load (self, lumpid, write = False, dtype = None):

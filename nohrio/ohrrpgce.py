@@ -76,7 +76,7 @@
 
 import numpy as np
 import os
-from ohrstring import *
+from .ohrstring import *
 
 # Helper data
 # ----------------
@@ -353,8 +353,8 @@ def pad (filename, granularity, groupsize = 1, headersize = 0):
 #     fixbits = fixBits (rpgfile, offset)
 
 def filename_or_handle (f, mode):
-    if type (f) in (str, unicode):
-        return open (f, mode)
+    if isinstance(f, str):
+        return open(f, mode)
     return f
 
 class fixBits (object):
@@ -441,7 +441,7 @@ class archiNym (object):
         mode = 'rb+'
         if offset > 0:
             mode = 'rb'
-        if type (file) in (str, unicode):
+        if isinstance(file, str):
             if not os.path.exists (file):
                 mode = 'wb+'
         self.file = filename_or_handle (file, mode)
@@ -492,7 +492,7 @@ class binSize (object):
     defaults = [0, 64, 0, 0, 40, 0, 0, 0, 400, 30, 636, 320, 200]
 
     def __init__ (self, file, offset = 0):
-        if type (file) in (str, unicode) and not os.path.isfile(file):
+        if isinstance(file, str) and not os.path.isfile(file):
             # Doesn't exist, only create it if we actually write to it
             self.file = file
             sizes = []
@@ -509,7 +509,7 @@ class binSize (object):
         #self.sizes = np.ndarray(sizes, dtype = dtype)
         self.sizes = sizes
     def _resolve_key (self, k):
-        if type (k) in (str, unicode):
+        if isinstance(k, str):
             if k in self.fields:
                 k = self.fields.index (k)
             else:
@@ -529,7 +529,7 @@ class binSize (object):
         self.sizes.__setitem__ (k, v)
         if self.origin:
             raise IOError("Should not be modifying binsize.bin in a lumped RPG")
-        if type (self.file) in (str, unicode):
+        if isinstance(self.file, str):
             self.file = open (self.file, 'wb+')
         self.file.seek(self.origin)
         self.file.write(struct.pack('H', self.sizes))
@@ -551,7 +551,7 @@ class binSize (object):
     def __iter__ (self):
         return [getattr (self, k) for k in self.fields].__iter__()
     def __del__ (self):
-        if not type (self.file) in (str, unicode):
+        if not isinstance(self.file, str):
             self.file.close()
 
 
@@ -767,8 +767,8 @@ dtypes = {
     'gen' : make ('maxmap title titlemusic victorymusic battlemusic',
                   'password_version password3_rotator password3_data',
                   'password1_data',
-                  " ".join(['max%spic' % name for name in 'hero','enemy1','enemy2','enemy3','npc','weapon','attack']),
-                  " ".join(['max%s' % name for name in 'tileset','attack','hero', 'enemy', 'formation','palette','textbox','plotscript']),
+                  " ".join(['max%spic' % name for name in ('hero','enemy1','enemy2','enemy3','npc','weapon','attack')]),
+                  " ".join(['max%s' % name for name in ('tileset','attack','hero', 'enemy', 'formation','palette','textbox','plotscript')]),
                   'newgamescript gameoverscript max_regularscript suspendbits cameramode',
                   'camera_args scriptbackdrop time maxvehicle maxtagname',
                   'loadgamescript textbox_backdrop enemydissolve enablejoy',

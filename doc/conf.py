@@ -37,8 +37,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'NOHRIO'
-copyright = u'2009, David Gowers <00ai99@gmail.com>'
+project = 'NOHRIO'
+copyright = '2009, David Gowers <00ai99@gmail.com>'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -172,8 +172,8 @@ htmlhelp_basename = 'NOHRIOdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'NOHRIO.tex', u'NOHRIO Documentation',
-   u'David Gowers \\textless{}00ai99@gmail.com\\textgreater{}', 'manual'),
+  ('index', 'NOHRIO.tex', 'NOHRIO Documentation',
+   'David Gowers \\textless{}00ai99@gmail.com\\textgreater{}', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

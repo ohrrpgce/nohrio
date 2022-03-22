@@ -89,13 +89,6 @@ element_size = {
     5 : 8,
     6 : -1}
 
-element_type = {
-    int : 3,
-    long: 4,
-    float: 5,
-    str: 6,
-    type(None): 0}
-
 
 
 class strtable (list):
@@ -148,8 +141,8 @@ class Element (object):
         children = [v.__hash__() for v in self.children]
         children.sort ()
         datahash = (self.name, self.data)
-        datatype = element_type[type(self.data)]
-        return ((datatype, self.name, self.data, len(self.children)) + tuple (children)
+        # 5 and 5.0 have the same hash, so need to add type
+        return ((self.name, type(self.data), self.data) + tuple(children)
                       ).__hash__()
 
     def add_child (self, child):
@@ -161,7 +154,7 @@ class Element (object):
                     self.children.pop(i)
                     return
         else:
-            for i,ch in enumerate(tuple(self.children)):
+            for i, ch in enumerate(tuple(self.children)):
                 if ch == child_or_childname:
                     self.children.pop(i)
                     return
@@ -174,13 +167,13 @@ class Element (object):
             elementsize = 0
         elif datatype == str:
             elementtype = 6
-            elementsize = len (data)
-            elementsize += vli_size (elementsize)
-        elif datatype in (int, long, float):
+            elementsize = len(data)
+            elementsize += vli_size(elementsize)
+        elif datatype in (int, float):
             if datatype == float:
                 elementtype = 5
             else:
-                absval = abs (data)
+                absval = abs(data)
                 elementtype = 4
                 if absval < 128:
                     elementtype = 1
@@ -350,7 +343,7 @@ def build_stringtable (root):
     """
     occurrences = _find_names (root)
     occurrences.pop('', None)
-    table = [(k,v) for k, v in occurrences.items()]
+    table = list(occurrences.items())
     table.sort (key = lambda v: v[1], reverse = True)
     table = strtable ([''] + [k for k,v in table])
     return table
@@ -377,12 +370,12 @@ def read (f):
 
 def reload_from_dict (d, name, key = None):
     root = Element (name)
-    items = d.items()
+    items = list(d.items())
     if not key:
         key = lambda v:v[0]
     items.sort (key = key)
     for k,v in items:
-        if type (v) in (long, int, float, str, type(None),):
+        if type(v) in (int, float, str, type(None)):
             root.add_child (Element (k, v))
         else:
             root.add_child (reload_from_dict (v, k))

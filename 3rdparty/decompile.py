@@ -14,7 +14,7 @@ if len(sys.argv) <= 1:
     usage()
 
 if not os.path.isfile(sys.argv[1]):
-    print sys.argv[1], "not found\n"
+    print(sys.argv[1], "not found\n")
     usage()
 
 scripts = nohrio.scripts.HSScripts(sys.argv[1])
@@ -24,7 +24,7 @@ if len(sys.argv) > 2:
         whichscript = int(whichscript)
     except:
         pass
-    print scripts.script(whichscript)
+    print(scripts.script(whichscript))
 else:
     for id, name in sorted(scripts.scriptnames.items()):
-        print "(%d %s)" % (id, name),
+        print("(%d %s)" % (id, name), end=' ')

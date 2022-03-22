@@ -25,7 +25,7 @@ def shape_bpp_adjust (shape, bpp = 4, srcbpp = 8):
 
     """
     assert bpp in (8,4,2,1)
-    return shape[:-1] + (int (shape[-1] / (float(srcbpp) / bpp )),)
+    return shape[:-1] + (int(shape[-1] / (float(srcbpp) / bpp)), )
 
 def reduce_shape (shape):
     i = 1
@@ -36,7 +36,7 @@ def reduce_shape (shape):
 def hex_4bpp_array (array):
     "convert a 4bpp array to hex string"
     if array.ndim > 3 or array.ndim < 2:
-        raise ValueError ('array must be either (y,x) or (z,y,x) shape')
+        raise ValueError('array must be either (y,x) or (z,y,x) shape')
 
 
 def pack_array (array, bpp = 8, srcbpp = 4):
@@ -50,11 +50,11 @@ def unpack_array (array, srcbpp = 4):
     masks = [1 << srcbpp - 1]
     shifts = [srcbpp * v for i in range (nparts)]
     for i in range (1, nparts):
-        masks.append (masks[-1] << (srcbpp * i))
-    newshape = shape_bpp_adjust (array.shape, bpp = 8, srcbpp = 4)
+        masks.append(masks[-1] << (srcbpp * i))
+    newshape = shape_bpp_adjust(array.shape, bpp = 8, srcbpp = 4)
 #    size = reduce_shape (newshape)
-    unpacked = np.zeros (shape = newshape, dtype = np.uint8)
-    for i, mask, shift in zip (range (nparts), masks, shifts):
+    unpacked = np.zeros(shape = newshape, dtype = np.uint8)
+    for i, mask, shift in zip(range(nparts), masks, shifts):
         unpacked.flat[i::nparts] = (array & mask) << shift
     return unpacked
 

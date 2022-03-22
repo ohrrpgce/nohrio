@@ -148,9 +148,9 @@ def field_descriptor(dtype, name):
             header = [name]
         else:
             # Not primitive; recurse on subfields
-            headers, decoders, encoders = zip(*
+            headers, decoders, encoders = list(zip(*
                 [field_descriptor(ty[subfield], subfield) for subfield in ty.names]
-                )
+                ))
 
             def decoder(src):
                 ret = []
@@ -187,7 +187,7 @@ def field_descriptor(dtype, name):
         header = concatenate([['%s %d%s' % (name, i, piece) for piece in _header] for i in range(ty.shape[0])])
 
     else:
-        print repr(ty)
+        print(repr(ty))
         assert False
 
     return header, decoder, encoder
@@ -294,7 +294,7 @@ def csv2lump(csv, lump, overrides):
             _headers, _decoder, _encoder = field_descriptor(lump.dtype[name], name)
         headers.extend(_headers)
         encoders.extend( [(_encoder, name, i) for i in range(len(_headers))] )
-    print
+    print()
 
     encoder_list = []
 
@@ -307,7 +307,7 @@ def csv2lump(csv, lump, overrides):
             raise ValueError("Could not recognise the column named '" + header + "'")
         encoder_list.append(encoders[encoder_num])
 
-    print "Writing into records 0 to %d (out of %d existing)" % (len(records) - 1, len(lump))
+    print("Writing into records 0 to %d (out of %d existing)" % (len(records) - 1, len(lump)))
 
     for recnum, csv_record in enumerate(records):
         # create a 0-dimensional reference to the record.
@@ -326,23 +326,23 @@ def csv2lump(csv, lump, overrides):
 if __name__ == '__main__':
 
     def usage():
-        print "Usage:"
-        print "  " + sys.argv[0] + " --type <type> --export <path_to_rpgdir> <csv_file>"
-        print "  " + sys.argv[0] + " --type <type> --import <path_to_rpgdir> <csv_file>"
-        print
-        print " Where <type> is one of items, attacks, enemies, heroes, textboxes"
-        print
+        print("Usage:")
+        print("  " + sys.argv[0] + " --type <type> --export <path_to_rpgdir> <csv_file>")
+        print("  " + sys.argv[0] + " --type <type> --import <path_to_rpgdir> <csv_file>")
+        print()
+        print(" Where <type> is one of items, attacks, enemies, heroes, textboxes")
+        print()
         sys.exit(1)
 
     lumpnames = {'items': 'itm', 'enemies': 'dt1', 'heroes': 'dt0', 'attacks': 'attack.full', 'textboxes': 'say'}
     binsizes = {'items': 'item', 'enemies': 'enemy', 'heroes': 'hero', 'attacks': 'attack', 'textboxes': 'say'}
 
     if len(sys.argv) != 6:
-        print "Not enough arguments"
+        print("Not enough arguments")
         usage()
 
     if sys.argv[1] != '--type' or sys.argv[2] not in lumpnames:
-        print "Type not understood"
+        print("Type not understood")
         usage()
     lumpid = sys.argv[2]
 
@@ -353,11 +353,11 @@ if __name__ == '__main__':
         export = False
         mode = 'r+'
     else:
-        print "Specify --import or --export"
+        print("Specify --import or --export")
         usage()
 
     if not os.path.isdir(sys.argv[4]):
-        print sys.argv[4] + " is not a directory"
+        print(sys.argv[4] + " is not a directory")
         usage()
 
     rpg = RPGDir(sys.argv[4], 'r+')
@@ -366,9 +366,9 @@ if __name__ == '__main__':
     def unsupported(msg, indicator, supported):
         msg += " (%d; expected %d)" % (indicator, supported)
         if indicator < supported:
-            print msg + " The RPG file needs to be updated."
+            print(msg + " The RPG file needs to be updated.")
         else:
-            print msg + " nohrio needs to be updated."
+            print(msg + " nohrio needs to be updated.")
         sys.exit(1)
             
     rpgformat = rpg.data('gen').version
@@ -377,9 +377,9 @@ if __name__ == '__main__':
 
     if rpgformat >= 19 and lumpid == 'heroes':
         if export:
-            print "Warning: newer RPG format; reading old hero data. Missing some data fields, and re-importing hero data into this game is not supported."
+            print("Warning: newer RPG format; reading old hero data. Missing some data fields, and re-importing hero data into this game is not supported.")
         else:
-            print "Importing heroes into newer RPG files is not supported; will not be until a total tabulate.py rewrite."
+            print("Importing heroes into newer RPG files is not supported; will not be until a total tabulate.py rewrite.")
             sys.exit(1)
 
     if binsizes[lumpid]:

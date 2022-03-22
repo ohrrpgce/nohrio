@@ -80,13 +80,13 @@ spritepixelcounts = np.zeros(256, int)
 coluse = np.zeros(256, int)
 
 
-print "Counting sprite pixels"
+print("Counting sprite pixels")
 sprpixels = [[] for i in range(9)]
 sprpals = [[] for i in range(9)]
 for ptno in range(9):
     try:
         lmp = game.lump('.pt%d' % ptno)
-    except IOError, e:
+    except IOError as e:
         # Old games might not have all lumps, cool with me
         continue
     for spriteset in lmp['pixels']:
@@ -100,7 +100,7 @@ for ptno in range(9):
 def scanforpalettes(sprpals):
     # Now look everywhere where sprites are used and find out which palettes each
     # are used with.
-    print "Scanning RPG for sprite usage"
+    print("Scanning RPG for sprite usage")
 
     # NPCs: Walkabouts
     for mapno in range(gen['maxmap'] + 1):
@@ -137,7 +137,7 @@ def scanforpalettes(sprpals):
     try:
         attacks = game.lump('attack.full')
     except IOError:
-        print "Warning: did not process attacks; run spliceattack on the RPG"
+        print("Warning: did not process attacks; run spliceattack on the RPG")
     else:
         for attack in attacks:
             pic, pal = game.picnpal(6, attack['picture'], attack['palette'])
@@ -161,7 +161,7 @@ def scanforpalettes(sprpals):
 scanforpalettes(sprpals)
 
 ######
-print "Summing sprite pixels"
+print("Summing sprite pixels")
 
 pal16 = game.lump('.pal')
 palmaps = []
@@ -180,7 +180,7 @@ for ptno in range(9):
 
 
 def counttilpixels(coluse, tilepixelcounts, backdroppixelcounts):
-    print "Counting tileset & backdrop pixels"
+    print("Counting tileset & backdrop pixels")
     for array, lmp in [(tilepixelcounts, game.lump('.til')), (backdroppixelcounts, game.lump('.mxs'))]:
         for tset in lmp['planes']:
             tempcount = np.bincount(tset.flat)
@@ -204,7 +204,7 @@ for col in uicols.view((INT, uicols.dtype.itemsize/2))[:48]:
 
 totalpixelcounts = spritepixelcounts + tilepixelcounts + backdroppixelcounts
 
-print "Finished processing"
+print("Finished processing")
 
 try:
     import pygame
@@ -320,8 +320,8 @@ try:
         
     
 except ImportError:
-    print "Colour usages:", coluse
-    print "Tileset pixel counts:", tilepixelcounts
-    print "Backdrop pixel counts:", backdroppixelcounts
-    print "Sprite pixel counts:", spritepixelcounts
-    print "Total pixel counts:", totalpixelcounts
+    print("Colour usages:", coluse)
+    print("Tileset pixel counts:", tilepixelcounts)
+    print("Backdrop pixel counts:", backdroppixelcounts)
+    print("Sprite pixel counts:", spritepixelcounts)
+    print("Total pixel counts:", totalpixelcounts)

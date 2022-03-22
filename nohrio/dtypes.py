@@ -3,13 +3,13 @@
 #
 # Mostly named according to description rather than filename
 
-from ohrrpgce import deprecated_dtypes, dtypes as _dt
+from .ohrrpgce import deprecated_dtypes, dtypes as _dt
 import numpy as np
 dt = {}
 for name, dtype in _dt.items():
-    dt[name] = np.dtype (dtype)
+    dt[name] = np.dtype(dtype)
 for name, dtype in deprecated_dtypes.items():
-    dt[name] = np.dtype (dtype)
+    dt[name] = np.dtype(dtype)
 
 # World domination
 # ----------------
@@ -45,10 +45,10 @@ DEFAULTPAL = dt['defpal%d.bin']
 #
 #
 
-TILESET = np.dtype ('B', (4,80,200))
+TILESET = np.dtype('B', (4,80,200))
 BACKGROUND = TILESET
 
-TILESET_LINEAR = np.dtype ('B', (320, 200))
+TILESET_LINEAR = np.dtype('B', (320, 200))
 BACKGROUND_LINEAR = TILESET_LINEAR
 
 # Fonts are a 256[8]
@@ -90,6 +90,6 @@ PASSABILITY_DEFAULTS = dt['defpass.bin']
 _classes = {
 }
 
-for v in range (0,7+1):
+for v in range(0,7+1):
     _classes[dt['pt%d' % v]] = 'pixels'
     _classes[dt['alt-pt%d' % v]] = 'packedimage'

@@ -18,7 +18,7 @@ class CorruptionError(IOError):
 def unpack_lumpid (lumpid):
     m = lumpid_rex.match (lumpid)
     dict = m.groupdict()
-    for key in dict.keys():
+    for key in list(dict.keys()):
         if dict[key] == None:
             del dict[key]
     dict['lumpid'] = dict['lumpid'].upper()

@@ -7,7 +7,7 @@ from base64 import b64decode
 data = b64decode (data)
 def gunzip ():
   import gzip
-  from cStringIO import StringIO as SIO
+  from io import StringIO as SIO
   from hashlib import md5
   tmp=gzip.GzipFile(mode = 'rb', fileobj = SIO (data)).read()
   md5 = md5(tmp).hexdigest()

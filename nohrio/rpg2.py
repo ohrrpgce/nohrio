@@ -260,7 +260,7 @@ class RPGFile (RPGHandler):
     def __len__ (self):
         return len (self._lump_map)
     def unlump_all (self, dest = None):
-        ordered = self._lump_map.keys()
+        ordered = list(self._lump_map.keys())
         ordered.sort (key = lambda v:v[1][0])
         #read them in order.
         #yield after each lump, so that showing a progress bar is easy.
@@ -321,7 +321,7 @@ class RPGDir (RPGHandler):
         tmp.insert (0, genname) # GEN second-from-front
         tmp.insert (0, archname) # ARCHINYM.LMP at front.
         needs_close = False
-        if type (dest) in (str, unicode):
+        if isinstance(dest, str):
             if os.path.exists (dest):
                 raise OSError ('Refusing to lump a RPG over the top of an existing file')
             dest = open (dest, 'wb')
@@ -397,7 +397,7 @@ class RPGDir (RPGHandler):
         dtype = None
         offset = None
         if type(k) != str:
-            print "tuple indexed!"
+            print("tuple indexed!")
             l = len(k)
             if l > 1:
                 n = l[1]
@@ -431,9 +431,9 @@ def create (dest, prefix, template = None,
     tmpfile = None
     filename = None
     if not template:
-        import _newrpg
+        from . import _newrpg
         from tempfile import mkstemp
-        from cStringIO import StringIO as SIO
+        from io import StringIO as SIO
         data = _newrpg.gunzip ()
         tmpfile = mkstemp (prefix)[1]
         f = open (tmpfile,'wb')
@@ -446,7 +446,7 @@ def create (dest, prefix, template = None,
     if tmpfile:
         os.remove (tmpfile)
     lmppath = os.path.join (tempdir,'archinym.lmp')
-    from ohrrpgce import archiNym
+    from .ohrrpgce import archiNym
     # archiNym implicitly writes a new file, when opened on a
     # nonexistent path.  This is weird behaviour and I hope
     # to remedy it.
