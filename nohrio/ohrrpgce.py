@@ -246,7 +246,7 @@ def fix_stringjunk (arr, fields = None, doubled = False):
             if doubled:
                 tmp = str(item['value'])[:item['length'] * 2]
                 tmp = list(tmp)
-                tmp[1::2] = ['.'] * (len (tmp) / 2)
+                tmp[1::2] = ['.'] * (len(tmp) // 2)
                 tmp = "".join (tmp)
             else:
                 tmp = str(item['value'])[:item['length']]
@@ -262,13 +262,13 @@ def pad (filename, granularity, groupsize = 1, headersize = 0):
         padding = '\x00' * (int (nrecordsets) *
                             (granularity * groupsize) - filesize)
     if padding == '':
-        return int (nrecordsets) / groupsize
+        return int(nrecordsets) // groupsize
     f = open (filename, 'ab')
     f.seek (1, 2)
     f.write (padding)
     f.close ()
     filesize = os.path.getsize (filename)
-    nrecords = (filesize - headersize) / granularity
+    nrecords = (filesize - headersize) // granularity
     return nrecords
 
 # Wrappers
@@ -395,7 +395,7 @@ class fixBits (object):
             k = object.__getattribute__ (self, 'fields').index (k)
         except ValueError:
             return object.__getattribute__ (self, k)
-        self.file.seek (self.origin + (k / 8))
+        self.file.seek (self.origin + (k // 8))
         byte = self.file.read (1)
         if len (byte) == 0:
             # file is short
@@ -411,13 +411,13 @@ class fixBits (object):
         except ValueError:
             object.__setattr__ (self, k, v)
             return
-        self.file.seek (self.origin + (k / 8))
+        self.file.seek (self.origin + (k // 8))
         value = ord (self.file.read (1))
         if value & (1 << k % 8):
             value ^= (1 << k % 8)
         if v:
             value |= (1 << k % 8)
-        self.file.seek (self.origin + (k / 8))
+        self.file.seek (self.origin + (k // 8))
         self.file.write (chr (value))
     def __repr__ (self):
         kwargs = ", ".join (['%s = %d' % (name, v) for name, v in zip (self.fields, self)])
@@ -455,14 +455,14 @@ class archiNym (object):
         self.file.seek (self.origin)
         for i in range (k):
             self.file.readline()
-        return self.file.readline().rstrip()
+        return self.file.readline().rstrip().decode('latin-1')
     def __setitem__ (self, k, v):
         assert (-1 < k < 2)
         everything = [self[0], self[1]]
-        self.file.seek (0)
-        everything [k] = v
+        everything[k] = v
+        self.file.seek(0)
         for value in everything:
-            self.file.write (value + '\x0d\x0a')
+            self.file.write(value.encode('latin-1') + b'\x0d\x0a')
         self.file.flush()
     def __repr__ (self):
         return '%s (%r, %r, %r)' % (self.__class__.__name__,
@@ -697,7 +697,7 @@ dtypes = {
                           'baseacc_stat basedog_stat acc_mult dog_mult alk_mulk def_mult aim_extra',
                           'absorb randomization damage_color transmog_rewards counterattacks',
                           #'miss_sound fail_sound steal_fail_sound',   # Not merged yet
-                          bitsets1 = ('B', 64 / 8), bitsets2 = ('B', 128 / 8),
+                          bitsets1 = ('B', 64 // 8), bitsets2 = ('B', 128 // 8),
                           cost = [('hp', INT), ('mp', INT), ('money', INT)],
                           name = [('length', INT), ('unused', INT), ('data', (np.character, 10*2))],
                           caption = fvstr (40),
@@ -733,7 +733,7 @@ dtypes = {
                   name = vstr2 (17),
                   stats = STATS0_99_DTYPE,
                   spells = _spell_list,
-                  bitsets = (np.uint8, 48 / 8),
+                  bitsets = (np.uint8, 48 // 8),
                   spelllist_name = ([('length', INT), ('data', (np.character, 10*2))], 4),
                   spelllist_type = (INT, 4),
                   handcoord = (xycoord_dtype, 2),
@@ -963,7 +963,7 @@ deprecated_dtypes = {
 #                          'settag tagcond tagcheck settag2 tagcond2 tagcheck2 bitsets3',
 #                          'description consumeitem nitems_consumed soundeffect',
 #                          'stat_preftarget',
-#                          bitsets3 = ('B', 128 / 8),
+#                          bitsets3 = ('B', 128 // 8),
 #                          captionpt2 = 'S36',
 #                          description = fvstr (38),
 #                          consumeitem = (INT, 3),
@@ -976,7 +976,7 @@ deprecated_dtypes = {
                   'damage_eq aim_math baseatk_stat cost xdamage chainto chain_percent',
                   'attacker_anim attack_anim attack_delay nhits target_stat',
                   'preftarget bitsets1 name captiontime captionpt1',
-                  bitsets1 = ('B', 64 / 8),
+                  bitsets1 = ('B', 64 // 8),
                   cost = [('hp', INT), ('mp', INT), ('money', INT)],
                   name = [('length', INT), ('unused', INT), ('value', 'S20')],
                   captionpt1 = fvstr (4)),
@@ -1097,8 +1097,8 @@ class Gfx4bpp (tuple):
 
 for i, data in enumerate (ptshapes):
     w, h, frames = data
-    dtypes['pt%d' % i] = (np.uint8, (w/2) * h * frames)
-    dtypes['alt-pt%d' % i] = [('images', np.uint8, (frames, h, w / 2))]
+    dtypes['pt%d' % i] = (np.uint8, (w//2) * h * frames)
+    dtypes['alt-pt%d' % i] = [('images', np.uint8, (frames, h, w // 2))]
     #textserialize_dtype_tweaks['pt%d' % i] = {'pixels' : Gfx4bpp ((w, h, frames))}
 
 del w, h, frames, i, data

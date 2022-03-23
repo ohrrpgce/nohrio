@@ -58,7 +58,7 @@ class VarLenOhrData (OhrData):
         except ValueError:
             # probably error due to file length not being divisible by binsize/dtype size
             filesize = os.stat(filename).st_size
-            records = (filesize - offset) / binsize
+            records = (filesize - offset) // binsize
             trailing_shape = (filesize - offset) % binsize
             if trailing_shape:
                 print ("Warning: last record (idx %d) of lump %s (size %d) is partial: only length %s, binsize %d"
@@ -279,12 +279,12 @@ def pack (src, dest = None, transpose = None):
             raise ValueError (
               '%d byte unpacked image cannot be packed into a %d byte destination!' %
               (nsrcpixels, ndestpixels))
-        if (src.shape[:-1] + (src.shape[-1] / 2)) != dest.shape:
+        if (src.shape[:-1] + (src.shape[-1] // 2)) != dest.shape:
             raise ValueError (
               '%d byte pitch doesn\'t fit exactly %d pixels' %
-              (dest.shape[-1], src.shape[-1] / 2))
+              (dest.shape[-1], src.shape[-1] // 2))
     else:
-        dest = np.zeros (shape = src.shape[:-1] + (src.shape[-1] / 2,), dtype='B')
+        dest = np.zeros (shape = src.shape[:-1] + (src.shape[-1] // 2,), dtype='B')
     if src.max() > 15:
         raise ValueError ('source image should only contain indices [0...15]')
     # Take two source pixels, pack them into one destination pixel

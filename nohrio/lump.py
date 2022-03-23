@@ -25,18 +25,20 @@ def unpack_lumpid (lumpid):
     return dict
 
 def read_lumpheader (file):
-    characters = ['']
-    while len(characters) < 50 and characters[-1] != '\x00':
-        characters.append (file.read (1))
-        if characters[-1] == '':
-            if len (characters) != 2:
-                raise CorruptionError ('Broken lump header near end of file')
+    filename = b''
+    while len(filename) < 50:
+        ch = file.read(1)
+        if not ch:
+            if len(filename):
+                raise CorruptionError('Broken lump header near end of file')
             return None, None, None
-    characters = characters[:-1]
-    filename = "".join (characters)
+        if ord(ch) == 0:
+            break
+        filename += ch
+    filename = filename.decode('latin-1')
     size = file.read(4)
-    size = struct.unpack('<I', '%s%s%s%s' % (size[2], size[3],
-                                             size[0], size[1]))[0]
+    size = bytes([size[2], size[3], size[0], size[1]])
+    size = struct.unpack('<I', size)[0]
     return filename, file.tell(), size
 
 

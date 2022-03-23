@@ -228,7 +228,7 @@ def assign_array (array, value):
                    array.dtype[key].names[-1] in ('value','data')):
                     double = array.dtype[key].names[-1] == 'data'
                     if double:
-                        s = value[key][:array.dtype[key]['data'].itemsize / 2]
+                        s = value[key][:array.dtype[key]['data'].itemsize // 2]
                         set_str16 (array[key], s)
                     else:
                         s = value[key][:array.dtype[key]['value'].itemsize]

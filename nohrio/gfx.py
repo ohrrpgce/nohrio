@@ -46,7 +46,7 @@ def pack_array (array, bpp = 8, srcbpp = 4):
 
 def unpack_array (array, srcbpp = 4):
     "unpack an array to 8bpp"
-    nparts = 8 / srcbpp
+    nparts = 8 // srcbpp
     masks = [1 << srcbpp - 1]
     shifts = [srcbpp * v for i in range (nparts)]
     for i in range (1, nparts):

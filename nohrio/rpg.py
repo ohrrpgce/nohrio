@@ -197,7 +197,7 @@ class RPGFile (RPG):
         # TODO: handle slicing here -- alter offset and shape
         filename = inforecord[0]
         baseoffset, basesize = self.lump_map[filename]
-        shape = basesize / dtype.itemsize
+        shape = basesize // dtype.itemsize
         if flags & PLANAR:
             order = 'F'
         if flags & SINGLE:

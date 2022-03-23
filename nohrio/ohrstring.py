@@ -17,7 +17,7 @@
 
 
 def set_str16 (dest, src): # 16bit/8bit len, 16bit chars, optionally unused field
-    assert len (src) <= (dest.dtype['data'].itemsize / 2)
+    assert len (src) <= (dest.dtype['data'].itemsize // 2)
     dest['length'] = len(src)
     dest['data'] = "".join([char + '\x00' for char in src] + ['\x00\x00'])
 

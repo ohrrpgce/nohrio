@@ -6,12 +6,15 @@ import weakref
 import hashlib
 
 
-def text_lump_lines(f, offset, size):
-    "An iterator over the lines in a lumped text file"
+def text_lump_lines(f, offset, size, encoding):
+    """An iterator over the lines in a lumped text file (which is opened for binary).
+    scripts.txt is currently 8-bit, but lumped source text can be in any encoding
+    supported by HSpeak, which autodetects it.
+    """
     f.seek (offset)
     left_to_read = offset + size - f.tell()
     while left_to_read > 0:
-        line = f.readline()
+        line = f.readline().decode(encoding)
         left_to_read = offset + size - f.tell()
         if left_to_read < 0:
             # Read too much from file, trim
@@ -28,7 +31,7 @@ class Script(object):
         f.seek (offset + self.data_off)
         data = f.read (size - self.data_off)
         #self.data = np.memmap (f, mode = 'r', dtype = self.int, shape = length, offset = offset + self.data_off)
-        cmds_len = self.cmds_size / self.int_bytes
+        cmds_len = self.cmds_size // self.int_bytes
         self.cmds = np.ndarray (buffer = data, dtype = self.int, shape = cmds_len, offset = 0)
         if self.strtable_size:
             self.strtable = np.ndarray (buffer = data, dtype = np.int8, shape = self.strtable_size, offset = self.strtable_off - self.data_off)
@@ -95,7 +98,7 @@ class Script(object):
             f.seek (offset)
             data = f.read (headerlen)
             # nearly everything defaults to 0
-            data += '\0' * 28
+            data += b'\0' * 28
             header = np.ndarray ((1), dtype = 'i2, i2, i2, i2, i4, i2, i2, i2, i4, i2, i4', buffer = data)
             self.numargs = header[0][2]
             self.format_version = header[0][3]
@@ -127,7 +130,7 @@ class Script(object):
 
 
 def read_scripts_txt(f, offset, size):
-    lines = text_lump_lines (f, offset, size)
+    lines = text_lump_lines(f, offset, size, 'latin-1')
     scriptnames = {}
     scriptids = {}
     for scriptname in lines:
@@ -156,7 +159,7 @@ def read_commands_bin(f, offset, size):
     for cmdid, offset in enumerate(offsets):
         if offset:
             row = np.ndarray (shape = 2, dtype = INT, buffer = data, offset = offset)
-            command_names[cmdid] = {'name': data[offset + 4 : offset + 4 + row[1]],
+            command_names[cmdid] = {'name': data[offset + 4 : offset + 4 + row[1]].decode('latin-1'),
                                     'argnum': row[0]}
     return command_names
     

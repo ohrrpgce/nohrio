@@ -199,7 +199,7 @@ uicols = game.lump('uicolors.bin')[gen['masterpal']]
 #del uidtypehack['textboxframe']
 #uicols = uicols.view(np.dtype(uidtypehack))
 # therefore, a bit of a hack
-for col in uicols.view((INT, uicols.dtype.itemsize/2))[:48]:
+for col in uicols.view((INT, uicols.dtype.itemsize//2))[:48]:
     coluse[col] += 1
 
 totalpixelcounts = spritepixelcounts + tilepixelcounts + backdroppixelcounts
