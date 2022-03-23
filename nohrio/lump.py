@@ -84,16 +84,14 @@ def lump (srcpath, file):
 def guess_lump_prefix (lumplist):
     """Given a list of lump names, without path, guess the lump-prefix."""
     leftpart = [v[:v.find('.')] for v in lumplist]
-    lump_prefix = None
     unique = set (leftpart)
     for v in unique:
         # in the test data, 43 of the prefix are found
         # in OHRRPGCE.NEW,  38 of the prefix are found out
         # of total 57 lumps
         if leftpart.count(v) > 16:
-            lump_prefix = v
-            break
-    return lump_prefix
+            return v
+    return None
 
 def lumpname_ok (name):
     "Return False for corrupted or non canonical lump names, True otherwise."

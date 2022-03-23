@@ -5,7 +5,7 @@
 
 from numpy import memmap
 import numpy as np
-from nohrio.lump import read_lumplist, Passcode, lump, CorruptionError
+from nohrio.lump import read_lumplist, guess_lump_prefix, Passcode, lump, CorruptionError
 import os
 from nohrio.dtypes import GENERAL, dt
 from nohrio.ohrrpgce import archiNym, binSize, INT
@@ -189,10 +189,12 @@ class RPGHandler (object):
         if lump.startswith ('.'):
             lump = lump [1:]
         if not "." in lump:
-            lump = self.archinym.prefix + "." + lump
+            lump = self.lumpname_prefix + "." + lump
         return lump
     def prepare (self):
         "NOTE: This currently is used by and supports RPGDir only."
+        if len(self.manifest) == 0:
+            raise CorruptionError ('%s contains no lumps!' % self.path)
         self.binsize = binSize (self.lump_path('binsize.bin'))
         if self.lump_path ('gen') not in self.manifest:
             raise CorruptionError ('Missing .gen lump from %s' % self.path)
@@ -224,7 +226,7 @@ class RPGHandler (object):
     pal256 = property (_pal256)
 
 class RPGFile (RPGHandler):
-    """RPGFile reader/writer.
+    """RPGFile reader/writer. Highly unfinished and unusable.
     """
     def __init__ (self, filename, mode = 'r', unlumpto = None):
         needs_close = False
@@ -250,6 +252,9 @@ class RPGFile (RPGHandler):
         self.manifest, self._lump_map = read_lumplist (f)
         self.mode = mode
         # mapping, step 2: create corresponding objects for the lumps we know
+        #self.archinym = archiNym(self.get_lump('archinym.lmp'))
+        #self.lumpname_prefix = self.archinym.prefix
+
         # Mapping, final step: catalogue all lumps we don't understand.
         # Init, step 1: read GEN
         # Init, step 2: decode password, creating Passcode object.
@@ -297,11 +302,20 @@ class RPGDir (RPGHandler):
         filenames = listdir_with_path(path)
         # classify filenames into old-style: WANDER.XYZ
         # and new style: XYZ.ABC
+
         if 'b' in mode:
             raise ValueError ('mode must not contain "b" (see numpy.memmap docs)')
-        self.archinym = archiNym (os.path.join (path, 'archinym.lmp'))
-        if self.archinym.prefix == '':
-            self.archinym.prefix = os.path.splitext (os.path.basename (path))[0]
+        # Note this creates archinym.lmp, but it won't appear in self.manifest
+        self.archinym = archiNym(os.path.join(path, 'archinym.lmp'))
+        if self.archinym.prefix:
+            self.lumpname_prefix = self.archinym.prefix
+        else:
+            self.lumpname_prefix = guess_lump_prefix(os.listdir(path))
+            if not self.lumpname_prefix:
+                self.lumpname_prefix = os.path.splitext(os.path.basename(path))[0]
+            #print("guessed archinym", self.lumpname_prefix)
+            self.archinym.prefix = self.lumpname_prefix
+
         self.manifest = filenames
         from weakref import WeakValueDictionary
         self.mmaps = {}
@@ -309,6 +323,7 @@ class RPGDir (RPGHandler):
         self.path = path
         self.prepare()
         self.maps = MapManager (self,)
+
     def lump_all (self, dest):
         tmp = list (self.manifest)
         tmp.sort()
