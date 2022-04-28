@@ -1,5 +1,8 @@
 """RELOAD document handling.
 
+To read a document, use `read()`.
+To write a document, use `root.write_root()` where `root` is the root Element.
+
 http://gilgamesh.hamsterrepublic.com/wiki/ohrrpgce/index.php/RELOAD
 """
 
@@ -14,7 +17,7 @@ _double = struct.Struct('d')
 
 def check_or_message (f, n, expected, exception, message):
     tmp = f.read(n)
-    if type (expected) != str: # filtering
+    if type (expected) != bytes: # filtering
         tmp = expected[0](tmp)
         expected = expected[1]
     if tmp != expected:
@@ -31,7 +34,7 @@ def read_reload_header(f):
 
     table : list of strings
     """
-    check_or_message (f, 4, 'RELD', CorruptionError,
+    check_or_message (f, 4, b'RELD', CorruptionError,
                       'Header string %r doesn\'t look like a RELOAD header')
     check_or_message (f, 1, (ord, 1), NotImplementedError,
                       'RELOAD version %d not understood.')
@@ -118,6 +121,16 @@ class Element (object):
             self.children = []
     def __repr__ (self):
         return "%s (%r, %r, %r)" % (self.__class__.__name__, self.name, self.data, self.children)
+    def __str__ (self, depth=0):
+        ret = "  " * depth
+        name = self.name if self.name else "''"
+        if self.data is None:
+            ret += name
+        else:
+            ret += "%s: %s" % (name, self.data)
+        for ch in self.children:
+            ret += "\n" + ch.__str__(depth + 1)
+        return ret
     def __eq__ (self, y):
         if self.name != y.name or self.data != y.data or \
             (len(self.children) != len(y.children)):
@@ -165,8 +178,13 @@ class Element (object):
         if data == None:
             elementtype = 0
             elementsize = 0
+        elif datatype == bytes:
+            elementtype = 6
+            elementsize = len(data)
+            elementsize += vli_size(elementsize)
         elif datatype == str:
             elementtype = 6
+            data = data.encode('latin-1')
             elementsize = len(data)
             elementsize += vli_size(elementsize)
         elif datatype in (int, float):
@@ -215,10 +233,10 @@ class Element (object):
         The canonical usage of this is upon the actual root node,
         but it can also be used to extract any subtree.
         """
-        f.write('RELD\x01')
+        f.write(b'RELD\x01')
         f.write(struct.pack('I', 13))
         stringtable_metapos = f.tell()
-        f.write('    ')
+        f.write(b'    ')
         table = build_stringtable (self)
         self.write(f, table)
         string_table_pos = f.tell()
@@ -282,15 +300,15 @@ def write_vli (f, value):
     tmp |= value & 0x3f
     if value > 0x3f:
         tmp |= 0x80
-    f.write (chr (tmp))
+    f.write(bytes([tmp]))
     shift = 6
     if value > 0x3f:
         tmp = value >> shift
         while (tmp) != 0:
             if tmp > 0x7f:
-                f.write (chr ((tmp & 0x7f)|0x80))
+                f.write(bytes([(tmp & 0x7f)|0x80]))
             else:
-                f.write (chr ((tmp & 0x7f)))
+                f.write(bytes([(tmp & 0x7f)]))
             shift += 7
             tmp = value >> shift
 
@@ -311,7 +329,7 @@ def read_stringtable (f):
     results = strtable([''])
     while nstrings > 0 :
         length = read_vli(f)
-        content = f.read(length)
+        content = f.read(length).decode('ascii')
         if len(content) != length:
             raise CorruptionError ('Truncated string table')
         results.append (content)
@@ -319,8 +337,10 @@ def read_stringtable (f):
     return results
 
 def write_stringtable (f, table):
-    write_vli (f, len (table) - 1)
+    write_vli (f, len(table) - 1)
     for s in table[1:]:
+        if isinstance(s, str):
+            s = s.encode('latin-1')
         write_vli (f, len(s))
         f.write (s)
 
