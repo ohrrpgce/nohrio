@@ -31,20 +31,22 @@ def escaped_split(string, sep):
 
 def escape_string(string):
     """
-    Escape an 8-bit string suitably for an csv file
+    Escape a bytes or an 8-bit string suitably for an csv file
 
     Nonprintable characters are escaped in the same format that Custom's textbox
     exporter uses: '\ddd'
     """
     ret = '"'
+    if isinstance(string, str):
+        string = map(ord, string)
     for c in string:
-        if ord(c) <= 31 or ord(c) >= 127 or c == '"':
-            if ord(c) == 10:
+        if c <= 31 or c >= 127 or c == ord('"'):
+            if c == 10:
                 ret += '\\n'
             else:
-                ret += '\\%03d' % ord(c)
+                ret += '\\%03d' % c
         else:
-            ret += c
+            ret += chr(c)
     return ret + '"'
 
 def unescape_string(string):
@@ -218,7 +220,7 @@ def bitset_array(bitname_list = None):
         clearmask = np.zeros((), dtype = dtype)
         for i, bname in enumerate(bitnames):
             if bname:
-                clearmask[i / 8] |= 1 << (i % 8)
+                clearmask[i // 8] |= 1 << (i % 8)
 
         def decoder(src):
             bitvec = 0
